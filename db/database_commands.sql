@@ -68,12 +68,55 @@
     CREATE TABLE Event (
         EventID INT UNIQUE NOT NULL AUTO_INCREMENT PRIMARY KEY,
         UserID INT NOT NULL,
-        EventTitle TINYTEXT
-        FOREIGN KEY (UserID) REFERENCES User(UserID)
+        EventTitle TINYTEXT,
+        DateTime DATETIME,
+        Location TINYTEXT,
+        Genre VARCHAR(11) NOT NULL,
+        Description TINYTEXT,
+        SlotOne INT,
+        SlotTwo INT,
+        SlotThree INT,
+        SlotFour INT,
+        CONSTRAINT Check_Genre CHECK IN ('Classic Rock', 'Country', 'Pop', 'RnB', 'Metal', 'Classical', 'Folk', 'Hip Hop', 'Electronic', 'Jazz', 'Indie', 'Alternative')
+        FOREIGN KEY (UserID) REFERENCES User(UserID),
+        FOREIGN KEY (SlotOne) REFERENCES Band(BandID),
+        FOREIGN KEY (SlotTwo) REFERENCES Band(BandID),
+        FOREIGN KEY (SlotThree) REFERENCES Band(BandID),
+        FOREIGN KEY (SlotFour) REFERENCES Band(BandID)
     );
     -- membership_request
+    CREATE TABLE MembershipRequest (
+        MembershipRequestID INT UNIQUE NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        UserID INT NOT NULL,
+        BandID INT NOT NULL,
+        Status BOOLEAN DEFAULT False,
+        TimeCreated DATETIME,
+        Message TINYTEXT,
+        FOREIGN KEY (UserID) REFERENCES User(UserID),
+        FOREIGN KEY (BandID) REFERENCES Band(BandID)
+    );
     -- event_request
+    CREATE TABLE EventRequest (
+        EventRequestID INT UNIQUE NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        BandID INT NOT NULL,
+        EventID INT NOT NULL,
+        Status BOOLEAN DEFAULT False,
+        TimeCreated DATETIME,
+        Message TINYTEXT,
+        FOREIGN KEY (BandID) REFERENCES Band(BandID),
+        FOREIGN KEY (EventID) REFERENCES Event(EventID)
+    );
     -- fill_in_request
+    CREATE TABLE FillInRequest (
+        FillInRequestID INT UNIQUE NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        BandID INT NOT NULL,
+        EventID INT NOT NULL,
+        Description TINYTEXT,
+        FillInMemberID INT,
+        FOREIGN KEY (BandID) REFERENCES Band(BandID),
+        FOREIGN KEY (EventID) REFERENCES Event(EventID),
+        FOREIGN KEY (FillInMemberID) REFERENCES User(UserID)
+    );
 -- SQL insert statements to fill your tables with initial data.  Include enough data to show proper testing of your SQL select statements below.
     -- user
     -- roles
