@@ -11,8 +11,7 @@
         PhoneNumber INTEGER(10),
         Genre VARCHAR(11) NOT NULL,
         Instrument TINYTEXT NOT NULL,
-        CONSTRAINT Check_Genre CHECK IN ('Classic Rock', 'Country', 'Pop', 'RnB', 'Metal', 
-        'Classical', 'Folk', 'Hip Hop', 'Electronic', 'Jazz', 'Indie', 'Alternative')
+        CONSTRAINT Check_Genre CHECK IN ('Classic Rock', 'Country', 'Pop', 'RnB', 'Metal', 'Classical', 'Folk', 'Hip Hop', 'Electronic', 'Jazz', 'Indie', 'Alternative')
     );
     -- roles
     CREATE TABLE Roles (
