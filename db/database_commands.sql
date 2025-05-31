@@ -146,10 +146,15 @@
     -- wxtj_exec
     SELECT * FROM WXTJExec;
     -- band
+    SELECT * FROM Band;
     -- event
+    SELECT * FROM Event;
     -- membership_request
+    SELECT * FROM MembershipRequest;
     -- event_request
+    SELECT * FROM EventRequest;
     -- fill_in_request
+    SELECT * FROM FillInRequest;
 -- SQL select statements that use criteria to select some rows.
     -- user
     -- roles
