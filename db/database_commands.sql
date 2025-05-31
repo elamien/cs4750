@@ -170,14 +170,46 @@
     -- fill_in_request
 -- SQL select statements that summarize data.
     -- user
+    SELECT Genre, COUNT(*) AS UserCount
+    FROM User
+    GROUP BY Genre;
     -- roles
+    SELECT r.RoleName, COUNT(ur.UserID) AS UsersPerRole
+    FROM Roles r
+    JOIN UserRoles ur ON r.RoleID = ur.RoleID
+    GROUP BY r.RoleName;
     -- user_roles
+    SELECT UserID, COUNT(DISTINCT RoleID) AS RoleCount
+    FROM UserRoles
+    GROUP BY UserID;    
     -- band_leader
+    SELECT UserRoleID, COUNT(BandID) AS BandsLed
+    FROM BandLeader
+    GROUP BY UserRoleID;
     -- band_member
+    SELECT UserRoleID, COUNT(BandID) AS BandsJoined
+    FROM BandMember
+    GROUP BY UserRoleID;
     -- general_user
+    SELECT LookingForABand, COUNT(*) AS UserCount
+    FROM GeneralUser
+    GROUP BY LookingForABand;
     -- wxtj_exec
+    SELECT ExecTitle, COUNT(*) AS ExecCount
+    FROM WXTJExec
+    GROUP BY ExecTitle;
     -- band
+    SELECT Genre, AVG(TotalEventsPlayed) AS AvgTotalEvents, COUNT(*) AS BandCount
+    FROM Band
+    GROUP BY Genre;
     -- event
+    SELECT Genre, COUNT(*) AS UpcomingEventCount
+    FROM Event
+    WHERE DateTime > NOW()
+    GROUP BY Genre;
     -- membership_request
+    SELECT Status, COUNT(*) AS RequestCount
+    FROM MembershipRequest
+    GROUP BY Status;
     -- event_request
     -- fill_in_request
