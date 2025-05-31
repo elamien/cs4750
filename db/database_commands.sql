@@ -212,4 +212,11 @@
     FROM MembershipRequest
     GROUP BY Status;
     -- event_request
+    SELECT Status, COUNT(*) AS RequestCount
+    FROM EventRequest
+    GROUP BY Status;
     -- fill_in_request
+    SELECT COUNT(*) AS PendingFillInRequests
+    FROM FillInRequest
+    WHERE FillInMemberID IS NULL;
+    
