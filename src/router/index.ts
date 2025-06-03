@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '../views/general/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,12 +15,103 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      component: () => import('../views/general/AboutView.vue'),
     },
     {
       path: '/onboarding',
       name: 'onboarding',
-      component: () => import('../views/OnboardingView.vue'),
+      component: () => import('../views/auth/OnboardingView.vue'),
+    },
+    // Browse routes (available to all users)
+    {
+      path: '/browse/bands',
+      name: 'browse-bands',
+      component: () => import('../views/browse/BrowseBandsView.vue'),
+    },
+    {
+      path: '/browse/events',
+      name: 'browse-events',
+      component: () => import('../views/browse/BrowseEventsView.vue'),
+    },
+    // User account and preferences (signed-in users)
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('../views/account/AccountView.vue'),
+    },
+    {
+      path: '/favorites',
+      name: 'favorites',
+      component: () => import('../views/account/FavoritesView.vue'),
+    },
+    {
+      path: '/create-event',
+      name: 'create-event',
+      component: () => import('../views/general/CreateEventView.vue'),
+    },
+    {
+      path: '/fill-in-requests',
+      name: 'fill-in-requests',
+      component: () => import('../views/general/FillInRequestsView.vue'),
+    },
+    // General users
+    {
+      path: '/join-create-band',
+      name: 'join-create-band',
+      component: () => import('../views/band/JoinCreateBandView.vue'),
+    },
+    // Band member routes
+    {
+      path: '/my-band',
+      name: 'my-band',
+      component: () => import('../views/band/MyBandView.vue'),
+    },
+    // Band leader routes
+    {
+      path: '/my-band/info',
+      name: 'band-info',
+      component: () => import('../views/band/BandInfoView.vue'),
+    },
+    {
+      path: '/my-band/members',
+      name: 'band-members',
+      component: () => import('../views/band/BandMembersView.vue'),
+    },
+    {
+      path: '/my-band/event-requests',
+      name: 'event-requests',
+      component: () => import('../views/band/EventRequestsView.vue'),
+    },
+    {
+      path: '/my-band/member-requests',
+      name: 'member-requests',
+      component: () => import('../views/band/MemberRequestsView.vue'),
+    },
+    {
+      path: '/my-band/create-fill-in',
+      name: 'create-fill-in',
+      component: () => import('../views/band/CreateFillInView.vue'),
+    },
+    // Executive/Admin routes
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('../views/admin/AdminUsersView.vue'),
+    },
+    {
+      path: '/admin/bands',
+      name: 'admin-bands',
+      component: () => import('../views/admin/AdminBandsView.vue'),
+    },
+    {
+      path: '/admin/events',
+      name: 'admin-events',
+      component: () => import('../views/admin/AdminEventsView.vue'),
+    },
+    {
+      path: '/admin/reports',
+      name: 'admin-reports',
+      component: () => import('../views/admin/AdminReportsView.vue'),
     },
   ],
 })

@@ -94,7 +94,7 @@
 
 /* Form input styling to match theme */
 .auth-form .p-inputtext {
-    border-color: #ccc !important;
+    border-color: #52525b !important;
 }
 
 .auth-form .p-inputtext:hover {
@@ -109,7 +109,7 @@
 
 /* Password component styling */
 .auth-form .p-password {
-    border-color: #ccc !important;
+    border-color: #52525b !important;
 }
 
 .auth-form .p-password:hover {

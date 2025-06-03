@@ -42,7 +42,7 @@
 .navbar-end {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     height: 100%;
 }
 
@@ -113,4 +113,104 @@
   display: inline-block;
 }
 
-/* Removed dev navigation item styling - onboarding now part of registration flow */ 
+/* Removed dev navigation item styling - onboarding now part of registration flow */
+
+/* App layout styles */
+.app {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    padding: 2rem;
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+
+
+.navbar-user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Avatar button styling */
+.avatar-button {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.avatar-button:hover {
+    transform: scale(1.1);
+    border-color: var(--hoojams-orange);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-button:active {
+    transform: scale(1.05);
+}
+
+/* Profile menu styling */
+.profile-menu {
+    position: relative;
+}
+
+.profile-dropdown {
+    min-width: 180px;
+}
+
+.profile-dropdown .p-menu-item {
+    transition: all 0.2s ease;
+}
+
+.profile-dropdown .p-menu-item:hover {
+    background: var(--p-highlight-bg);
+}
+
+.profile-dropdown .p-menu-item-icon {
+    margin-right: 0.5rem;
+}
+
+.profile-dropdown .p-menu-separator {
+    margin: 0.5rem 0;
+}
+
+/* Favorites button styling */
+.favorites-button-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.favorites-button-wrapper:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.favorites-icon {
+    color: #ff6b6b !important;
+    font-size: 1.1rem !important;
+    font-weight: bold;
+}
+
+.favorites-label {
+    color: white;
+    font-weight: 500;
+    font-size: 0.95rem;
+} 

@@ -13,24 +13,24 @@
   --hoojams-cream-dark: hsl(37.3deg 60% 75%);
 }
 
-/* Light Mode (default) - Orange navbar, dark blue background, cream cards */
+/* Light Mode (default) - Orange navbar, white background, black text */
 :root {
-  --theme-background: var(--hoojams-dark-blue);
-  --theme-card-bg: var(--hoojams-cream);
-  --theme-card-border: var(--hoojams-orange);
-  --theme-card-text: var(--hoojams-dark-blue);
-  --theme-main-text: white;
-  --theme-secondary-text: hsl(203.53deg 60% 85%);
+  --theme-background: white;
+  --theme-card-bg: white;
+  --theme-card-border: #e5e5e5;
+  --theme-card-text: #1a1a1a;
+  --theme-main-text: #1a1a1a;
+  --theme-secondary-text: #666666;
   
-  /* Modal colors (opposite of cards) */
-  --theme-modal-bg: var(--hoojams-dark-blue);
-  --theme-modal-text: white;
+  /* Modal colors */
+  --theme-modal-bg: white;
+  --theme-modal-text: #1a1a1a;
   
   /* Override PrimeVue design tokens */
   --p-primary-color: var(--hoojams-orange);
   --p-primary-contrast-color: white;
-  --p-primary-50: var(--hoojams-cream);
-  --p-primary-100: var(--hoojams-cream-dark);
+  --p-primary-50: #f9f9f9;
+  --p-primary-100: #f0f0f0;
   --p-primary-500: var(--hoojams-orange);
   --p-primary-600: var(--hoojams-orange-hover);
   --p-primary-700: hsl(24.17deg 89.57% 35%);
@@ -38,35 +38,41 @@
   --p-surface-ground: var(--theme-background);
   --p-surface-card: var(--theme-card-bg);
   --p-surface-border: var(--theme-card-border);
-  --p-surface-50: var(--hoojams-cream);
-  --p-surface-100: var(--hoojams-cream-dark);
+  --p-surface-50: #f9f9f9;
+  --p-surface-100: #f0f0f0;
   --p-surface-800: var(--theme-card-bg);
-  --p-surface-900: var(--hoojams-cream-dark);
+  --p-surface-900: #f0f0f0;
   
   --p-text-color: var(--theme-card-text);
   --p-text-secondary-color: var(--theme-secondary-text);
-  --p-highlight-bg: hsl(24.17deg 50% 20%);
-  --p-highlight-text-color: white;
+  --p-highlight-bg: #f0f0f0;
+  --p-highlight-text-color: #1a1a1a;
 }
 
-/* Dark Mode - Orange navbar, cream background, dark blue cards */
+/* Dark Mode - Orange navbar, black background, white text */
 [data-theme="dark"] {
-  --theme-background: var(--hoojams-cream);
-  --theme-card-bg: var(--hoojams-dark-blue);
-  --theme-card-border: var(--hoojams-orange);
-  --theme-card-text: white;
-  --theme-main-text: var(--hoojams-dark-blue);
-  --theme-secondary-text: hsl(203.53deg 80% 50%);
+  --theme-background: #1a1a1a;
+  --theme-card-bg: #2a2a2a;
+  --theme-card-border: #404040;
+  --theme-card-text: #f5f5f5;
+  --theme-main-text: #f5f5f5;
+  --theme-secondary-text: #b0b0b0;
   
-  /* Modal colors (opposite of cards) */
-  --theme-modal-bg: var(--hoojams-cream);
-  --theme-modal-text: var(--hoojams-dark-blue);
+  /* Modal colors */
+  --theme-modal-bg: #2a2a2a;
+  --theme-modal-text: #f5f5f5;
   
   --p-surface-ground: var(--theme-background);
   --p-surface-card: var(--theme-card-bg);
   --p-surface-border: var(--theme-card-border);
+  --p-surface-50: #3a3a3a;
+  --p-surface-100: #404040;
+  --p-surface-800: var(--theme-card-bg);
+  --p-surface-900: #404040;
   --p-text-color: var(--theme-card-text);
   --p-text-secondary-color: var(--theme-secondary-text);
+  --p-highlight-bg: #404040;
+  --p-highlight-text-color: #f5f5f5;
 }
 
 * {

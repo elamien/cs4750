@@ -23,9 +23,32 @@
                 </template>
                 <template #end>
                     <div class="navbar-end">
-                        <InputText placeholder="Search" type="text" class="search-input" />
-                        <ThemeToggle />
-                        <Avatar v-if="isSignedIn" image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" />
+                        <div v-if="isSignedIn" class="navbar-user-section">
+                            <div 
+                                class="favorites-button-wrapper"
+                                @click="router.push('/favorites')"
+                                title="My Favorites"
+                            >
+                                <i class="pi pi-heart favorites-icon"></i>
+                                <span class="favorites-label">Favorites</span>
+                            </div>
+                            <div class="profile-menu">
+                                <Avatar 
+                                    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" 
+                                    shape="circle" 
+                                    class="avatar-button"
+                                    @click="toggleProfileMenu"
+                                    title="Profile Menu"
+                                    ref="avatarRef"
+                                />
+                                <Menu 
+                                    ref="profileMenuRef" 
+                                    :model="profileMenuItems" 
+                                    :popup="true"
+                                    class="profile-dropdown"
+                                />
+                            </div>
+                        </div>
                         <Button v-else label="Sign In" icon="pi pi-sign-in" @click="showAuthModal = true" />
                     </div>
                 </template>
@@ -156,11 +179,14 @@
                 </div>
             </div>
         </Dialog>
+        
+        <!-- Developer Panel (only in development) -->
+        <DeveloperPanel />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { RouterView, useRouter } from 'vue-router';
 import Menubar from 'primevue/menubar';
 import Badge from 'primevue/badge';
@@ -170,14 +196,22 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Password from 'primevue/password';
 import Checkbox from 'primevue/checkbox';
-import ThemeToggle from '@/components/ThemeToggle.vue';
+import Menu from 'primevue/menu';
+import DeveloperPanel from '@/components/DeveloperPanel.vue';
 
 // Router instance
 const router = useRouter();
 
 // User state - this would typically come from a store/auth service
 const isSignedIn = ref(false);
-const userRole = ref<'anonymous' | 'band_member' | 'band_leader' | 'exec'>('anonymous');
+const userRole = ref<'anonymous' | 'general' | 'band_member' | 'band_leader' | 'exec'>('anonymous');
+
+// Theme state
+const isDarkMode = ref(false);
+
+// Profile menu refs
+const profileMenuRef = ref();
+const avatarRef = ref();
 
 // Authentication modal state
 const showAuthModal = ref(false);
@@ -192,36 +226,56 @@ const authForm = ref({
     acceptTerms: false
 });
 
-// Base menu items for anonymous users
+// Menu items for anonymous users (not signed in)
 const anonymousItems = [
     {
-        label: 'About',
-        icon: 'pi pi-info-circle',
-        route: '/about'
+        label: 'Browse Bands',
+        icon: 'pi pi-users',
+        route: '/browse/bands'
     },
     {
-        label: 'Contact',
-        icon: 'pi pi-envelope',
-        route: '/contact'
+        label: 'Browse Events',
+        icon: 'pi pi-calendar',
+        route: '/browse/events'
     }
 ];
 
-// Dev-only items
-const devItems = import.meta.env.DEV ? [
-    // Removed onboarding from navbar - now part of registration flow
-] : [];
-
-// Additional menu items for signed-in users
-const signedInItems = [
+// Base menu items for all signed-in users
+const baseSignedInItems = [
     {
-        label: 'Dashboard',
-        icon: 'pi pi-th-large',
-        route: '/dashboard'
+        label: 'Browse Bands',
+        icon: 'pi pi-users',
+        route: '/browse/bands'
     },
     {
-        label: 'Profile',
-        icon: 'pi pi-user',
-        route: '/profile'
+        label: 'Browse Events',
+        icon: 'pi pi-calendar',
+        route: '/browse/events'
+    },
+    {
+        label: 'Favorites',
+        icon: 'pi pi-heart',
+        route: '/favorites'
+    },
+    {
+        label: 'Create Event',
+        icon: 'pi pi-calendar-plus',
+        route: '/create-event'
+    },
+    {
+        label: 'Fill-In Requests',
+        icon: 'pi pi-bell',
+        route: '/fill-in-requests',
+        badge: '3' // Mock notification count
+    }
+];
+
+// Menu items specific to general users
+const generalItems = [
+    {
+        label: 'Join/Create Band',
+        icon: 'pi pi-plus-circle',
+        route: '/join-create-band'
     }
 ];
 
@@ -230,51 +284,42 @@ const bandMemberItems = [
     {
         label: 'My Band',
         icon: 'pi pi-users',
-        items: [
-            {
-                label: 'Schedule',
-                icon: 'pi pi-calendar',
-                route: '/band/schedule'
-            },
-            {
-                label: 'Music Library',
-                icon: 'pi pi-file-music',
-                route: '/band/music'
-            },
-            {
-                label: 'Attendance',
-                icon: 'pi pi-check',
-                route: '/band/attendance'
-            }
-        ]
+        route: '/my-band'
     }
 ];
 
-// Menu items for band leaders
+// Menu items for band leaders (includes band management)
 const bandLeaderItems = [
     {
-        label: 'Band Management',
-        icon: 'pi pi-crown',
+        label: 'My Band',
+        icon: 'pi pi-users',
         items: [
             {
-                label: 'Manage Members',
+                label: 'Band Info',
+                icon: 'pi pi-info-circle',
+                route: '/my-band/info'
+            },
+            {
+                label: 'Members',
                 icon: 'pi pi-users',
-                route: '/leader/members'
+                route: '/my-band/members'
             },
             {
-                label: 'Schedule Events',
+                label: 'Event Requests',
                 icon: 'pi pi-calendar-plus',
-                route: '/leader/schedule'
+                route: '/my-band/event-requests',
+                badge: '2'
             },
             {
-                label: 'Reports',
-                icon: 'pi pi-chart-bar',
-                route: '/leader/reports'
+                label: 'Member Requests',
+                icon: 'pi pi-user-plus',
+                route: '/my-band/member-requests',
+                badge: '1'
             },
             {
-                label: 'Settings',
-                icon: 'pi pi-cog',
-                route: '/leader/settings'
+                label: 'Create Fill-In Request',
+                icon: 'pi pi-send',
+                route: '/my-band/create-fill-in'
             }
         ]
     }
@@ -283,59 +328,111 @@ const bandLeaderItems = [
 // Menu items for executives
 const execItems = [
     {
-        label: 'Administration',
+        label: 'Join/Create Band',
+        icon: 'pi pi-plus-circle',
+        route: '/join-create-band'
+    },
+    {
+        label: 'Admin Panel',
         icon: 'pi pi-shield',
         items: [
             {
-                label: 'User Management',
+                label: 'Manage Users',
                 icon: 'pi pi-users',
                 route: '/admin/users'
             },
             {
-                label: 'Band Management',
+                label: 'Manage Bands',
                 icon: 'pi pi-sitemap',
                 route: '/admin/bands'
             },
             {
-                label: 'System Settings',
-                icon: 'pi pi-sliders-h',
-                route: '/admin/settings'
-            },
-            {
-                label: 'Analytics',
-                icon: 'pi pi-chart-line',
-                route: '/admin/analytics'
+                label: 'Manage Events',
+                icon: 'pi pi-calendar',
+                route: '/admin/events'
             }
         ]
     }
 ];
 
+// Dev-only items
+const devItems = import.meta.env.DEV ? [] : [];
+
 // Computed menu items based on user role
 const menuItems = computed(() => {
-    let items = [...anonymousItems, ...devItems];
-    
-    if (isSignedIn.value) {
-        items = [...items, ...signedInItems];
-        
-        switch (userRole.value) {
-            case 'band_member':
-                items = [...items, ...bandMemberItems];
-                break;
-            case 'band_leader':
-                items = [...items, ...bandMemberItems, ...bandLeaderItems];
-                break;
-            case 'exec':
-                items = [...items, ...bandMemberItems, ...bandLeaderItems, ...execItems];
-                break;
-}
+    if (!isSignedIn.value) {
+        return [...anonymousItems, ...devItems];
     }
     
-    return items;
+    let currentBaseItems = [...baseSignedInItems];
+    
+    if (userRole.value === 'exec') {
+        // For execs, remove the text-based "Favorites" from the main menu
+        // as they have the dedicated heart icon button.
+        currentBaseItems = currentBaseItems.filter(item => item.label !== 'Favorites');
+    }
+    
+    let items = [...currentBaseItems];
+    
+    switch (userRole.value) {
+        case 'general':
+            items = [...items, ...generalItems];
+            break;
+        case 'band_member':
+            items = [...items, ...bandMemberItems];
+            break;
+        case 'band_leader':
+            items = [...items, ...bandLeaderItems];
+            break;
+        case 'exec':
+            // execItems are added to the (potentially filtered) base items
+            items = [...items, ...execItems];
+            break;
+    }
+    
+    return [...items, ...devItems];
 });
 
+// Profile menu items
+const profileMenuItems = computed(() => [
+    {
+        label: 'Account Info',
+        icon: 'pi pi-user',
+        command: () => {
+            router.push('/account');
+        }
+    },
+    {
+        separator: true
+    },
+    {
+        label: isDarkMode.value ? 'Light Mode' : 'Dark Mode',
+        icon: isDarkMode.value ? 'pi pi-sun' : 'pi pi-moon',
+        command: () => {
+            toggleTheme();
+        }
+    }
+]);
+
+// Theme toggle functionality
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+    
+    if (isDarkMode.value) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+    }
+};
+
+// Profile menu toggle
+const toggleProfileMenu = (event: Event) => {
+    profileMenuRef.value.toggle(event);
+};
+
 // Demo functions to test different user states (for development testing)
-// You can use these in the browser console to test different user states:
-// toggleSignIn(), setUserRole('band_leader'), etc.
 const toggleSignIn = () => {
     isSignedIn.value = !isSignedIn.value;
     if (!isSignedIn.value) {
@@ -343,7 +440,7 @@ const toggleSignIn = () => {
     }
 };
 
-const setUserRole = (role: 'band_member' | 'band_leader' | 'exec') => {
+const setUserRole = (role: 'general' | 'band_member' | 'band_leader' | 'exec') => {
     if (isSignedIn.value) {
         userRole.value = role;
     }
@@ -358,7 +455,7 @@ const handleSignIn = () => {
     
     // Mock successful sign in
     isSignedIn.value = true;
-    userRole.value = 'band_member'; // Default role
+    userRole.value = 'general'; // Default role for new users
     showAuthModal.value = false;
     
     // Reset form
@@ -375,6 +472,7 @@ const handleSignUp = () => {
     
     // Mock successful sign up - redirect to onboarding for new users
     isSignedIn.value = true;
+    userRole.value = 'general'; // New users start as general
     showAuthModal.value = false;
     
     // Reset form and redirect to onboarding for first-time users
@@ -397,6 +495,15 @@ const resetAuthForm = () => {
     authMode.value = 'signin';
 };
 
+// Initialize theme from localStorage
+onMounted(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        isDarkMode.value = true;
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+});
+
 // Expose functions to window for development testing
 if (import.meta.env.DEV) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -407,33 +514,17 @@ if (import.meta.env.DEV) {
     (window as any).showAuthModal = () => showAuthModal.value = true;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).triggerOnboarding = () => router.push('/onboarding');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).getDevState = () => ({ 
+        isSignedIn: isSignedIn.value, 
+        userRole: userRole.value 
+    });
     
     console.log('🚧 Developer Controls Available:');
     console.log('- toggleSignIn() - Toggle sign in state');
-    console.log('- setUserRole("band_member"|"band_leader"|"exec") - Set user role');
+    console.log('- setUserRole("general"|"band_member"|"band_leader"|"exec") - Set user role');
     console.log('- showAuthModal() - Show authentication modal');
     console.log('- triggerOnboarding() - Manually trigger onboarding flow');
-  }
+    console.log('- getDevState() - Get current auth state');
+}
 </script>
-
-<style scoped>
-.app {
-    min-height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-.main-content {
-    padding: 2rem;
-    flex: 1;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.card {
-    margin-bottom: 0;
-    width: 100%;
-}
-</style>
