@@ -1,0 +1,163 @@
+/* Authentication Modal Styles */
+
+.auth-container {
+    padding: 1rem 0;
+}
+
+.auth-form h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--p-text-color);
+    font-weight: 600;
+}
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field label {
+    font-weight: 600;
+    color: var(--p-text-color);
+    font-size: 0.9rem;
+}
+
+.field-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.field-checkbox label {
+    font-size: 0.9rem;
+    color: var(--p-text-color);
+}
+
+.auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auth-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.auth-links .p-button {
+    font-size: 0.9rem;
+}
+
+/* Make Password component full width */
+.p-password {
+    width: 100%;
+}
+
+.p-password input {
+    width: 100%;
+}
+
+/* Auth modal theme styling */
+.p-dialog {
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--theme-modal-bg) !important;
+}
+
+.p-dialog .p-dialog-header {
+    background: var(--theme-modal-bg) !important;
+    color: var(--theme-modal-text) !important;
+    border-bottom: 1px solid var(--theme-card-border);
+    border-radius: 12px 12px 0 0;
+}
+
+.p-dialog .p-dialog-content {
+    background: var(--theme-modal-bg) !important;
+    color: var(--theme-modal-text) !important;
+}
+
+.p-dialog .p-dialog-footer {
+    background: var(--theme-modal-bg) !important;
+    color: var(--theme-modal-text) !important;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Form input styling to match theme */
+.auth-form .p-inputtext {
+    border-color: #ccc !important;
+}
+
+.auth-form .p-inputtext:hover {
+    border-color: var(--hoojams-orange) !important;
+}
+
+.auth-form .p-inputtext:focus {
+    border-color: var(--hoojams-orange) !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 114, 34, 0.2) !important;
+    outline: none !important;
+}
+
+/* Password component styling */
+.auth-form .p-password {
+    border-color: #ccc !important;
+}
+
+.auth-form .p-password:hover {
+    border-color: var(--hoojams-orange) !important;
+}
+
+.auth-form .p-password input:focus {
+    border-color: var(--hoojams-orange) !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 114, 34, 0.2) !important;
+    outline: none !important;
+}
+
+.auth-form .p-password:focus-within {
+    border-color: var(--hoojams-orange) !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 114, 34, 0.2) !important;
+    outline: none !important;
+}
+
+/* Checkbox focus styling */
+.auth-form .p-checkbox:focus-within {
+    box-shadow: 0 0 0 0.2rem rgba(234, 114, 34, 0.2) !important;
+    outline: none !important;
+}
+
+/* Primary button styling for auth actions */
+.auth-actions .p-button:not(.p-button-link) {
+    background: var(--hoojams-orange);
+    border-color: var(--hoojams-orange);
+    color: white;
+}
+
+.auth-actions .p-button:not(.p-button-link):hover {
+    background: var(--hoojams-orange-hover);
+    border-color: var(--hoojams-orange-hover);
+}
+
+/* Link button styling */
+.auth-links .p-button-link {
+    color: var(--hoojams-orange) !important;
+}
+
+.auth-links .p-button-link:hover {
+    color: var(--hoojams-orange-hover) !important;
+    background: transparent !important;
+}
+
+.auth-links .p-button-link:focus {
+    color: var(--hoojams-orange) !important;
+    background: transparent !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 114, 34, 0.2) !important;
+} 

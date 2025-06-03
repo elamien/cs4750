@@ -1,35 +1,144 @@
 @import './base.css';
+@import './navbar.css';
+@import './auth-modal.css';
+@import './onboarding.css';
+
+/* Custom HooJams Theme */
+:root {
+  /* Base color palette */
+  --hoojams-dark-blue: hsl(203.53deg 80.95% 12.35%);
+  --hoojams-orange: hsl(24.17deg 89.57% 45.1%);
+  --hoojams-cream: hsl(37.3deg 92.5% 84.31%);
+  --hoojams-orange-hover: hsl(24.17deg 89.57% 40%);
+  --hoojams-cream-dark: hsl(37.3deg 60% 75%);
+}
+
+/* Light Mode (default) - Orange navbar, dark blue background, cream cards */
+:root {
+  --theme-background: var(--hoojams-dark-blue);
+  --theme-card-bg: var(--hoojams-cream);
+  --theme-card-border: var(--hoojams-orange);
+  --theme-card-text: var(--hoojams-dark-blue);
+  --theme-main-text: white;
+  --theme-secondary-text: hsl(203.53deg 60% 85%);
+  
+  /* Modal colors (opposite of cards) */
+  --theme-modal-bg: var(--hoojams-dark-blue);
+  --theme-modal-text: white;
+  
+  /* Override PrimeVue design tokens */
+  --p-primary-color: var(--hoojams-orange);
+  --p-primary-contrast-color: white;
+  --p-primary-50: var(--hoojams-cream);
+  --p-primary-100: var(--hoojams-cream-dark);
+  --p-primary-500: var(--hoojams-orange);
+  --p-primary-600: var(--hoojams-orange-hover);
+  --p-primary-700: hsl(24.17deg 89.57% 35%);
+  
+  --p-surface-ground: var(--theme-background);
+  --p-surface-card: var(--theme-card-bg);
+  --p-surface-border: var(--theme-card-border);
+  --p-surface-50: var(--hoojams-cream);
+  --p-surface-100: var(--hoojams-cream-dark);
+  --p-surface-800: var(--theme-card-bg);
+  --p-surface-900: var(--hoojams-cream-dark);
+  
+  --p-text-color: var(--theme-card-text);
+  --p-text-secondary-color: var(--theme-secondary-text);
+  --p-highlight-bg: hsl(24.17deg 50% 20%);
+  --p-highlight-text-color: white;
+}
+
+/* Dark Mode - Orange navbar, cream background, dark blue cards */
+[data-theme="dark"] {
+  --theme-background: var(--hoojams-cream);
+  --theme-card-bg: var(--hoojams-dark-blue);
+  --theme-card-border: var(--hoojams-orange);
+  --theme-card-text: white;
+  --theme-main-text: var(--hoojams-dark-blue);
+  --theme-secondary-text: hsl(203.53deg 80% 50%);
+  
+  /* Modal colors (opposite of cards) */
+  --theme-modal-bg: var(--hoojams-cream);
+  --theme-modal-text: var(--hoojams-dark-blue);
+  
+  --p-surface-ground: var(--theme-background);
+  --p-surface-card: var(--theme-card-bg);
+  --p-surface-border: var(--theme-card-border);
+  --p-text-color: var(--theme-card-text);
+  --p-text-secondary-color: var(--theme-secondary-text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--theme-background);
+  color: var(--theme-main-text);
+}
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin: 0;
+  padding: 0;
   font-weight: normal;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--theme-background);
 }
 
-a,
-.green {
+/* Ensure full width layout */
+.app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--theme-background);
+}
+
+/* Make navbar full width */
+.card {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Content area styling */
+.main-content {
+  flex: 1;
+  width: 100%;
+  background: var(--theme-background);
+}
+
+/* PrimeVue Card custom styling */
+.p-card {
+  padding: 25px;
+  background: var(--theme-card-bg) !important;
+  border: 1px solid var(--theme-card-border);
+  color: var(--theme-card-text);
+  }
+
+/* PrimeVue Menubar styling */
+.p-menubar {
+  background: var(--hoojams-orange) !important;
+  border: none !important;
+  color: white;
+}
+
+.p-menubar .p-menuitem-link {
+  color: white !important;
+  }
+
+.p-menubar .p-menuitem-link:hover {
+  background: var(--hoojams-orange-hover) !important;
+  color: white !important;
+}
+
+a {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+  transition: 0.3s;
 }
