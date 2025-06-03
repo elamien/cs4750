@@ -1,5 +1,3 @@
--- We can all contribute/store the database commands here, along with comments as needed.
--- DUE 5/31 AKA TONIGHT
 -- An SQL script that creates all your tables.  Primary key and foreign key constraints must be included.  Check constraints must be included as well, where applicable.
     -- user
     CREATE TABLE User (
@@ -118,18 +116,42 @@
         FOREIGN KEY (FillInMemberID) REFERENCES User(UserID)
     );
 -- SQL insert statements to fill your tables with initial data.  Include enough data to show proper testing of your SQL select statements below.
-    -- user
     -- roles
+INSERT INTO Roles (RoleID, RoleName) VALUES
+(1, “General”);   
+    -- user
+INSERT INTO User (UserID, FirstName, LastName, Bio, Email, PhoneNumber, Genre, Instrument) VALUES
+(1, ‘John’, ‘Smith’, ‘Music dude looking to play some stuff’, ‘jsmith@email.com’, 123456789, ‘Folk’, ‘Guitar’);
     -- user_roles
+INSERT INTO UserRoles (UserRoleID, UserID, RoleID) VALUES
+(1, 1, 1);
     -- band_leader
+INSERT INTO BandLeader (UserRoleID, BandID) VALUES
+(1, 1);
     -- band_member
+INSERT INTO BandMember (UserRoleID, BandID) VALUES
+(1, 1);
     -- general_user
+INSERT INTO GeneralUser (UserRoleID, LookingForABand) VALUES
+(1, TRUE);
     -- wxtj_exec
+INSERT INTO WXTJExec (UserRoleID, ExecTitle) VALUES
+(1, 'President');
     -- band
+INSERT INTO Band (BandID, Name, Email, PhoneNumber, Genre, TotalEventsPlayed, EventsPlayedYTD, Description) VALUES
+(1, 'Electric Dreams', 'electricdreams@band.com', 1112223333, 'Alternative', 15, 5, 'Alternative rock band with electronic influences');
     -- event
+INSERT INTO Event (EventID, UserID, EventTitle, datetime, location, genre, status, description, slot_one, slot_two, slot_three, slot_four) VALUES
+(1, 1, 'Summer Music Festival', '2025-07-15 18:00:00', 'The Pavilion', 'Alternative', 'open', 'Annual summer music showcase', 1, NULL, NULL, NULL);
     -- membership_request
+INSERT INTO membership_request (membership_request_id, user_id, band_id, status, time_created, message) VALUES
+(1, 1, 1, 'pending', '2025-05-20 10:00:00', 'I would love to join as a rhythm guitarist');
     -- event_request
+INSERT INTO event_request (event_request_id, band_id, event_id, status, time_created, message) VALUES
+(1, 1, 1, 'pending', '2025-05-25 11:00:00', 'Electric Dreams would love to compete!');
     -- fill_in_request
+INSERT INTO fill_in_request (fill_in_request_id, band_id, event_id, Fill_In_Description, Fill_InMemberID) VALUES
+(1, 1, 1, 'Need drummer for Summer Festival - Lisa is unavailable', NULL);
 -- An SQL select statement for each table that shows all rows.
     -- user
     SELECT * FROM User;
@@ -157,17 +179,47 @@
     SELECT * FROM FillInRequest;
 -- SQL select statements that use criteria to select some rows.
     -- user
+SELECT * FROM User 
+WHERE Instrument LIKE '%Guitar%';
     -- roles
+SELECT * FROM Roles 
+WHERE RoleName = 'Band Member';
     -- user_roles
+SELECT ur.* FROM UserRoles ur
+WHERE ur.RoleID = 2;
     -- band_leader
+SELECT bl.* FROM BandLeader bl
+WHERE bl.UserRoleID = 4;
     -- band_member
+SELECT bm.* FROM BandMember bm
+WHERE bm.BandID = 1;
     -- general_user
+SELECT gu.* FROM GeneralUser gu
+WHERE gu.LookingForABand = TRUE;
     -- wxtj_exec
+SELECT we.* FROM WXTJExec we
+WHERE we.ExecTitle = 'Event Coordinator'
     -- band
+SELECT * FROM Band 
+WHERE Genre = 'Jazz' AND TotalEventsPlayed > 10;
     -- event
+SELECT * FROM Event 
+WHERE Genre = 'Alternative' 
+AND status = 'open' 
+AND datetime > NOW();
     -- membership_request
+SELECT mr.* FROM membership_request mr
+WHERE mr.band_id = 1 
+AND mr.status = 'pending';
     -- event_request
+​​SELECT er.* FROM event_request er
+WHERE er.event_id = 1 
+AND er.status = 'accepted';
     -- fill_in_request
+SELECT fir.* FROM fill_in_request fir
+JOIN Event e ON fir.event_id = e.EventID
+WHERE fir.Fill_InMemberID IS NULL 
+AND e.datetime > NOW();
 -- SQL select statements that summarize data.
     -- user
     SELECT Genre, COUNT(*) AS UserCount
@@ -219,4 +271,4 @@
     SELECT COUNT(*) AS PendingFillInRequests
     FROM FillInRequest
     WHERE FillInMemberID IS NULL;
-    
+   
