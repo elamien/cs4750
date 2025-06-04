@@ -66,6 +66,7 @@ import Dropdown from 'primevue/dropdown';
 
 // Mock current user ID - in a real app, this would come from auth state
 const mockCurrentUserId = ref(1); // Example user_id
+// TODO: Replace mockCurrentUserId with actual user ID from an authentication store/service
 
 interface EventForm {
     eventTitle: string;
@@ -85,6 +86,8 @@ const eventForm = ref<EventForm>({
     description: '',
     status: 'open',
     user_id: mockCurrentUserId.value
+    // Note: slot_one, slot_two, slot_three, slot_four from event table are not included here.
+    // They are nullable and may be handled in a different view/process (e.g., event update by owner/admin).
 });
 
 const genreOptions = ref([
@@ -99,12 +102,13 @@ const genreOptions = ref([
     { name: 'Classical', value: 'Classical' },
     { name: 'Other', value: 'Other' }
 ]);
+// TODO: Consider fetching genreOptions from config or API endpoint for maintainability.
 
-const createEvent = () => {
+const createEvent = async () => {
     // Ensure user_id is set (should be from logged-in user)
     if (!eventForm.value.user_id) {
         console.error("User ID is missing, cannot create event.");
-        // Show error toast to user
+        // TODO: Show error toast to user
         return;
     }
     // Convert date to ISO string if it's a Date object from Calendar
@@ -114,13 +118,41 @@ const createEvent = () => {
     }
 
     const eventDataToSubmit = {
-        ...eventForm.value,
-        datetime: finalDateTimeISO, // Use the ISO string version
+        userId: eventForm.value.user_id, // Backend expects userId, not user_id
+        eventTitle: eventForm.value.eventTitle,
+        datetime: finalDateTimeISO,
+        location: eventForm.value.location,
+        genre: eventForm.value.genre,
+        description: eventForm.value.description,
         status: 'open' // Always 'open' on creation from this form
     };
     console.log('Creating event:', eventDataToSubmit);
-    // Would submit to backend here
-    // After successful submission, potentially reset form or navigate
+    
+    try {
+        const API_BASE_URL = 'http://localhost:3001/api';
+        const response = await fetch(`${API_BASE_URL}/events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(eventDataToSubmit)
+        });
+        
+        if (!response.ok) {
+            const errorResult = await response.json();
+            throw new Error(errorResult.message || 'Failed to create event');
+        }
+        
+        const createdEvent = await response.json();
+        console.log('Event created successfully:', createdEvent);
+        // TODO: Show success toast
+        resetForm(); // Reset form after successful creation
+        // TODO: Optionally navigate to event details or browse events
+        // router.push(`/browse/events/${createdEvent.id}`); 
+    } catch (error) {
+        console.error('Error creating event:', error);
+        // TODO: Show error toast to user
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`Error creating event: ${errorMessage}`); // Temporary error display
+    }
 };
 
 const resetForm = () => {

@@ -110,7 +110,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 // TODO: Replace with actual logged-in user from auth store or context
-const currentUser = ref({ id: 'user5', firstName: 'Edward', lastName: 'Scissorhands' }); 
+const currentUser = ref({ id: '2', firstName: 'Charles', lastName: 'Mingus' }); 
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 // Note: IDs are INT in DB but often string in APIs/frontend. Kept as string for now.
