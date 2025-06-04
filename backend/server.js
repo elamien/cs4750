@@ -8,6 +8,7 @@ import eventsRoutes from './routes/events.js';
 import usersRoutes from './routes/users.js';
 import bandsRoutes from './routes/bands.js';
 import fillInRequestsRoutes from './routes/fillInRequests.js';
+import authRoutes from './routes/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/bands', bandsRoutes);
