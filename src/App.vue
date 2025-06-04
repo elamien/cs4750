@@ -180,10 +180,7 @@
             </div>
         </Dialog>
         
-        <!-- Developer Panel (only in development) -->
-        <DeveloperPanel />
-        
-        <!-- Toast for notifications -->
+                  <!-- Toast for notifications -->
         <Toast position="top-right" class="app-toast" />
     </div>
 </template>
@@ -202,7 +199,7 @@ import Password from 'primevue/password';
 import Checkbox from 'primevue/checkbox';
 import Menu from 'primevue/menu';
 import Toast from 'primevue/toast';
-import DeveloperPanel from '@/components/DeveloperPanel.vue';
+
 
 // Router instance
 const router = useRouter();
@@ -348,7 +345,7 @@ const bandLeaderExtraItems: MenuItem[] = [
 // Menu items for WXTJ executives
 // Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
 const wxtjExecExtraItems: MenuItem[] = [
-     {
+    {
         label: 'Join or Create Band', // Also allowed for Execs
         icon: 'pi pi-plus-circle',
         route: '/join-create-band',
@@ -454,35 +451,9 @@ const toggleProfileMenu = (event: Event) => {
     profileMenuRef.value.toggle(event);
 };
 
-// Demo functions to test different user states (for development testing)
-const toggleSignIn = () => {
-    isSignedIn.value = !isSignedIn.value;
-    if (!isSignedIn.value) {
-        userRole.value = 'anonymous';
-        mockUserProfile.value = { userId: null, hasCreatedBand: false, hasPendingBandRequest: false, bandId: null };
-    } else {
-        // Default to general user on mock sign-in, dev panel can change it
-        userRole.value = 'general';
-        mockUserProfile.value.userId = Date.now(); // Mock user ID
-    }
-};
 
-const setUserRole = (role: 'general' | 'band_member' | 'band_leader' | 'exec') => {
-    if (isSignedIn.value) {
-        userRole.value = role;
-        // Simulate some role-specific profile details
-        if (role === 'band_member' || role === 'band_leader') {
-            mockUserProfile.value.bandId = mockUserProfile.value.bandId || 123; // Mock band ID
-            mockUserProfile.value.hasCreatedBand = false;
-            mockUserProfile.value.hasPendingBandRequest = false;
-        } else if (role === 'general') {
-            mockUserProfile.value.bandId = null;
-            // reset these flags, JoinCreateBandView will manage them
-            // mockUserProfile.value.hasCreatedBand = false; 
-            // mockUserProfile.value.hasPendingBandRequest = false;
-        }
-    }
-};
+
+
 
 // Mock authentication functions
 const handleSignIn = () => {
@@ -562,28 +533,5 @@ onMounted(() => {
     }, 100); // Small delay to ensure navbar is rendered
 });
 
-// Expose functions to window for development testing
-if (import.meta.env.DEV) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).toggleSignIn = toggleSignIn;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).setUserRole = setUserRole;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).showAuthModal = () => showAuthModal.value = true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).triggerOnboarding = () => router.push('/onboarding');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).getDevState = () => ({ 
-        isSignedIn: isSignedIn.value, 
-        userRole: userRole.value,
-        profile: mockUserProfile.value // Expose mock profile too
-    });
-    
-    console.log('🚧 Developer Controls Available:');
-    console.log('- toggleSignIn() - Toggle sign in state');
-    console.log('- setUserRole("general"|"band_member"|"band_leader"|"exec") - Set user role');
-    console.log('- showAuthModal() - Show authentication modal');
-    console.log('- triggerOnboarding() - Manually trigger onboarding flow');
-    console.log('- getDevState() - Get current auth state');
-}
+
 </script>
