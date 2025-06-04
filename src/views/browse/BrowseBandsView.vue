@@ -80,10 +80,46 @@ import Button from 'primevue/button';
 
 const router = useRouter();
 
-// TODO: Replace with actual auth state from store
-const isSignedIn = ref(true);
-// TODO: Replace with actual logged-in user from auth store
-const currentUser = ref({ id: '2', firstName: 'Charles', lastName: 'Mingus' });
+// TypeScript interface for dev state
+interface DevState {
+    isSignedIn: boolean;
+    userRole: string;
+    currentTestUser?: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+}
+
+// Get auth state from global window state (set by App.vue and developer panel)
+const getAuthState = () => {
+    if (typeof window !== 'undefined') {
+        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
+        if (windowWithDev.getDevState) {
+            const devState = windowWithDev.getDevState();
+            return {
+                isSignedIn: devState.isSignedIn,
+                currentUser: devState.currentTestUser || null
+            };
+        }
+    }
+    return { isSignedIn: false, currentUser: null };
+};
+
+const authState = ref(getAuthState());
+const isSignedIn = computed(() => authState.value.isSignedIn);
+const currentUser = computed(() => authState.value.currentUser);
+
+// Update auth state periodically to sync with developer panel
+setInterval(() => {
+    const newState = getAuthState();
+    if (newState.isSignedIn !== authState.value.isSignedIn || 
+        newState.currentUser?.id !== authState.value.currentUser?.id) {
+        authState.value = newState;
+        console.log('BrowseBandsView - Auth state updated:', newState);
+    }
+}, 1000);
 
 interface BandListItem { // Aligned with `band` table + `isFavorite` from user context
     id: string; // band_id (INT in DB, string in API/frontend)
@@ -130,8 +166,13 @@ const viewBandDetails = (bandId: string) => {
 };
 
 const toggleFavorite = async (bandId: string) => {
-    // TODO: Replace with actual user ID from auth store
-    const currentUserId = currentUser.value.id; // Mock user ID for now
+    // Check if user is signed in and has a valid ID
+    if (!currentUser.value || !currentUser.value.id) {
+        console.error('User not signed in or invalid user ID');
+        return;
+    }
+    
+    const currentUserId = currentUser.value.id;
     
     const band = bands.value.find(b => b.id === bandId);
     if (!band) return;
@@ -175,6 +216,9 @@ const API_BASE_URL = 'http://localhost:3001/api'; // Placeholder, ensure this is
 
 const fetchBands = async () => {
   try {
+    console.log('BrowseBandsView - Starting fetchBands, API URL:', `${API_BASE_URL}/bands`);
+    console.log('BrowseBandsView - Current auth state:', authState.value);
+    
     // TODO: Add query parameters for filtering (selectedGenre, searchTerm) on the backend
     const response = await fetch(`${API_BASE_URL}/bands`); // Assuming an endpoint /api/bands
     if (!response.ok) {
@@ -189,11 +233,15 @@ const fetchBands = async () => {
 
     const apiData: ApiBand[] = await response.json();
     
+    console.log('BrowseBandsView - API response received:', apiData);
+    
     bands.value = apiData.map((bandFromApi: ApiBand) => ({
       ...bandFromApi,
       id: String(bandFromApi.id), // Ensure id is string for BandListItem
       isFavorite: bandFromApi.isFavorite ?? false, // Default to false if undefined
     })); 
+    
+    console.log('BrowseBandsView - Bands state updated:', bands.value);
   } catch (error) {
     console.error('Failed to fetch bands:', error);
     // TODO: Show user-friendly error message in UI (e.g., using a toast)

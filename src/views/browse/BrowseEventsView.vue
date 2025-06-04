@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
@@ -102,10 +102,46 @@ import Calendar from 'primevue/calendar';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 
-// TODO: Replace with actual auth state from store
-const isSignedIn = ref(true);
-// TODO: Replace with actual logged-in user from auth store
-const currentUser = ref({ id: '2', firstName: 'Charles', lastName: 'Mingus' });
+// TypeScript interface for dev state
+interface DevState {
+    isSignedIn: boolean;
+    userRole: string;
+    currentTestUser?: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+}
+
+// Get auth state from global window state (set by App.vue and developer panel)
+const getAuthState = () => {
+    if (typeof window !== 'undefined') {
+        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
+        if (windowWithDev.getDevState) {
+            const devState = windowWithDev.getDevState();
+            return {
+                isSignedIn: devState.isSignedIn,
+                currentUser: devState.currentTestUser || null
+            };
+        }
+    }
+    return { isSignedIn: false, currentUser: null };
+};
+
+const authState = ref(getAuthState());
+const isSignedIn = computed(() => authState.value.isSignedIn);
+const currentUser = computed(() => authState.value.currentUser);
+
+// Update auth state periodically to sync with developer panel
+setInterval(() => {
+    const newState = getAuthState();
+    if (newState.isSignedIn !== authState.value.isSignedIn || 
+        newState.currentUser?.id !== authState.value.currentUser?.id) {
+        authState.value = newState;
+        console.log('BrowseEventsView - Auth state updated:', newState);
+    }
+}, 1000);
 
 // TODO: Consider fetching genreOptions from config or API
 const genres = ref([
@@ -187,7 +223,12 @@ const viewEventDetails = (eventId: string) => {
 const requestToPlay = async (eventId: string) => {
     console.log('Requesting to play at event:', eventId);
     
-    // TODO: Replace with actual user/band data from auth store
+    // Check if user is signed in and has a valid ID
+    if (!currentUser.value || !currentUser.value.id) {
+        console.error('User not signed in or invalid user ID');
+        return;
+    }
+    
     const requestingUserId = currentUser.value.id;
     // TODO: Get actual band ID - for now using a mock band ID
     const bandId = '1'; // Mock band ID - should come from user's band context
@@ -222,8 +263,13 @@ const requestToPlay = async (eventId: string) => {
 };
 
 const toggleFavorite = async (eventId: string) => {
-    // TODO: Replace with actual user ID from auth store
-    const currentUserId = currentUser.value.id; // Mock user ID for now
+    // Check if user is signed in and has a valid ID
+    if (!currentUser.value || !currentUser.value.id) {
+        console.error('User not signed in or invalid user ID');
+        return;
+    }
+    
+    const currentUserId = currentUser.value.id;
     
     const event = events.value.find(e => e.id === eventId);
     if (!event) return;
@@ -267,6 +313,9 @@ const API_BASE_URL = 'http://localhost:3001/api'; // Placeholder
 
 const fetchEvents = async () => {
   try {
+    console.log('BrowseEventsView - Starting fetchEvents, API URL:', `${API_BASE_URL}/events`);
+    console.log('BrowseEventsView - Current auth state:', authState.value);
+    
     // TODO: Implement backend filtering for genre, date, searchTerm
     const response = await fetch(`${API_BASE_URL}/events`); // Assuming endpoint /api/events
     if (!response.ok) {
@@ -283,6 +332,8 @@ const fetchEvents = async () => {
 
     const apiData: ApiEvent[] = await response.json();
 
+    console.log('BrowseEventsView - API response received:', apiData);
+    
     events.value = apiData.map((eventFromApi: ApiEvent) => ({
       ...eventFromApi,
       id: String(eventFromApi.id),
@@ -291,13 +342,14 @@ const fetchEvents = async () => {
       status: eventFromApi.status as EventListItem['status'], // Cast if API string matches enum
       isFavorite: eventFromApi.isFavorite ?? false,
     }));
+    
+    console.log('BrowseEventsView - Events state updated:', events.value);
   } catch (error) {
     console.error('Failed to fetch events:', error);
     // TODO: Show user-friendly error message in UI
   }
 };
 
-import { onMounted } from 'vue';
 onMounted(() => {
   fetchEvents();
 });
