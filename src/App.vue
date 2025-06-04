@@ -9,7 +9,13 @@
                     </router-link>
                 </template>
                 <template #item="{ item, props, hasSubmenu, root }">
-                    <router-link v-if="item.route && !hasSubmenu" :to="item.route" v-ripple class="flex items-center" v-bind="props.action">
+                    <router-link 
+                        v-if="item.route && !hasSubmenu" 
+                        :to="item.route" 
+                        v-ripple 
+                        class="flex items-center nav-link" 
+                        active-class="nav-link-active"
+                        v-bind="props.action">
                         <span>{{ item.label }}</span>
                         <Badge v-if="item.badge" :class="{ 'ml-auto': !root, 'ml-2': root }" :value="item.badge" />
                         <span v-if="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
@@ -211,6 +217,9 @@ const userRole = ref<'anonymous' | 'general' | 'band_member' | 'band_leader' | '
 // NEW: Mock user profile details that might influence UI, based on SQL schema
 const mockUserProfile = ref({
     userId: null as number | null,
+    firstName: '' as string,
+    lastName: '' as string,
+    email: '' as string,
     hasCreatedBand: false, // Relevant for 'general' role, from general_user table
     hasPendingBandRequest: false, // Relevant for 'general' role, from general_user table
     bandId: null as number | null, // If they are a member or leader of a band
@@ -430,6 +439,16 @@ const profileMenuItems = computed<MenuItem[]>(() => [
         command: () => {
             toggleTheme();
         }
+    },
+    {
+        separator: true
+    },
+    {
+        label: 'Sign Out',
+        icon: 'pi pi-sign-out',
+        command: () => {
+            handleLogout();
+        }
     }
 ]);
 
@@ -455,23 +474,47 @@ const toggleProfileMenu = (event: Event) => {
 
 
 
-// Mock authentication functions
-const handleSignIn = () => {
-    console.log('Sign in attempted:', {
-        email: authForm.value.email,
-        rememberMe: authForm.value.rememberMe
-    });
-    
-    // Mock successful sign in
-    isSignedIn.value = true;
-    userRole.value = 'general'; // Default role for new users
-    mockUserProfile.value.userId = Date.now(); // Mock user ID
-    mockUserProfile.value.hasCreatedBand = false; // Reset for new general user
-    mockUserProfile.value.hasPendingBandRequest = false;
-    showAuthModal.value = false;
-    
-    // Reset form
-    resetAuthForm();
+// Real authentication functions
+const handleSignIn = async () => {
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: authForm.value.email,
+                password: authForm.value.password
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Show error toast
+            console.error('Login failed:', data.message);
+            return;
+        }
+
+        // Successful login
+        isSignedIn.value = true;
+        userRole.value = data.user.role; // Use real role from database
+        mockUserProfile.value.userId = data.user.userId;
+        mockUserProfile.value.firstName = data.user.firstName;
+        mockUserProfile.value.lastName = data.user.lastName;
+        mockUserProfile.value.email = data.user.email;
+        
+        // Store user data in localStorage for persistence
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        
+        showAuthModal.value = false;
+        resetAuthForm();
+        
+        console.log('Login successful:', data.user);
+        
+    } catch (error) {
+        console.error('Login error:', error);
+    }
 };
 
 const handleSignUp = () => {
@@ -510,12 +553,46 @@ const resetAuthForm = () => {
     authMode.value = 'signin';
 };
 
-// Initialize theme from localStorage
+const handleLogout = () => {
+    isSignedIn.value = false;
+    userRole.value = 'anonymous';
+    mockUserProfile.value = {
+        userId: null,
+        firstName: '',
+        lastName: '',
+        email: '',
+        hasCreatedBand: false,
+        hasPendingBandRequest: false,
+        bandId: null
+    };
+    localStorage.removeItem('currentUser');
+    router.push('/');
+};
+
+// Initialize theme and authentication from localStorage
 onMounted(() => {
+    // Initialize theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         isDarkMode.value = true;
         document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    
+    // Initialize authentication state
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            isSignedIn.value = true;
+            userRole.value = user.role;
+            mockUserProfile.value.userId = user.userId;
+            mockUserProfile.value.firstName = user.firstName;
+            mockUserProfile.value.lastName = user.lastName;
+            mockUserProfile.value.email = user.email;
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            localStorage.removeItem('currentUser');
+        }
     }
     
     // Dynamically calculate navbar height for toast positioning

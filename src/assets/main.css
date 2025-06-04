@@ -138,14 +138,7 @@ html, body {
   color: white;
 }
 
-.p-menubar .p-menuitem-link {
-  color: white !important;
-  }
-
-.p-menubar .p-menuitem-link:hover {
-  background: var(--hoojams-orange-hover) !important;
-  color: white !important;
-}
+/* Remove conflicting styles - these are handled in navbar.css */
 
 a {
   text-decoration: none;
