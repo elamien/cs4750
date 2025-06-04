@@ -17,7 +17,7 @@
                         <label for="venue">Venue</label>
                         <InputText id="venue" v-model="eventForm.location" placeholder="Event location" />
                     </div>
-
+                    
                     <div class="field">
                         <label for="genre">Genre</label>
                         <Dropdown 

@@ -223,10 +223,10 @@ const removeFavoriteBand = async (bandId: string) => {
         }
 
         // Remove from local state on success
-        const index = favoriteBands.value.findIndex(b => b.id === bandId);
-        if (index > -1) {
-            favoriteBands.value.splice(index, 1);
-        }
+    const index = favoriteBands.value.findIndex(b => b.id === bandId);
+    if (index > -1) {
+        favoriteBands.value.splice(index, 1);
+    }
         console.log(`Removed band ${bandId} from favorites.`);
         // TODO: Show success toast
     } catch (error) {
@@ -254,10 +254,10 @@ const removeFavoriteEvent = async (eventId: string) => {
         }
 
         // Remove from local state on success
-        const index = favoriteEvents.value.findIndex(e => e.id === eventId);
-        if (index > -1) {
-            favoriteEvents.value.splice(index, 1);
-        }
+    const index = favoriteEvents.value.findIndex(e => e.id === eventId);
+    if (index > -1) {
+        favoriteEvents.value.splice(index, 1);
+    }
         console.log(`Removed event ${eventId} from favorites.`);
         // TODO: Show success toast
     } catch (error) {

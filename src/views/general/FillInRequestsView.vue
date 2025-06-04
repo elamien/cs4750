@@ -210,7 +210,7 @@ const fetchFillInRequests = async () => {
 onMounted(() => {
   fetchFillInRequests();
 });
-
+  
 // Update handleOfferToFillIn to call the API
 const handleOfferToFillIn = async (request: FillInRequest) => {
   const offeringUserId = currentUser.value.id;
@@ -240,7 +240,7 @@ const handleOfferToFillIn = async (request: FillInRequest) => {
 
     // Update the local state with the accepted request from the server response
     const reqIndex = allFillInRequests.value.findIndex(r => r.id === result.request.id);
-    if (reqIndex > -1) {
+  if (reqIndex > -1) {
       allFillInRequests.value[reqIndex] = result.request;
     }
     // TODO: Show success toast message
@@ -270,7 +270,7 @@ const displayRequests = computed(() => {
   // then this map might just format dates or names.
   // For now, it directly uses fields from the updated FillInRequest interface.
   return allFillInRequests.value.map(req => ({
-    ...req,
+      ...req,
     // Ensure these fields are provided by the API or fetched separately and added to `allFillInRequests` items
     // bandName: req.bandName || 'Unknown Band', // Example placeholder
     // eventName: req.eventName || 'Unknown Event', // Example placeholder

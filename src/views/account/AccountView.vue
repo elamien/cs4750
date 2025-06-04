@@ -56,7 +56,7 @@
                             </div>
                         </div>
                         <div class="form-grid musical-info-grid">
-                             <div class="field">
+                            <div class="field">
                                 <label for="instrument">Primary Instrument</label>
                                 <Dropdown 
                                     id="instrument"

@@ -16,50 +16,50 @@
                     You have already created a band. You cannot join another or create more.
                 </div>
                 <div v-else>
-                    <div class="search-section">
-                        <div class="search-filters">
-                            <InputText 
-                                v-model="searchTerm" 
-                                placeholder="Search bands by name or genre..." 
-                                class="search-input"
-                            />
-                            <Dropdown 
-                                v-model="selectedGenre" 
-                                :options="genres" 
-                                optionLabel="name" 
+                <div class="search-section">
+                    <div class="search-filters">
+                        <InputText 
+                            v-model="searchTerm" 
+                            placeholder="Search bands by name or genre..." 
+                            class="search-input"
+                        />
+                        <Dropdown 
+                            v-model="selectedGenre" 
+                            :options="genres" 
+                            optionLabel="name" 
                                 optionValue="value"
-                                placeholder="All Genres"
-                            />
-                        </div>
+                            placeholder="All Genres"
+                        />
                     </div>
+                </div>
 
-                    <div v-if="filteredBands.length > 0" class="bands-list">
-                        <Card v-for="band in filteredBands" :key="band.id" class="band-card">
-                            <template #title>{{ band.name }}</template>
-                            <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members</template>
-                            <template #content>
-                                <p>{{ band.description }}</p>
+                <div v-if="filteredBands.length > 0" class="bands-list">
+                    <Card v-for="band in filteredBands" :key="band.id" class="band-card">
+                        <template #title>{{ band.name }}</template>
+                        <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members</template>
+                        <template #content>
+                            <p>{{ band.description }}</p>
                                 <div class="band-needs" v-if="band.needs && band.needs.length > 0">
-                                    <strong>Looking for:</strong>
-                                    <div class="needs-tags">
-                                        <Tag v-for="need in band.needs" :key="need" :value="need" />
-                                    </div>
+                                <strong>Looking for:</strong>
+                                <div class="needs-tags">
+                                    <Tag v-for="need in band.needs" :key="need" :value="need" />
                                 </div>
-                            </template>
-                            <template #footer>
-                                <Button 
-                                    label="Request to Join" 
-                                    icon="pi pi-user-plus" 
-                                    @click="requestToJoin(band.id)"
+                            </div>
+                        </template>
+                        <template #footer>
+                            <Button 
+                                label="Request to Join" 
+                                icon="pi pi-user-plus" 
+                                @click="requestToJoin(band.id)"
                                     :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand"
-                                />
-                            </template>
-                        </Card>
-                    </div>
+                            />
+                        </template>
+                    </Card>
+                </div>
 
-                    <div v-else class="empty-state">
-                        <i class="pi pi-users" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
-                        <h3>No bands found</h3>
+                <div v-else class="empty-state">
+                    <i class="pi pi-users" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
+                    <h3>No bands found</h3>
                         <p>Try adjusting your search or create your own band (if eligible)</p>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                                 <Dropdown 
                                     id="bandGenre"
                                     v-model="bandForm.genre" 
-                                    :options="genres" 
+                                    :options="genres"
                                     optionLabel="name"
                                     optionValue="value" 
                                     placeholder="Select genre"
