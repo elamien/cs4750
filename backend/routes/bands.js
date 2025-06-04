@@ -72,7 +72,7 @@ router.get('/:id', async (req, res, next) => {
 // PUT /api/bands/:id - Update band profile
 router.put('/:id', async (req, res, next) => {
   const { id: bandId } = req.params;
-  const { name, genre, description } = req.body;
+  const { name, genre, description, location } = req.body;
   
   if (!name) {
     return res.status(400).json({ message: 'Band name is required.' });
@@ -84,13 +84,15 @@ router.put('/:id', async (req, res, next) => {
       SET 
         name = ?,
         genre = ?,
-        description = ?
+        description = ?,
+        location = ?
       WHERE band_id = ?;
     `;
     const [result] = await pool.query(query, [
       name, 
       genre || null, 
-      description || null, 
+      description || null,
+      location || null,
       bandId
     ]);
     
@@ -100,7 +102,7 @@ router.put('/:id', async (req, res, next) => {
     
     // Return updated band
     const [updatedRows] = await pool.query(
-      `SELECT band_id AS id, name, genre, description, NULL AS location FROM band WHERE band_id = ?`,
+      `SELECT band_id AS id, name, genre, description, location FROM band WHERE band_id = ?`,
       [bandId]
     );
     
@@ -116,12 +118,13 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-// GET /api/bands/:id/members - Get band members
+// GET /api/bands/:id/members - Get band members (including leaders)
 router.get('/:id/members', async (req, res, next) => {
   const { id: bandId } = req.params;
   
   try {
-    const query = `
+    // Get band members
+    const memberQuery = `
       SELECT 
         u.user_id AS id,
         u.first_name AS firstName,
@@ -133,13 +136,34 @@ router.get('/:id/members', async (req, res, next) => {
       JOIN user u ON ur.user_id = u.user_id
       JOIN roles r ON ur.role_id = r.role_id
       WHERE bm.band_id = ?
-      ORDER BY 
-        CASE WHEN r.role_name = 'Band Leader' THEN 1 ELSE 2 END,
-        u.first_name;
     `;
-    const [rows] = await pool.query(query, [bandId]);
+    const [memberRows] = await pool.query(memberQuery, [bandId]);
     
-    const members = rows.map(member => ({
+    // Get band leaders
+    const leaderQuery = `
+      SELECT 
+        u.user_id AS id,
+        u.first_name AS firstName,
+        u.last_name AS lastName,
+        u.instrument,
+        r.role_name AS role
+      FROM band_leader bl
+      JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+      JOIN user u ON ur.user_id = u.user_id
+      JOIN roles r ON ur.role_id = r.role_id
+      WHERE bl.band_id = ?
+    `;
+    const [leaderRows] = await pool.query(leaderQuery, [bandId]);
+    
+    // Combine and sort (leaders first, then members, then by first name)
+    const allMembers = [...memberRows, ...leaderRows];
+    allMembers.sort((a, b) => {
+      if (a.role === 'Band Leader' && b.role !== 'Band Leader') return -1;
+      if (b.role === 'Band Leader' && a.role !== 'Band Leader') return 1;
+      return a.firstName.localeCompare(b.firstName);
+    });
+    
+    const members = allMembers.map(member => ({
       ...member,
       id: String(member.id)
     }));
