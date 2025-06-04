@@ -30,7 +30,7 @@
                                     </div>
                                     <div class="availability-actions">
                                         <Button 
-                                            label="Available"
+                                            label="Available" 
                                             icon="pi pi-check" 
                                             severity="success"
                                             size="small"
@@ -207,35 +207,13 @@ const showLeaveDialog = ref(false);
 const loading = ref(true);
 
 // TypeScript interface for dev state
-interface DevState {
-    isSignedIn: boolean;
-    userRole: string;
-    currentTestUser?: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
-}
 
-// Get current user from developer panel or auth system
+
+// Get current user ID (placeholder - replace with real authentication)
 const getCurrentUserId = () => {
-    // Check if we're in development mode and can get user from global state
-    if (import.meta.env.DEV && typeof window !== 'undefined') {
-        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
-        if (windowWithDev.getDevState) {
-            const devState = windowWithDev.getDevState();
-            console.log('MyBandView - Dev state:', devState);
-            // In dev panel, we might be impersonating a specific user
-            if (devState.currentTestUser) {
-                console.log('MyBandView - Using test user:', devState.currentTestUser.id);
-                return devState.currentTestUser.id;
-            }
-        }
-    }
-    // Default fallback - in real app this would come from auth store
-    console.log('MyBandView - Using default user: 5');
-    return '5'; // Default to Sarah Leader for testing
+    // TODO: Replace with real authentication
+    // For now, return null (anonymous user)
+    return null;
 };
 
 const currentUserId = ref(getCurrentUserId());
@@ -349,11 +327,12 @@ const fetchBandMembers = async () => {
 const fetchBandEvents = async () => {
     try {
         const bandId = bandInfo.value.id || '1';
-        const response = await fetch(`/api/bands/${bandId}/events?userId=${currentUserId.value}`);
+        const response = await fetch(`/api/bands/${bandId}/events`);
+        // TODO: User authentication should be handled via secure session/tokens, not URL params
         if (!response.ok) throw new Error('Failed to fetch band events');
         
         const events: APIBandEvent[] = await response.json();
-        
+
         // Filter for upcoming events only
         const now = new Date();
         upcomingEvents.value = events
@@ -394,9 +373,9 @@ const setAvailability = async (eventId: string, availability: boolean) => {
         if (!response.ok) throw new Error('Failed to update availability');
         
         // Update local state
-        const event = upcomingEvents.value.find(e => e.id === eventId);
-        if (event) {
-            event.myAvailability = availability;
+    const event = upcomingEvents.value.find(e => e.id === eventId);
+    if (event) {
+        event.myAvailability = availability;
         }
         
         toast.add({

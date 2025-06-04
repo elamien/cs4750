@@ -15,10 +15,10 @@
                 </template>
             </Card>
         </div>
-
+        
         <div v-else-if="!bandInfo.id" class="no-band">
-            <Card>
-                <template #content>
+        <Card>
+            <template #content>
                     <div style="text-align: center; padding: 2rem;">
                         <i class="pi pi-exclamation-triangle" style="font-size: 2rem; color: var(--p-text-muted-color);"></i>
                         <h3 style="margin: 1rem 0;">No Band Found</h3>
@@ -202,8 +202,8 @@
                             outlined
                         />
                     </div>
-                </template>
-            </Card>
+            </template>
+        </Card>
         </div>
     </div>
 </template>
@@ -223,16 +223,7 @@ const router = useRouter();
 const toast = useToast();
 
 // TypeScript interface for dev state
-interface DevState {
-    isSignedIn: boolean;
-    userRole: string;
-    currentTestUser?: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
-}
+
 
 // Data interfaces
 interface BandInfo {
@@ -273,21 +264,10 @@ const editForm = ref({
     description: ''
 });
 
-// Get current user from developer panel
+// Get current user ID (placeholder - replace with real authentication)
 const getCurrentUserId = () => {
-    if (import.meta.env.DEV && typeof window !== 'undefined') {
-        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
-        if (windowWithDev.getDevState) {
-            const devState = windowWithDev.getDevState();
-            console.log('BandInfoView - Dev state:', devState);
-            if (devState.currentTestUser) {
-                console.log('BandInfoView - Using test user:', devState.currentTestUser.id);
-                return devState.currentTestUser.id;
-            }
-        }
-    }
-    console.log('BandInfoView - Using default user: 5');
-    return '5'; // Default to Sarah Leader for testing
+    // TODO: Replace with real authentication
+    return null;
 };
 
 const currentUserId = ref(getCurrentUserId());

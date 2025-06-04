@@ -103,45 +103,18 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 
 // TypeScript interface for dev state
-interface DevState {
+
+
+// Auth state (placeholder - replace with real authentication)
+const authState = ref<{
     isSignedIn: boolean;
-    userRole: string;
-    currentTestUser?: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
-}
-
-// Get auth state from global window state (set by App.vue and developer panel)
-const getAuthState = () => {
-    if (typeof window !== 'undefined') {
-        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
-        if (windowWithDev.getDevState) {
-            const devState = windowWithDev.getDevState();
-            return {
-                isSignedIn: devState.isSignedIn,
-                currentUser: devState.currentTestUser || null
-            };
-        }
-    }
-    return { isSignedIn: false, currentUser: null };
-};
-
-const authState = ref(getAuthState());
+    currentUser: { id: string; name: string; email: string; role: string } | null;
+}>({
+    isSignedIn: false,
+    currentUser: null
+});
 const isSignedIn = computed(() => authState.value.isSignedIn);
 const currentUser = computed(() => authState.value.currentUser);
-
-// Update auth state periodically to sync with developer panel
-setInterval(() => {
-    const newState = getAuthState();
-    if (newState.isSignedIn !== authState.value.isSignedIn || 
-        newState.currentUser?.id !== authState.value.currentUser?.id) {
-        authState.value = newState;
-        console.log('BrowseEventsView - Auth state updated:', newState);
-    }
-}, 1000);
 
 // TODO: Consider fetching genreOptions from config or API
 const genres = ref([
@@ -347,7 +320,7 @@ const fetchEvents = async () => {
   } catch (error) {
     console.error('Failed to fetch events:', error);
     // TODO: Show user-friendly error message in UI
-  }
+    }
 };
 
 onMounted(() => {

@@ -81,45 +81,18 @@ import Button from 'primevue/button';
 const router = useRouter();
 
 // TypeScript interface for dev state
-interface DevState {
+
+
+// Auth state (placeholder - replace with real authentication)
+const authState = ref<{
     isSignedIn: boolean;
-    userRole: string;
-    currentTestUser?: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
-}
-
-// Get auth state from global window state (set by App.vue and developer panel)
-const getAuthState = () => {
-    if (typeof window !== 'undefined') {
-        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
-        if (windowWithDev.getDevState) {
-            const devState = windowWithDev.getDevState();
-            return {
-                isSignedIn: devState.isSignedIn,
-                currentUser: devState.currentTestUser || null
-            };
-        }
-    }
-    return { isSignedIn: false, currentUser: null };
-};
-
-const authState = ref(getAuthState());
+    currentUser: { id: string; name: string; email: string; role: string } | null;
+}>({
+    isSignedIn: false,
+    currentUser: null
+});
 const isSignedIn = computed(() => authState.value.isSignedIn);
 const currentUser = computed(() => authState.value.currentUser);
-
-// Update auth state periodically to sync with developer panel
-setInterval(() => {
-    const newState = getAuthState();
-    if (newState.isSignedIn !== authState.value.isSignedIn || 
-        newState.currentUser?.id !== authState.value.currentUser?.id) {
-        authState.value = newState;
-        console.log('BrowseBandsView - Auth state updated:', newState);
-    }
-}, 1000);
 
 interface BandListItem { // Aligned with `band` table + `isFavorite` from user context
     id: string; // band_id (INT in DB, string in API/frontend)
@@ -245,7 +218,7 @@ const fetchBands = async () => {
   } catch (error) {
     console.error('Failed to fetch bands:', error);
     // TODO: Show user-friendly error message in UI (e.g., using a toast)
-  }
+    }
 };
 
 onMounted(() => {
