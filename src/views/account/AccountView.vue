@@ -93,61 +93,129 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 
+// Aligned with `user` table from core_db_structure.sql
 interface UserProfile {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string | null;
-    bio: string | null;
-    instrument: string | null;
-    genre: string | null;
+    id?: string; // user_id (for API calls)
+    firstName: string; // first_name VARCHAR(100) NOT NULL
+    lastName: string; // last_name VARCHAR(100) NOT NULL
+    email: string; // email VARCHAR(255) UNIQUE NOT NULL
+    phoneNumber: string | null; // phone_number VARCHAR(20)
+    bio: string | null; // bio TEXT
+    instrument: string | null; // instrument VARCHAR(100)
+    genre: string | null; // genre VARCHAR(100)
 }
 
+// TODO: Replace with actual logged-in user ID from auth store
+const currentUserId = ref('2'); // Real user ID - Charles Mingus
+
 const profile = ref<UserProfile>({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phoneNumber: '555-123-4567',
-    bio: 'Passionate musician with 10+ years of experience in jazz and blues.',
-    instrument: 'guitar',
-    genre: 'jazz'
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: null,
+    bio: null,
+    instrument: null,
+    genre: null
 });
 
+// TODO: Consider fetching these options from config or API
 const instrumentOptions = ref([
-    { name: 'Guitar', value: 'guitar' },
-    { name: 'Bass', value: 'bass' },
-    { name: 'Drums', value: 'drums' },
-    { name: 'Piano', value: 'piano' },
-    { name: 'Vocals', value: 'vocals' },
-    { name: 'Saxophone', value: 'saxophone' },
-    { name: 'Trumpet', value: 'trumpet' },
-    { name: 'Violin', value: 'violin' },
-    { name: 'Other', value: 'other' }
+    { name: 'Guitar', value: 'Guitar' },
+    { name: 'Bass', value: 'Bass' },
+    { name: 'Drums', value: 'Drums' },
+    { name: 'Piano', value: 'Piano' },
+    { name: 'Vocals', value: 'Vocals' },
+    { name: 'Saxophone', value: 'Saxophone' },
+    { name: 'Trumpet', value: 'Trumpet' },
+    { name: 'Violin', value: 'Violin' },
+    { name: 'Other', value: 'Other' }
 ]);
 
 const genreOptions = ref([
-    { name: 'Rock', value: 'rock' },
-    { name: 'Jazz', value: 'jazz' },
-    { name: 'Blues', value: 'blues' },
-    { name: 'Folk', value: 'folk' },
-    { name: 'Electronic', value: 'electronic' },
-    { name: 'Pop', value: 'pop' },
-    { name: 'Classical', value: 'classical' },
-    { name: 'Country', value: 'country' },
-    { name: 'Hip Hop', value: 'hiphop' },
-    { name: 'Other', value: 'other' }
+    { name: 'Rock', value: 'Rock' },
+    { name: 'Jazz', value: 'Jazz' },
+    { name: 'Blues', value: 'Blues' },
+    { name: 'Folk', value: 'Folk' },
+    { name: 'Electronic', value: 'Electronic' },
+    { name: 'Pop', value: 'Pop' },
+    { name: 'Classical', value: 'Classical' },
+    { name: 'Country', value: 'Country' },
+    { name: 'Hip Hop', value: 'Hip Hop' },
+    { name: 'Other', value: 'Other' }
 ]);
 
-const saveProfile = () => {
-    console.log('Saving profile (all user table fields):', profile.value);
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Fetch user profile from backend
+const fetchProfile = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const userData = await response.json();
+        
+        // Map API response to profile
+        profile.value = {
+            id: String(userData.id),
+            firstName: userData.firstName || userData.first_name || '',
+            lastName: userData.lastName || userData.last_name || '',
+            email: userData.email || '',
+            phoneNumber: userData.phoneNumber || userData.phone_number || null,
+            bio: userData.bio || null,
+            instrument: userData.instrument || null,
+            genre: userData.genre || null
+        };
+    } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+        // TODO: Show error toast
+        alert('Failed to load profile data'); // Temporary error display
+    }
 };
+
+const saveProfile = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firstName: profile.value.firstName,
+                lastName: profile.value.lastName,
+                email: profile.value.email,
+                phoneNumber: profile.value.phoneNumber,
+                bio: profile.value.bio,
+                instrument: profile.value.instrument,
+                genre: profile.value.genre
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update profile');
+        }
+
+        const updatedUser = await response.json();
+        console.log('Profile updated successfully:', updatedUser);
+        // TODO: Show success toast
+        alert('Profile saved successfully!'); // Temporary success display
+    } catch (error) {
+        console.error('Failed to save profile:', error);
+        // TODO: Show error toast
+        const errorMessage = error instanceof Error ? error.message : 'Failed to save profile';
+        alert(`Error: ${errorMessage}`); // Temporary error display
+    }
+};
+
+onMounted(() => {
+    fetchProfile();
+});
 
 </script>
 

@@ -35,10 +35,10 @@
         <div class="bands-grid">
             <Card v-for="band in filteredBands" :key="band.id" class="band-card">
                 <template #header>
-                    <img :src="band.mockImage || 'https://picsum.photos/400/200?random=' + band.id" :alt="band.name" class="band-image" />
+                    <img src="https://via.placeholder.com/400x200/cccccc/969696?text=Band+Image" :alt="band.name" class="band-image" />
                 </template>
                 <template #title>{{ band.name }}</template>
-                <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members (mocked)</template>
+                <template #subtitle>{{ band.genre }}</template>
                 <template #content>
                     <p class="band-description">{{ band.description || 'No description available.' }}</p>
                     <div class="band-details">
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
@@ -80,19 +80,21 @@ import Button from 'primevue/button';
 
 const router = useRouter();
 
+// TODO: Replace with actual auth state from store
 const isSignedIn = ref(true);
+// TODO: Replace with actual logged-in user from auth store
+const currentUser = ref({ id: '2', firstName: 'Charles', lastName: 'Mingus' });
 
-interface BandListItem {
-    id: string | number;
+interface BandListItem { // Aligned with `band` table + `isFavorite` from user context
+    id: string; // band_id (INT in DB, string in API/frontend)
     name: string;
     genre?: string | null;
     description?: string | null;
     email?: string | null;
-    phoneNumber?: string | null;
+    phoneNumber?: string | null; // Corresponds to phone_number
     totalEventsPlayed?: number;
-    memberCount: number;
-    mockImage?: string;
-    isFavorite: boolean;
+    // events_played_ytd?: number; // Available in DB, can be added if needed
+    isFavorite: boolean; // Derived by API based on current user
 }
 
 const genreOptions = ref([
@@ -105,57 +107,9 @@ const genreOptions = ref([
     { name: 'Country', value: 'Country' },
     { name: 'Other', value: 'Other' }
 ]);
+// TODO: Consider fetching genreOptions from config or API
 
-const bands = ref<BandListItem[]>([
-    {
-        id: 'band1',
-        name: 'The Jazz Collective',
-        genre: 'Jazz',
-        memberCount: 5,
-        description: 'A smooth jazz ensemble bringing classic and contemporary sounds to Charlottesville.',
-        email: 'jazz.collective@example.com',
-        phoneNumber: '555-1234',
-        totalEventsPlayed: 25,
-        mockImage: 'https://picsum.photos/400/200?random=1',
-        isFavorite: false,
-    },
-    {
-        id: 'band2',
-        name: 'Blue Ridge Rockers',
-        genre: 'Rock',
-        memberCount: 4,
-        description: 'High-energy rock band specializing in classic and modern rock hits.',
-        email: 'brr@example.com',
-        phoneNumber: '555-5678',
-        totalEventsPlayed: 150,
-        mockImage: 'https://picsum.photos/400/200?random=2',
-        isFavorite: true,
-    },
-    {
-        id: 'band3',
-        name: 'Acoustic Duo',
-        genre: 'Folk',
-        memberCount: 2,
-        description: 'Intimate acoustic performances perfect for smaller venues and events.',
-        email: null,
-        phoneNumber: '555-9012',
-        totalEventsPlayed: 78,
-        mockImage: 'https://picsum.photos/400/200?random=3',
-        isFavorite: false,
-    },
-    {
-        id: 'band4',
-        name: 'Electronic Fusion',
-        genre: 'Electronic',
-        memberCount: 3,
-        description: 'Cutting-edge electronic music with live instrumental accompaniment.',
-        email: 'efusion@example.com',
-        phoneNumber: null,
-        totalEventsPlayed: 40,
-        mockImage: 'https://picsum.photos/400/200?random=4',
-        isFavorite: false,
-    }
-]);
+const bands = ref<BandListItem[]>([]); // Will be populated by API call
 
 const selectedGenre = ref<string | null>(null);
 const searchTerm = ref('');
@@ -171,18 +125,84 @@ const filteredBands = computed(() => {
     });
 });
 
-const viewBandDetails = (bandId: string | number) => {
-    console.log('Viewing band details for:', bandId);
+const viewBandDetails = (bandId: string) => {
     router.push(`/browse/bands/${bandId}`);
 };
 
-const toggleFavorite = (bandId: string | number) => {
+const toggleFavorite = async (bandId: string) => {
+    // TODO: Replace with actual user ID from auth store
+    const currentUserId = currentUser.value.id; // Mock user ID for now
+    
     const band = bands.value.find(b => b.id === bandId);
-    if (band) {
-        band.isFavorite = !band.isFavorite;
-        console.log(`Band ${bandId} favorite status: ${band.isFavorite}`);
+    if (!band) return;
+
+    const newFavoriteStatus = !band.isFavorite;
+    const originalStatus = band.isFavorite;
+    
+    // Optimistic update
+    band.isFavorite = newFavoriteStatus;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId}/favorite-bands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                bandId: bandId, 
+                makeFavorite: newFavoriteStatus 
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update favorite status');
+        }
+
+        const result = await response.json();
+        console.log('Favorite status updated:', result.message);
+        // TODO: Show success toast message
+    } catch (error) {
+        console.error('Failed to toggle favorite:', error);
+        // Revert optimistic update on error
+        band.isFavorite = originalStatus;
+        // TODO: Show error toast message
+        const errorMessage = error instanceof Error ? error.message : 'Failed to update favorite';
+        alert(`Error: ${errorMessage}`); // Temporary error display
     }
 };
+
+// TODO: Add API_BASE_URL like in FillInRequestsView.vue
+const API_BASE_URL = 'http://localhost:3001/api'; // Placeholder, ensure this is correct
+
+const fetchBands = async () => {
+  try {
+    // TODO: Add query parameters for filtering (selectedGenre, searchTerm) on the backend
+    const response = await fetch(`${API_BASE_URL}/bands`); // Assuming an endpoint /api/bands
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Define the expected raw shape of a band object from the API
+    type ApiBand = Omit<BandListItem, 'id' | 'isFavorite'> & {
+      id: number | string; // API might send id as number
+      isFavorite?: boolean; // API might not send this if user not logged in / no favorites data
+    };
+
+    const apiData: ApiBand[] = await response.json();
+    
+    bands.value = apiData.map((bandFromApi: ApiBand) => ({
+      ...bandFromApi,
+      id: String(bandFromApi.id), // Ensure id is string for BandListItem
+      isFavorite: bandFromApi.isFavorite ?? false, // Default to false if undefined
+    })); 
+  } catch (error) {
+    console.error('Failed to fetch bands:', error);
+    // TODO: Show user-friendly error message in UI (e.g., using a toast)
+  }
+};
+
+onMounted(() => {
+  fetchBands();
+});
 </script>
 
 <style scoped>

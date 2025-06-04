@@ -10,7 +10,7 @@
                 <div v-if="favoriteBands.length > 0" class="favorites-grid">
                     <Card v-for="band in favoriteBands" :key="band.id" class="favorite-card">
                         <template #header>
-                            <img :src="band.mockImage || 'https://picsum.photos/400/200?random=' + band.id" :alt="band.name" class="favorite-image" />
+                            <img src="https://via.placeholder.com/400x200/cccccc/969696?text=Band+Image" :alt="band.name" class="favorite-image" />
                         </template>
                         <template #title>{{ band.name }}</template>
                         <template #subtitle>{{ band.genre }}</template>
@@ -47,7 +47,7 @@
                 <div v-if="favoriteEvents.length > 0" class="favorites-grid">
                     <Card v-for="event in favoriteEvents" :key="event.id" class="favorite-card">
                         <template #header>
-                             <img :src="event.mockImage || 'https://picsum.photos/400/200?random=event' + event.id" :alt="event.eventTitle" class="favorite-image" />
+                             <img src="https://via.placeholder.com/400x200/cccccc/969696?text=Event+Image" :alt="event.eventTitle" class="favorite-image" />
                         </template>
                         <template #title>{{ event.eventTitle }}</template>
                         <template #subtitle>
@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import TabView from 'primevue/tabview';
@@ -106,62 +106,81 @@ import Button from 'primevue/button';
 
 const router = useRouter();
 
+// TODO: Replace with actual logged-in user ID from auth store
+const currentUserId = ref('2'); // Real user ID - Charles Mingus
+
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
-interface FavoriteBandItem { // Based on `band` table for favorites
-    id: string | number; // band_id
+interface FavoriteBandItem { // Based on `band` table + favorites
+    id: string; // band_id
     name: string;
     genre?: string | null;
     description?: string | null;
     email?: string | null;
     phoneNumber?: string | null;
-    mockImage?: string; // Kept for UI consistency
 }
 
-interface FavoriteEventItem { // Based on `event` table for favorites
-    id: string | number; // event_id
+interface FavoriteEventItem { // Based on `event` table + favorites
+    id: string; // event_id
     eventTitle: string;
     datetime: string; // ISO string
     location?: string | null;
     genre?: string | null;
     description?: string | null;
-    status?: 'open' | 'filled' | 'expired'; // From event table
-    mockImage?: string; // Kept for UI consistency
+    status?: 'open' | 'filled' | 'expired';
 }
 
-// Mock favorite bands data
-const favoriteBands = ref<FavoriteBandItem[]>([
-    {
-        id: 'band2',
-        name: 'Blue Ridge Rockers',
-        genre: 'Rock',
-        description: 'High-energy rock band specializing in classic and modern rock hits.',
-        email: 'brr@example.com',
-        phoneNumber: '555-ROCK',
-        mockImage: 'https://picsum.photos/400/200?random=2'
-    },
-    {
-        id: 'band5',
-        name: 'Mountain Folk Trio',
-        genre: 'Folk',
-        description: 'Traditional and contemporary folk music from the Blue Ridge Mountains.',
-        // email and phone can be null
-        mockImage: 'https://picsum.photos/400/200?random=5'
-    }
-]);
+// Will be populated by API calls
+const favoriteBands = ref<FavoriteBandItem[]>([]);
+const favoriteEvents = ref<FavoriteEventItem[]>([]);
 
-// Mock favorite events data
-const favoriteEvents = ref<FavoriteEventItem[]>([
-    {
-        id: 'event2',
-        eventTitle: 'Jazz Night at The Blue Note',
-        genre: 'Jazz',
-        datetime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-        location: 'The Blue Note',
-        description: 'Weekly jazz night featuring different ensembles. Intimate setting with jazz enthusiasts.',
-        status: 'open',
-        mockImage: 'https://picsum.photos/400/200?random=12'
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Fetch user's favorite bands
+const fetchFavoriteBands = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/favorite-bands`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        type ApiFavoriteBand = Omit<FavoriteBandItem, 'id'> & {
+            id: number | string;
+        };
+        
+        const bandsData: ApiFavoriteBand[] = await response.json();
+        favoriteBands.value = bandsData.map((band: ApiFavoriteBand) => ({
+            ...band,
+            id: String(band.id)
+        }));
+    } catch (error) {
+        console.error('Failed to fetch favorite bands:', error);
+        // TODO: Show error toast
     }
-]);
+};
+
+// Fetch user's favorite events
+const fetchFavoriteEvents = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/favorite-events`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        type ApiFavoriteEvent = Omit<FavoriteEventItem, 'id'> & {
+            id: number | string;
+        };
+        
+        const eventsData: ApiFavoriteEvent[] = await response.json();
+        favoriteEvents.value = eventsData.map((event: ApiFavoriteEvent) => ({
+            ...event,
+            id: String(event.id),
+            datetime: event.datetime // Should already be ISO string from API
+        }));
+    } catch (error) {
+        console.error('Failed to fetch favorite events:', error);
+        // TODO: Show error toast
+    }
+};
 
 // Utility functions
 const formatDate = (dateString: string) => {
@@ -177,33 +196,82 @@ const formatDate = (dateString: string) => {
 };
 
 // Actions
-const viewBandDetails = (bandId: string | number) => {
+const viewBandDetails = (bandId: string) => {
     console.log('Viewing band details for:', bandId);
-    router.push(`/browse/bands/${bandId}`); // Example navigation
+    router.push(`/browse/bands/${bandId}`);
 };
 
-const viewEventDetails = (eventId: string | number) => {
+const viewEventDetails = (eventId: string) => {
     console.log('Viewing event details for:', eventId);
-    router.push(`/browse/events/${eventId}`); // Example navigation
+    router.push(`/browse/events/${eventId}`);
 };
 
-const removeFavoriteBand = (bandId: string | number) => {
-    const index = favoriteBands.value.findIndex(b => b.id === bandId);
-    if (index > -1) {
-        favoriteBands.value.splice(index, 1);
+const removeFavoriteBand = async (bandId: string) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/favorite-bands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                bandId: bandId, 
+                makeFavorite: false 
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to remove favorite');
+        }
+
+        // Remove from local state on success
+        const index = favoriteBands.value.findIndex(b => b.id === bandId);
+        if (index > -1) {
+            favoriteBands.value.splice(index, 1);
+        }
         console.log(`Removed band ${bandId} from favorites.`);
-        // DB: Delete from user_favorites_bands where user_id = current_user_id and band_id = bandId
+        // TODO: Show success toast
+    } catch (error) {
+        console.error('Failed to remove favorite band:', error);
+        // TODO: Show error toast
+        const errorMessage = error instanceof Error ? error.message : 'Failed to remove favorite';
+        alert(`Error: ${errorMessage}`); // Temporary error display
     }
 };
 
-const removeFavoriteEvent = (eventId: string | number) => {
-    const index = favoriteEvents.value.findIndex(e => e.id === eventId);
-    if (index > -1) {
-        favoriteEvents.value.splice(index, 1);
+const removeFavoriteEvent = async (eventId: string) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/favorite-events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                eventId: eventId, 
+                makeFavorite: false 
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to remove favorite');
+        }
+
+        // Remove from local state on success
+        const index = favoriteEvents.value.findIndex(e => e.id === eventId);
+        if (index > -1) {
+            favoriteEvents.value.splice(index, 1);
+        }
         console.log(`Removed event ${eventId} from favorites.`);
-        // DB: Delete from user_favorites_events where user_id = current_user_id and event_id = eventId
+        // TODO: Show success toast
+    } catch (error) {
+        console.error('Failed to remove favorite event:', error);
+        // TODO: Show error toast
+        const errorMessage = error instanceof Error ? error.message : 'Failed to remove favorite';
+        alert(`Error: ${errorMessage}`); // Temporary error display
     }
 };
+
+onMounted(() => {
+    fetchFavoriteBands();
+    fetchFavoriteEvents();
+});
 </script>
 
 <style scoped>
