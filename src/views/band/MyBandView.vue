@@ -134,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
@@ -205,17 +205,103 @@ const bandInfo = ref<BandInfo>({
 const upcomingEvents = ref<BandEvent[]>([]);
 const showLeaveDialog = ref(false);
 const loading = ref(true);
-const currentUserId = ref('2'); // TODO: Get from auth/session - using test user
+
+// TypeScript interface for dev state
+interface DevState {
+    isSignedIn: boolean;
+    userRole: string;
+    currentTestUser?: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+}
+
+// Get current user from developer panel or auth system
+const getCurrentUserId = () => {
+    // Check if we're in development mode and can get user from global state
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
+        if (windowWithDev.getDevState) {
+            const devState = windowWithDev.getDevState();
+            console.log('MyBandView - Dev state:', devState);
+            // In dev panel, we might be impersonating a specific user
+            if (devState.currentTestUser) {
+                console.log('MyBandView - Using test user:', devState.currentTestUser.id);
+                return devState.currentTestUser.id;
+            }
+        }
+    }
+    // Default fallback - in real app this would come from auth store
+    console.log('MyBandView - Using default user: 5');
+    return '5'; // Default to Sarah Leader for testing
+};
+
+const currentUserId = ref(getCurrentUserId());
+
+// Function to reload all data
+const loadAllData = async () => {
+    loading.value = true;
+    try {
+        await fetchBandInfo();
+        if (bandInfo.value.id) {
+            await Promise.all([
+                fetchBandMembers(),
+                fetchBandEvents()
+            ]);
+        }
+    } catch (error) {
+        console.error('Error loading band data:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Function to update current user (called when dev panel changes user)
+const updateCurrentUser = () => {
+    const newUserId = getCurrentUserId();
+    if (currentUserId.value !== newUserId) {
+        currentUserId.value = newUserId;
+        // Reload all data for the new user
+        loadAllData();
+    }
+};
 
 // --- API Functions ---
 const fetchBandInfo = async () => {
     try {
-        // For demo, using band ID 1 - in real app, get from route params or user's band
-        const bandId = '1';
-        const response = await fetch(`/api/bands/${bandId}`);
-        if (!response.ok) throw new Error('Failed to fetch band info');
+        console.log('MyBandView - Fetching band info for user:', currentUserId.value);
+        // First, get the user's band information
+        const response = await fetch(`/api/users/${currentUserId.value}/band-status`);
+        if (!response.ok) throw new Error('Failed to fetch user band status');
         
-        const band = await response.json();
+        const bandStatus = await response.json();
+        console.log('MyBandView - Band status response:', bandStatus);
+        
+        // Check if user has a band
+        if (!bandStatus.isMemberOfBand || bandStatus.memberBands.length === 0) {
+            // User has no band - show empty state
+            bandInfo.value = {
+                id: '',
+                name: '',
+                genre: null,
+                description: null,
+                location: null,
+                members: []
+            };
+            return;
+        }
+        
+        // Get the first band (users should only have one band)
+        const userBand = bandStatus.memberBands[0];
+        const bandId = userBand.id;
+        
+        // Fetch detailed band information
+        const bandResponse = await fetch(`/api/bands/${bandId}`);
+        if (!bandResponse.ok) throw new Error('Failed to fetch band details');
+        
+        const band = await bandResponse.json();
         bandInfo.value = {
             id: band.id,
             name: band.name,
@@ -402,15 +488,17 @@ const confirmLeaveBand = () => {
 
 // --- Lifecycle ---
 onMounted(async () => {
-    loading.value = true;
-    try {
-        await fetchBandInfo();
-        await Promise.all([
-            fetchBandMembers(),
-            fetchBandEvents()
-        ]);
-    } finally {
-        loading.value = false;
+    // Load initial data
+    await loadAllData();
+    
+    // In development mode, poll for user changes from developer panel
+    if (import.meta.env.DEV) {
+        const pollInterval = setInterval(updateCurrentUser, 1000);
+        
+        // Cleanup on unmount
+        onUnmounted(() => {
+            clearInterval(pollInterval);
+        });
     }
 });
 </script>
