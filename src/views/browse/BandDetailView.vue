@@ -215,16 +215,6 @@ const router = useRouter();
 const toast = useToast();
 
 // TypeScript interfaces
-interface DevState {
-    isSignedIn: boolean;
-    userRole: string;
-    currentTestUser?: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
-}
 
 interface BandDetails {
     id: string;
@@ -297,21 +287,12 @@ const userRelationship = ref<UserBandRelationship>({
     isAdmin: false
 });
 
-// Get current user from developer panel
+// Get current user ID (would come from real authentication)
 const getCurrentUserId = () => {
-    if (import.meta.env.DEV && typeof window !== 'undefined') {
-        const windowWithDev = window as typeof window & { getDevState?: () => DevState };
-        if (windowWithDev.getDevState) {
-            const devState = windowWithDev.getDevState();
-            if (devState.currentTestUser) {
-                return devState.currentTestUser.id;
-            }
-        }
-    }
+    // TODO: Replace with real authentication
+    // For now, return null (anonymous user)
     return null;
 };
-
-
 
 // Computed properties for permissions
 const canSeeMembers = computed(() => userRelationship.value.canSeeMembers);
@@ -325,14 +306,13 @@ const isAdmin = computed(() => userRelationship.value.isAdmin);
 // API Functions
 const fetchBandDetails = async () => {
     const bandId = route.params.id as string;
-    const currentUserId = getCurrentUserId();
+    // TODO: Get user ID from real authentication later
+    // const currentUserId = getCurrentUserId();
     
     try {
-        // Build URL with user context
-        let url = `/api/bands/${bandId}/details`;
-        if (currentUserId) {
-            url += `?userId=${currentUserId}`;
-        }
+        // Build URL - no user context since we removed the security vulnerability  
+        const url = `/api/bands/${bandId}/details`;
+        // TODO: Authentication should be handled via secure session/tokens, not URL params
         
         const response = await fetch(url);
         if (!response.ok) {
@@ -348,8 +328,6 @@ const fetchBandDetails = async () => {
         bandMembers.value = data.members || [];
         performanceHistory.value = data.performanceHistory || [];
         userRelationship.value = data.userRelationship;
-        
-        console.log('BandDetailView - Data loaded:', data);
     } catch (error) {
         console.error('Error fetching band details:', error);
         toast.add({
