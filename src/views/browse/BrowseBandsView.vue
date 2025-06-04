@@ -162,7 +162,7 @@ const filteredBands = computed(() => {
 });
 
 const viewBandDetails = (bandId: string) => {
-    router.push(`/browse/bands/${bandId}`);
+    router.push({ name: 'band-detail', params: { id: bandId } });
 };
 
 const toggleFavorite = async (bandId: string) => {

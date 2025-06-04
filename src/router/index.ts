@@ -29,6 +29,11 @@ const router = createRouter({
       component: () => import('../views/browse/BrowseBandsView.vue'),
     },
     {
+      path: '/browse/bands/:id',
+      name: 'band-detail',
+      component: () => import('../views/browse/BandDetailView.vue'),
+    },
+    {
       path: '/browse/events',
       name: 'browse-events',
       component: () => import('../views/browse/BrowseEventsView.vue'),

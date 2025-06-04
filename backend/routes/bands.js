@@ -36,6 +36,175 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+// GET /api/bands/:id/details - Get role-based band details (MUST come before /:id)
+router.get('/:id/details', async (req, res, next) => {
+  const { id: bandId } = req.params;
+  const { userId } = req.query;
+  
+  try {
+    // Get basic band information
+    const bandQuery = `
+      SELECT 
+        band_id AS id,
+        name,
+        genre,
+        description,
+        email,
+        phone_number AS phoneNumber,
+        total_events_played AS totalEventsPlayed,
+        NULL AS location
+      FROM band
+      WHERE band_id = ?;
+    `;
+    const [bandRows] = await pool.query(bandQuery, [bandId]);
+    
+    if (bandRows.length === 0) {
+      return res.status(404).json({ message: 'Band not found.' });
+    }
+    
+    const band = {
+      ...bandRows[0],
+      id: String(bandRows[0].id),
+      isFavorite: false // Will be updated if user is signed in
+    };
+    
+    // Initialize user relationship data
+    let userRelationship = {
+      isSignedIn: !!userId,
+      userRole: 'anonymous',
+      relationshipToBand: 'anonymous',
+      canSeeMembers: false,
+      canSeeContact: false,
+      canSeePerformanceHistory: false,
+      canRequestToJoin: false,
+      canFavorite: false,
+      isOwnBand: false,
+      isAdmin: false
+    };
+    
+    let members = [];
+    let performanceHistory = [];
+    
+    // If user is signed in, determine their relationship and permissions
+    if (userId) {
+      // Get user's role and band status
+      const userRoleQuery = `
+        SELECT r.role_name 
+        FROM user_roles ur 
+        JOIN roles r ON ur.role_id = r.role_id 
+        WHERE ur.user_id = ?
+      `;
+      const [userRoleRows] = await pool.query(userRoleQuery, [userId]);
+      const userRole = userRoleRows.length > 0 ? userRoleRows[0].role_name : 'General User';
+      
+      // Check if user is in this band
+      const userBandQuery = `
+        SELECT 'member' as type FROM band_member bm 
+        JOIN user_roles ur ON bm.user_role_id = ur.user_role_id 
+        WHERE bm.band_id = ? AND ur.user_id = ?
+        UNION
+        SELECT 'leader' as type FROM band_leader bl 
+        JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+        WHERE bl.band_id = ? AND ur.user_id = ?
+      `;
+      const [userBandRows] = await pool.query(userBandQuery, [bandId, userId, bandId, userId]);
+      
+      const isInThisBand = userBandRows.length > 0;
+      const isBandLeader = userBandRows.some(row => row.type === 'leader');
+      
+      // Check if user has any band
+      const userAnyBandQuery = `
+        SELECT COUNT(*) as count FROM (
+          SELECT bm.band_id FROM band_member bm 
+          JOIN user_roles ur ON bm.user_role_id = ur.user_role_id 
+          WHERE ur.user_id = ?
+          UNION
+          SELECT bl.band_id FROM band_leader bl 
+          JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+          WHERE ur.user_id = ?
+        ) as user_bands
+      `;
+      const [userAnyBandRows] = await pool.query(userAnyBandQuery, [userId, userId]);
+      const hasAnyBand = userAnyBandRows[0].count > 0;
+      
+      // Check if band is in user's favorites
+      const favoriteQuery = `
+        SELECT 1 FROM user_favorites_bands WHERE user_id = ? AND band_id = ?
+      `;
+      const [favoriteRows] = await pool.query(favoriteQuery, [userId, bandId]);
+      band.isFavorite = favoriteRows.length > 0;
+      
+      // Determine relationship and permissions
+      userRelationship = {
+        isSignedIn: true,
+        userRole: userRole,
+        relationshipToBand: isInThisBand ? 'same_band' : (hasAnyBand ? 'different_band' : 'no_band'),
+        canSeeMembers: isInThisBand || userRole === 'WXTJ Executive',
+        canSeeContact: isInThisBand || userRole === 'WXTJ Executive',
+        canSeePerformanceHistory: true, // Basic performance history for all signed-in users
+        canRequestToJoin: !hasAnyBand && !isInThisBand && userRole !== 'WXTJ Executive',
+        canFavorite: userRole !== 'anonymous',
+        isOwnBand: isInThisBand,
+        isAdmin: userRole === 'WXTJ Executive'
+      };
+      
+      // Fetch members if user can see them
+      if (userRelationship.canSeeMembers) {
+        const memberQuery = `
+          SELECT 
+            u.user_id AS id,
+            u.first_name AS firstName,
+            u.last_name AS lastName,
+            u.instrument,
+            r.role_name AS role
+          FROM band_member bm
+          JOIN user_roles ur ON bm.user_role_id = ur.user_role_id
+          JOIN user u ON ur.user_id = u.user_id
+          JOIN roles r ON ur.role_id = r.role_id
+          WHERE bm.band_id = ?
+          UNION
+          SELECT 
+            u.user_id AS id,
+            u.first_name AS firstName,
+            u.last_name AS lastName,
+            u.instrument,
+            r.role_name AS role
+          FROM band_leader bl
+          JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+          JOIN user u ON ur.user_id = u.user_id
+          JOIN roles r ON ur.role_id = r.role_id
+          WHERE bl.band_id = ?
+          ORDER BY CASE WHEN role = 'Band Leader' THEN 1 ELSE 2 END, firstName
+        `;
+        const [memberRows] = await pool.query(memberQuery, [bandId, bandId]);
+        
+        members = memberRows.map(member => ({
+          ...member,
+          id: String(member.id)
+        }));
+      }
+      
+      // Fetch performance history (placeholder - would need proper event-band relationship)
+      if (userRelationship.canSeePerformanceHistory) {
+        // For now, return empty array as we don't have band-event relationships set up
+        performanceHistory = [];
+      }
+    }
+    
+    const response = {
+      band,
+      members,
+      performanceHistory,
+      userRelationship
+    };
+    
+    res.json(response);
+  } catch (error) {
+    console.error('Failed to fetch band details:', error);
+    next(error);
+  }
+});
+
 // GET /api/bands/:id - Get specific band details
 router.get('/:id', async (req, res, next) => {
   const { id: bandId } = req.params;
