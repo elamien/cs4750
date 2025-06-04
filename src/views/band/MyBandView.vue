@@ -64,10 +64,7 @@
                                 <strong>Genre:</strong> {{ bandInfo.genre }}
                             </div>
                             <div class="detail-item">
-                                <strong>Email:</strong> {{ bandInfo.email || 'N/A' }}
-                            </div>
-                            <div class="detail-item">
-                                <strong>Phone:</strong> {{ bandInfo.phoneNumber || 'N/A' }}
+                                <strong>Location:</strong> {{ bandInfo.location || 'N/A' }}
                             </div>
                             <div class="detail-item">
                                 <strong>Description:</strong>
@@ -87,7 +84,7 @@
                                     <strong>{{ member.firstName }} {{ member.lastName }}</strong>
                                     <div class="member-role">
                                         {{ member.instrument || 'N/A' }}
-                                        <Tag v-if="member.isLeader" value="Leader" severity="warn" />
+                                        <Tag v-if="member.role === 'leader'" value="Leader" severity="warn" />
                                     </div>
                                 </div>
                             </div>
@@ -137,15 +134,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Avatar from 'primevue/avatar';
 import Dialog from 'primevue/dialog';
+import { useToast } from 'primevue/usetoast';
 
-// --- Mock User Data (for current band member) ---
-const mockCurrentMemberId = ref('user2'); // Example: Sarah Davis is the current member viewing this
+const router = useRouter();
+const toast = useToast();
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface BandUser { // Based on user table for band members
@@ -153,22 +152,20 @@ interface BandUser { // Based on user table for band members
     firstName: string;
     lastName: string;
     instrument?: string | null;
-    isLeader?: boolean; // Derived from band_leader table or a flag
+    role?: string; // From band_member table
 }
 
 interface BandInfo { // Based on band table
     id: string; // band_id
     name: string;
     genre?: string | null;
-    email?: string | null;
-    phoneNumber?: string | null;
     description?: string | null;
+    location?: string | null;
     members: BandUser[];
-    // total_events_played and events_played_ytd could be added if needed
 }
 
 interface BandEvent { // Based on event table
-    id: number; // event_id, assuming number for mock data simplicity
+    id: string; // event_id
     eventTitle: string;
     datetime: string; // ISO string
     location?: string | null;
@@ -176,70 +173,205 @@ interface BandEvent { // Based on event table
     myAvailability: boolean | null; // true for available, false for not, null for pending/not set by current user
 }
 
+// API Response Interfaces
+interface APIBandMember {
+    id: string;
+    firstName: string;
+    lastName: string;
+    instrument?: string;
+    role: string;
+}
 
-// Mock band data
+interface APIBandEvent {
+    id: string;
+    name: string;
+    eventTitle?: string;
+    datetime: string;
+    location?: string;
+    description?: string;
+    myAvailability: boolean | null;
+}
+
+// --- Reactive Data ---
 const bandInfo = ref<BandInfo>({
-    id: 'band123',
-    name: 'The Jazz Collective',
-    genre: 'Jazz',
-    email: 'jazzcollective@example.com',
-    phoneNumber: '555-JAZZ',
-    description: 'A smooth jazz ensemble bringing classic and contemporary sounds to Charlottesville. We focus on improvisation and creating a dynamic live experience.',
-    members: [
-        {
-            id: 'leader1',
-            firstName: 'Mike',
-            lastName: 'Johnson',
-            instrument: 'Piano, Vocals',
-            isLeader: true
-        },
-        {
-            id: 'user2',
-            firstName: 'Sarah',
-            lastName: 'Davis',
-            instrument: 'Saxophone',
-            isLeader: false
-        },
-        {
-            id: 'user3',
-            firstName: 'John',
-            lastName: 'Doe',
-            instrument: 'Guitar, Bass',
-            isLeader: false
-        },
-    ]
+    id: '',
+    name: '',
+    genre: null,
+    description: null,
+    location: null,
+    members: []
 });
 
-const upcomingEvents = ref<BandEvent[]>([
-    {
-        id: 1,
-        eventTitle: 'Jazz Night at The Blue Note',
-        datetime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        location: 'The Blue Note',
-        description: 'Weekly jazz night performance. Standard repertoire plus some original compositions.',
-        myAvailability: true // Sarah is available
-    },
-    {
-        id: 2,
-        eventTitle: 'Summer Music Festival',
-        datetime: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(),
-        location: 'Downtown Amphitheater',
-        description: 'Main stage performance at the annual summer festival. 45-minute set.',
-        myAvailability: null // Sarah hasn't responded yet (Pending)
-    },
-    {
-        id: 3,
-        eventTitle: 'Private Wedding',
-        datetime: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
-        location: 'Riverside Gardens',
-        description: 'Wedding reception performance. Mix of jazz standards and popular requests.',
-        myAvailability: false // Sarah is not available
-    }
-]);
-
+const upcomingEvents = ref<BandEvent[]>([]);
 const showLeaveDialog = ref(false);
+const loading = ref(true);
+const currentUserId = ref('2'); // TODO: Get from auth/session - using test user
 
-// Utility functions
+// --- API Functions ---
+const fetchBandInfo = async () => {
+    try {
+        // For demo, using band ID 1 - in real app, get from route params or user's band
+        const bandId = '1';
+        const response = await fetch(`/api/bands/${bandId}`);
+        if (!response.ok) throw new Error('Failed to fetch band info');
+        
+        const band = await response.json();
+        bandInfo.value = {
+            id: band.id,
+            name: band.name,
+            genre: band.genre,
+            description: band.description,
+            location: band.location,
+            members: []
+        };
+    } catch (error) {
+        console.error('Error fetching band info:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load band information',
+            life: 3000
+        });
+    }
+};
+
+const fetchBandMembers = async () => {
+    try {
+        const bandId = bandInfo.value.id || '1';
+        const response = await fetch(`/api/bands/${bandId}/members`);
+        if (!response.ok) throw new Error('Failed to fetch band members');
+        
+        const members: APIBandMember[] = await response.json();
+        bandInfo.value.members = members.map((member: APIBandMember) => ({
+            id: member.id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            instrument: member.instrument,
+            role: member.role
+        }));
+    } catch (error) {
+        console.error('Error fetching band members:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load band members',
+            life: 3000
+        });
+    }
+};
+
+const fetchBandEvents = async () => {
+    try {
+        const bandId = bandInfo.value.id || '1';
+        const response = await fetch(`/api/bands/${bandId}/events?userId=${currentUserId.value}`);
+        if (!response.ok) throw new Error('Failed to fetch band events');
+        
+        const events: APIBandEvent[] = await response.json();
+        
+        // Filter for upcoming events only
+        const now = new Date();
+        upcomingEvents.value = events
+            .filter((event: APIBandEvent) => new Date(event.datetime) > now)
+            .map((event: APIBandEvent) => ({
+                id: event.id,
+                eventTitle: event.eventTitle || event.name,
+                datetime: event.datetime,
+                location: event.location,
+                description: event.description,
+                myAvailability: event.myAvailability
+            }));
+    } catch (error) {
+        console.error('Error fetching band events:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load band events',
+            life: 3000
+        });
+    }
+};
+
+const setAvailability = async (eventId: string, availability: boolean) => {
+    try {
+        const bandId = bandInfo.value.id || '1';
+        const response = await fetch(`/api/bands/${bandId}/events/${eventId}/availability`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value,
+                isAvailable: availability
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to update availability');
+        
+        // Update local state
+        const event = upcomingEvents.value.find(e => e.id === eventId);
+        if (event) {
+            event.myAvailability = availability;
+        }
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Availability updated to ${availability ? 'Available' : 'Not Available'}`,
+            life: 3000
+        });
+    } catch (error) {
+        console.error('Error updating availability:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update availability',
+            life: 3000
+        });
+    }
+};
+
+const leaveBand = async () => {
+    try {
+        const bandId = bandInfo.value.id || '1';
+        const response = await fetch(`/api/bands/${bandId}/leave`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to leave band');
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `You have left ${bandInfo.value.name}`,
+            life: 3000
+        });
+        
+        showLeaveDialog.value = false;
+        
+        // Redirect to home or band selection page
+        setTimeout(() => {
+            router.push('/');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error leaving band:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to leave band',
+            life: 3000
+        });
+        showLeaveDialog.value = false;
+    }
+};
+
+// --- Utility Functions ---
 const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', { 
@@ -264,30 +396,23 @@ const getAvailabilitySeverity = (availability: boolean | null) => {
     return 'warning'; // For null (Pending)
 };
 
-// Actions
-const setAvailability = (eventId: number, availability: boolean) => {
-    const event = upcomingEvents.value.find(e => e.id === eventId);
-    if (event) {
-        event.myAvailability = availability;
-        console.log(`User ${mockCurrentMemberId.value} set availability for event ${eventId} to ${availability}`);
-        // In a real app, this would trigger an API call to update band_member_event_availability table
-        // with user_id, band_id, event_id, is_available
-    }
-};
-
 const confirmLeaveBand = () => {
     showLeaveDialog.value = true;
 };
 
-const leaveBand = () => {
-    console.log(`User ${mockCurrentMemberId.value} is leaving band: ${bandInfo.value.name}`);
-    showLeaveDialog.value = false;
-    // In a real app, this would trigger an API call to:
-    // 1. Remove user from band_member table (or update their role)
-    // 2. Add a record to band_membership_history table with action 'left'
-    // Then, likely redirect the user (e.g., to /join-create-band or home)
-    // For mock: router.push('/'); 
-};
+// --- Lifecycle ---
+onMounted(async () => {
+    loading.value = true;
+    try {
+        await fetchBandInfo();
+        await Promise.all([
+            fetchBandMembers(),
+            fetchBandEvents()
+        ]);
+    } finally {
+        loading.value = false;
+    }
+});
 </script>
 
 <style scoped>

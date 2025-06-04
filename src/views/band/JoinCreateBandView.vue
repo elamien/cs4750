@@ -6,8 +6,8 @@
         </div>
 
         <TabView v-if="!currentUserProfile.hasCreatedBand">
-            <TabPanel header="Join a Band" value="join" :disabled="currentUserProfile.hasPendingBandRequest || currentUserProfile.hasCreatedBand">
-                <div v-if="currentUserProfile.hasPendingBandRequest" class="notice-message">
+            <TabPanel header="Join a Band" value="join" :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand">
+                <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
                     You have a pending request to join a band. You cannot send more requests or create a band until it's resolved.
                 </div>
@@ -51,7 +51,7 @@
                                     label="Request to Join" 
                                     icon="pi pi-user-plus" 
                                     @click="requestToJoin(band.id)"
-                                    :disabled="currentUserProfile.hasPendingBandRequest || currentUserProfile.hasCreatedBand"
+                                    :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand"
                                 />
                             </template>
                         </Card>
@@ -65,12 +65,12 @@
                 </div>
             </TabPanel>
 
-            <TabPanel header="Create a Band" value="create" :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingBandRequest">
+            <TabPanel header="Create a Band" value="create" :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingRequest">
                  <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
                      <i class="pi pi-info-circle"></i>
                     You have already created a band. You cannot create another.
                 </div>
-                 <div v-else-if="currentUserProfile.hasPendingBandRequest" class="notice-message">
+                 <div v-else-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
                     You have a pending request to join a band. You cannot create a band now.
                 </div>
@@ -99,21 +99,11 @@
                             </div>
 
                             <div class="field">
-                                <label for="bandEmail">Contact Email (Optional)</label>
+                                <label for="bandLocation">Location (Optional)</label>
                                 <InputText 
-                                    id="bandEmail" 
-                                    v-model="bandForm.email" 
-                                    type="email"
-                                    placeholder="band.email@example.com"
-                                />
-                            </div>
-
-                            <div class="field">
-                                <label for="bandPhone">Contact Phone (Optional)</label>
-                                <InputText 
-                                    id="bandPhone" 
-                                    v-model="bandForm.phoneNumber" 
-                                    placeholder="(555) 123-4567"
+                                    id="bandLocation" 
+                                    v-model="bandForm.location" 
+                                    placeholder="City, State"
                                 />
                             </div>
                             
@@ -147,7 +137,7 @@
                                 label="Create Band" 
                                 icon="pi pi-plus" 
                                 @click="createBand"
-                                :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingBandRequest"
+                                :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingRequest"
                             />
                             <Button 
                                 label="Reset" 
@@ -169,8 +159,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
@@ -182,19 +173,16 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 
 const router = useRouter();
+const toast = useToast();
 
-const currentUserProfile = ref({
-    userId: 'user-gen-123',
-    hasCreatedBand: false, 
-    hasPendingBandRequest: false,
-});
-
+// --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface BandListItem {
-    id: number | string;
+    id: string;
     name: string;
     genre: string;
     memberCount: number;
     description: string;
+    location?: string;
     needs?: string[];
 }
 
@@ -202,10 +190,34 @@ interface BandForm {
     name: string;
     genre: string | null;
     description: string;
-    email?: string | null;
-    phoneNumber?: string | null;
+    location?: string | null;
     lookingForInstruments?: string[];
 }
+
+interface UserBandStatus {
+    isMemberOfBand: boolean;
+    hasPendingRequest: boolean;
+    hasCreatedBand: boolean;
+    memberBands: Array<{
+        id: string;
+        name: string;
+        role: string;
+    }>;
+}
+
+// --- Reactive Data ---
+const currentUserId = ref('2'); // TODO: Get from auth/session - using test user
+const currentUserProfile = ref<UserBandStatus>({
+    isMemberOfBand: false,
+    hasCreatedBand: false, 
+    hasPendingRequest: false,
+    memberBands: []
+});
+
+const bands = ref<BandListItem[]>([]);
+const loading = ref(true);
+const searchTerm = ref('');
+const selectedGenre = ref<string | null>(null);
 
 const genres = ref([
     { name: 'Rock', value: 'Rock' },
@@ -232,36 +244,15 @@ const instrumentOptions = ref([
     { name: 'Other', value: 'other' }
 ]);
 
-const bands = ref<BandListItem[]>([
-    {
-        id: 1,
-        name: 'The Groove Collective',
-        genre: 'Jazz',
-        memberCount: 3,
-        description: 'A modern jazz ensemble looking to expand our sound with additional members.',
-        needs: ['Bass', 'Drums']
-    },
-    {
-        id: 2,
-        name: 'Electric Storm',
-        genre: 'Rock',
-        memberCount: 2,
-        description: 'Hard rock duo seeking additional members to complete the lineup.',
-        needs: ['Guitar', 'Vocals']
-    },
-    {
-        id: 3,
-        name: 'Acoustic Vibes',
-        genre: 'Folk',
-        memberCount: 2,
-        description: 'Folk duo looking for additional acoustic instruments and harmonies.',
-        needs: ['Violin', 'Vocals']
-    }
-]);
+const bandForm = ref<BandForm>({
+    name: '',
+    genre: null,
+    description: '',
+    location: '',
+    lookingForInstruments: []
+});
 
-const searchTerm = ref('');
-const selectedGenre = ref<string | null>(null);
-
+// --- Computed Properties ---
 const filteredBands = computed(() => {
     return bands.value.filter(band => {
         const matchesSearch = !searchTerm.value || 
@@ -273,26 +264,149 @@ const filteredBands = computed(() => {
     });
 });
 
-const bandForm = ref<BandForm>({
-    name: '',
-    genre: null,
-    description: '',
-    email: '',
-    phoneNumber: '',
-    lookingForInstruments: []
-});
-
-const requestToJoin = (bandId: number | string) => {
-    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingBandRequest) return;
-    console.log(`User ${currentUserProfile.value.userId} requesting to join band: ${bandId}`);
-    currentUserProfile.value.hasPendingBandRequest = true;
+// --- API Functions ---
+const fetchUserBandStatus = async () => {
+    try {
+        const response = await fetch(`/api/users/${currentUserId.value}/band-status`);
+        if (!response.ok) throw new Error('Failed to fetch user band status');
+        
+        const status: UserBandStatus = await response.json();
+        currentUserProfile.value = status;
+    } catch (error) {
+        console.error('Error fetching user band status:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load your band status',
+            life: 3000
+        });
+    }
 };
 
-const createBand = () => {
-    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingBandRequest) return;
-    console.log(`User ${currentUserProfile.value.userId} creating band:`, bandForm.value);
-    currentUserProfile.value.hasCreatedBand = true;
-    alert('Band created successfully! You are now the band leader.');
+const fetchBands = async () => {
+    try {
+        const response = await fetch('/api/bands');
+        if (!response.ok) throw new Error('Failed to fetch bands');
+        
+        const bandsData: BandListItem[] = await response.json();
+        bands.value = bandsData.map(band => ({
+            id: band.id,
+            name: band.name,
+            genre: band.genre || 'Unknown',
+            memberCount: band.memberCount,
+            description: band.description || 'No description available.',
+            location: band.location,
+            needs: band.needs || []
+        }));
+    } catch (error) {
+        console.error('Error fetching bands:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load available bands',
+            life: 3000
+        });
+    }
+};
+
+const requestToJoin = async (bandId: string) => {
+    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) return;
+    
+    try {
+        const response = await fetch(`/api/bands/${bandId}/join-requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value,
+                message: 'I would like to join your band.'
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to send join request');
+        }
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Join request sent successfully!',
+            life: 3000
+        });
+        
+        // Refresh user status
+        await fetchUserBandStatus();
+        
+    } catch (error) {
+        console.error('Error requesting to join band:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error instanceof Error ? error.message : 'Failed to send join request',
+            life: 3000
+        });
+    }
+};
+
+const createBand = async () => {
+    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) return;
+    
+    if (!bandForm.value.name.trim()) {
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Band name is required',
+            life: 3000
+        });
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/bands', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: bandForm.value.name.trim(),
+                genre: bandForm.value.genre,
+                description: bandForm.value.description.trim(),
+                location: bandForm.value.location?.trim(),
+                creatorUserId: currentUserId.value
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create band');
+        }
+        
+        const createdBand = await response.json();
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Band "${createdBand.name}" created successfully! You are now the band leader.`,
+            life: 5000
+        });
+        
+        // Refresh user status
+        await fetchUserBandStatus();
+        
+        // Clear form
+        resetBandForm();
+        
+    } catch (error) {
+        console.error('Error creating band:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error instanceof Error ? error.message : 'Failed to create band',
+            life: 3000
+        });
+    }
 };
 
 const resetBandForm = () => {
@@ -300,8 +414,7 @@ const resetBandForm = () => {
         name: '',
         genre: null,
         description: '',
-        email: '',
-        phoneNumber: '',
+        location: '',
         lookingForInstruments: []
     };
 };
@@ -309,6 +422,19 @@ const resetBandForm = () => {
 const goToMyBand = () => {
     router.push('/my-band');
 };
+
+// --- Lifecycle ---
+onMounted(async () => {
+    loading.value = true;
+    try {
+        await Promise.all([
+            fetchUserBandStatus(),
+            fetchBands()
+        ]);
+    } finally {
+        loading.value = false;
+    }
+});
 </script>
 
 <style scoped>
