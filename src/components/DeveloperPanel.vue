@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 
@@ -312,6 +312,7 @@ interface WindowWithDevFunctions extends Window {
     showAuthModal?: () => void;
     triggerOnboarding?: () => void;
     getDevState?: () => { isSignedIn: boolean; userRole: string };
+    setDevCurrentUser?: (user: TestUser | null) => void;
 }
 
 declare const window: WindowWithDevFunctions;
@@ -469,6 +470,18 @@ onMounted(() => {
         document.removeEventListener('mouseup', stopDrag);
     });
 });
+
+// Expose current test user to global window state
+if (typeof window !== 'undefined') {
+    const updateGlobalDevState = () => {
+        if (window.setDevCurrentUser) {
+            window.setDevCurrentUser(currentTestUser.value);
+        }
+    };
+    
+    // Watch for changes in currentTestUser and update global state
+    watch(currentTestUser, updateGlobalDevState, { immediate: true });
+}
 
 // Listen for global state changes
 if (typeof window !== 'undefined') {

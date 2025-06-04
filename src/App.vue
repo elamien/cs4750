@@ -182,6 +182,9 @@
         
         <!-- Developer Panel (only in development) -->
         <DeveloperPanel />
+        
+        <!-- Toast for notifications -->
+        <Toast position="top-right" class="app-toast" />
     </div>
 </template>
 
@@ -198,6 +201,7 @@ import Dialog from 'primevue/dialog';
 import Password from 'primevue/password';
 import Checkbox from 'primevue/checkbox';
 import Menu from 'primevue/menu';
+import Toast from 'primevue/toast';
 import DeveloperPanel from '@/components/DeveloperPanel.vue';
 
 // Router instance
@@ -542,6 +546,20 @@ onMounted(() => {
         isDarkMode.value = true;
         document.documentElement.setAttribute('data-theme', 'dark');
     }
+    
+    // Dynamically calculate navbar height for toast positioning
+    setTimeout(() => {
+        const navbar = document.querySelector('.p-menubar');
+        if (navbar) {
+            const navbarHeight = navbar.getBoundingClientRect().height;
+            const toastTopOffset = navbarHeight + 10; // 10px gap below navbar
+            
+            // Update CSS custom property for toast positioning
+            document.documentElement.style.setProperty('--navbar-height', `${toastTopOffset}px`);
+            
+            console.log(`Navbar height detected: ${navbarHeight}px, toast offset: ${toastTopOffset}px`);
+        }
+    }, 100); // Small delay to ensure navbar is rendered
 });
 
 // Expose functions to window for development testing
