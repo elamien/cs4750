@@ -51,8 +51,9 @@ CREATE TABLE user (
     bio TEXT,
     email VARCHAR(255) UNIQUE NOT NULL,
     phone_number VARCHAR(20),
-    genre VARCHAR(100),
-    instrument VARCHAR(100)
+    genre ENUM('Classic rock', 'Country', 'Pop', 'R n B', 'Metal', 'Classical', 'Folk', 'Hip hop', 'Electronic', 'Jazz', 'Indie', 'Alternative'),
+    instrument VARCHAR(100),
+    password VARCHAR(255) NOT NULL DEFAULT 'test123'
 );
 
 -- Create roles table
@@ -77,7 +78,7 @@ CREATE TABLE band (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone_number VARCHAR(20),
-    genre VARCHAR(100),
+    genre ENUM('Classic rock', 'Country', 'Pop', 'R n B', 'Metal', 'Classical', 'Folk', 'Hip hop', 'Electronic', 'Jazz', 'Indie', 'Alternative'),
     total_events_played INT DEFAULT 0,
     events_played_ytd INT DEFAULT 0,
     description TEXT
@@ -90,7 +91,7 @@ CREATE TABLE event (
     event_title VARCHAR(255) NOT NULL,
     datetime DATETIME NOT NULL,
     location VARCHAR(255),
-    genre VARCHAR(100),
+    genre ENUM('Classic rock', 'Country', 'Pop', 'R n B', 'Metal', 'Classical', 'Folk', 'Hip hop', 'Electronic', 'Jazz', 'Indie', 'Alternative'),
     status ENUM('open', 'filled', 'expired') DEFAULT 'open',
     description TEXT,
     slot_one VARCHAR(100),
