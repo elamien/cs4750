@@ -230,7 +230,7 @@ router.get('/:id/band-status', async (req, res, next) => {
   const { id: userId } = req.params;
   
   try {
-    // Check if user is in any band (need to fix this query for role-based system)
+    // Check if user is a band member
     const [memberBands] = await pool.query(
       `SELECT b.band_id, b.name as band_name, r.role_name as role 
        FROM band_member bm 
@@ -240,6 +240,20 @@ router.get('/:id/band-status', async (req, res, next) => {
        WHERE ur.user_id = ?`,
       [userId]
     );
+    
+    // Check if user is a band leader
+    const [leaderBands] = await pool.query(
+      `SELECT b.band_id, b.name as band_name, r.role_name as role 
+       FROM band_leader bl 
+       JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+       JOIN band b ON bl.band_id = b.band_id 
+       JOIN roles r ON ur.role_id = r.role_id
+       WHERE ur.user_id = ?`,
+      [userId]
+    );
+    
+    // Combine member and leader bands
+    const allUserBands = [...memberBands, ...leaderBands];
     
     // Check if user has pending join requests (this table might not exist yet)
     let hasPendingRequest = false;
@@ -255,20 +269,19 @@ router.get('/:id/band-status', async (req, res, next) => {
       console.log('membership_request table not found, assuming no pending requests');
     }
     
-    // Check if user created any band (is a leader)
+    // Check if user created any band (is a leader) - using band_leader table
     const [createdBands] = await pool.query(
-      `SELECT COUNT(*) as count FROM band_member bm 
-       JOIN user_roles ur ON bm.user_role_id = ur.user_role_id
-       JOIN roles r ON ur.role_id = r.role_id
-       WHERE ur.user_id = ? AND r.role_name = 'Band Leader'`,
+      `SELECT COUNT(*) as count FROM band_leader bl 
+       JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+       WHERE ur.user_id = ?`,
       [userId]
     );
     
     res.json({
-      isMemberOfBand: memberBands.length > 0,
+      isMemberOfBand: allUserBands.length > 0,
       hasPendingRequest: hasPendingRequest,
       hasCreatedBand: createdBands[0].count > 0,
-      memberBands: memberBands.map(band => ({
+      memberBands: allUserBands.map(band => ({
         id: String(band.band_id),
         name: band.band_name,
         role: band.role
