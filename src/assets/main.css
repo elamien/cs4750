@@ -11,6 +11,9 @@
   --hoojams-cream: hsl(37.3deg 92.5% 84.31%);
   --hoojams-orange-hover: hsl(24.17deg 89.57% 40%);
   --hoojams-cream-dark: hsl(37.3deg 60% 75%);
+  
+  /* Toast positioning - dynamically set by JavaScript based on navbar height */
+  --navbar-height: 70px;
 }
 
 /* Light Mode (default) - Orange navbar, white background, black text */
@@ -147,4 +150,21 @@ html, body {
 a {
   text-decoration: none;
   transition: 0.3s;
+}
+
+/* Toast positioning to appear below navbar */
+.app-toast {
+  /* Dynamically calculated navbar height + gap */
+  margin-top: var(--navbar-height, 70px) !important;
+}
+
+/* Ensure toast container respects navbar positioning */
+.p-toast.p-component {
+  top: var(--navbar-height, 70px) !important;
+}
+
+/* Additional specificity for toast positioning */
+.p-toast-top-right {
+  top: var(--navbar-height, 70px) !important;
+  right: 1rem !important;
 }
