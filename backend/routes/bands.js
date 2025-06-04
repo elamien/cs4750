@@ -39,7 +39,10 @@ router.get('/', async (req, res, next) => {
 // GET /api/bands/:id/details - Get role-based band details (MUST come before /:id)
 router.get('/:id/details', async (req, res, next) => {
   const { id: bandId } = req.params;
-  const { userId } = req.query;
+  
+  // TODO: Get userId from authenticated session, NOT from query params!
+  // This is a SECURITY VULNERABILITY if userId comes from URL
+  const userId = null; // For now, always anonymous until proper auth is implemented
   
   try {
     // Get basic band information
@@ -403,10 +406,13 @@ router.post('/:id/join-requests', async (req, res, next) => {
   }
 });
 
-// GET /api/bands/:id/events - Get band's events with availability (optional userId param)  
+// GET /api/bands/:id/events - Get band's events with availability 
 router.get('/:id/events', async (req, res, next) => {
   const { id: bandId } = req.params;
-  const { userId } = req.query;
+  
+  // TODO: Get userId from authenticated session, NOT from query params!
+  // This is a SECURITY VULNERABILITY if userId comes from URL
+  const userId = null; // For now, always anonymous until proper auth is implemented
   
   try {
     // This would need a band_event join table which doesn't exist yet
