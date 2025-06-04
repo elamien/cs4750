@@ -7,7 +7,7 @@
         
         <Card>
             <template #content>
-                <p>WXTJ Executive view for managing all users - view, delete, and change user roles.</p>
+                <p>WXTJ Executive view for managing all system users. Functionality includes viewing user details, deleting users, and changing user roles.</p>
                 <p><em>This is a placeholder view. Full functionality coming soon.</em></p>
             </template>
         </Card>

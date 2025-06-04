@@ -2,7 +2,7 @@
     <div class="my-band">
         <div class="header">
             <h1>{{ bandInfo.name }}</h1>
-            <p>{{ bandInfo.genre }} • {{ bandInfo.memberCount }} members</p>
+            <p>{{ bandInfo.genre }} • {{ bandInfo.members.length }} members</p>
         </div>
 
         <div class="band-content">
@@ -13,11 +13,10 @@
                         <div v-if="upcomingEvents.length > 0" class="events-list">
                             <div v-for="event in upcomingEvents" :key="event.id" class="event-item">
                                 <div class="event-info">
-                                    <h4>{{ event.name }}</h4>
+                                    <h4>{{ event.eventTitle }}</h4>
                                     <div class="event-meta">
-                                        <span><i class="pi pi-calendar"></i> {{ formatDate(event.date) }}</span>
-                                        <span><i class="pi pi-clock"></i> {{ event.time }}</span>
-                                        <span><i class="pi pi-map-marker"></i> {{ event.venue }}</span>
+                                        <span><i class="pi pi-calendar"></i> {{ formatDate(event.datetime) }}</span>
+                                        <span><i class="pi pi-map-marker"></i> {{ event.location }}</span>
                                     </div>
                                     <p>{{ event.description }}</p>
                                 </div>
@@ -25,26 +24,26 @@
                                     <div class="availability-status">
                                         <strong>Your Status:</strong>
                                         <Tag 
-                                            :value="event.myAvailability" 
+                                            :value="getAvailabilityText(event.myAvailability)" 
                                             :severity="getAvailabilitySeverity(event.myAvailability)"
                                         />
                                     </div>
                                     <div class="availability-actions">
                                         <Button 
-                                            label="Available" 
+                                            label="Available"
                                             icon="pi pi-check" 
                                             severity="success"
                                             size="small"
-                                            :outlined="event.myAvailability !== 'Available'"
-                                            @click="setAvailability(event.id, 'Available')"
+                                            :outlined="event.myAvailability !== true"
+                                            @click="setAvailability(event.id, true)"
                                         />
                                         <Button 
                                             label="Not Available" 
                                             icon="pi pi-times" 
                                             severity="danger"
                                             size="small"
-                                            :outlined="event.myAvailability !== 'Not Available'"
-                                            @click="setAvailability(event.id, 'Not Available')"
+                                            :outlined="event.myAvailability !== false"
+                                            @click="setAvailability(event.id, false)"
                                         />
                                     </div>
                                 </div>
@@ -52,7 +51,7 @@
                         </div>
                         <div v-else class="no-events">
                             <i class="pi pi-calendar" style="font-size: 2rem; color: var(--p-text-muted-color);"></i>
-                            <p>No upcoming events scheduled</p>
+                            <p>No upcoming events scheduled for your band.</p>
                         </div>
                     </template>
                 </Card>
@@ -65,11 +64,14 @@
                                 <strong>Genre:</strong> {{ bandInfo.genre }}
                             </div>
                             <div class="detail-item">
-                                <strong>Formed:</strong> {{ bandInfo.formed }}
+                                <strong>Email:</strong> {{ bandInfo.email || 'N/A' }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Phone:</strong> {{ bandInfo.phoneNumber || 'N/A' }}
                             </div>
                             <div class="detail-item">
                                 <strong>Description:</strong>
-                                <p>{{ bandInfo.description }}</p>
+                                <p>{{ bandInfo.description || 'No description provided.' }}</p>
                             </div>
                         </div>
                     </template>
@@ -80,11 +82,11 @@
                     <template #content>
                         <div class="members-list">
                             <div v-for="member in bandInfo.members" :key="member.id" class="member-item">
-                                <Avatar :label="member.name.charAt(0)" shape="circle" />
+                                <Avatar :label="member.firstName.charAt(0)" shape="circle" />
                                 <div class="member-info">
-                                    <strong>{{ member.name }}</strong>
+                                    <strong>{{ member.firstName }} {{ member.lastName }}</strong>
                                     <div class="member-role">
-                                        {{ member.instruments.join(', ') }}
+                                        {{ member.instrument || 'N/A' }}
                                         <Tag v-if="member.isLeader" value="Leader" severity="warn" />
                                     </div>
                                 </div>
@@ -142,105 +144,134 @@ import Tag from 'primevue/tag';
 import Avatar from 'primevue/avatar';
 import Dialog from 'primevue/dialog';
 
+// --- Mock User Data (for current band member) ---
+const mockCurrentMemberId = ref('user2'); // Example: Sarah Davis is the current member viewing this
+
+// --- Data Interfaces (aligned with core_db_structure.sql) ---
+interface BandUser { // Based on user table for band members
+    id: string; // user_id
+    firstName: string;
+    lastName: string;
+    instrument?: string | null;
+    isLeader?: boolean; // Derived from band_leader table or a flag
+}
+
+interface BandInfo { // Based on band table
+    id: string; // band_id
+    name: string;
+    genre?: string | null;
+    email?: string | null;
+    phoneNumber?: string | null;
+    description?: string | null;
+    members: BandUser[];
+    // total_events_played and events_played_ytd could be added if needed
+}
+
+interface BandEvent { // Based on event table
+    id: number; // event_id, assuming number for mock data simplicity
+    eventTitle: string;
+    datetime: string; // ISO string
+    location?: string | null;
+    description?: string | null;
+    myAvailability: boolean | null; // true for available, false for not, null for pending/not set by current user
+}
+
+
 // Mock band data
-const bandInfo = ref({
+const bandInfo = ref<BandInfo>({
+    id: 'band123',
     name: 'The Jazz Collective',
     genre: 'Jazz',
-    memberCount: 5,
-    formed: 'January 2023',
+    email: 'jazzcollective@example.com',
+    phoneNumber: '555-JAZZ',
     description: 'A smooth jazz ensemble bringing classic and contemporary sounds to Charlottesville. We focus on improvisation and creating a dynamic live experience.',
     members: [
         {
-            id: 1,
-            name: 'Mike Johnson',
-            instruments: ['Piano', 'Vocals'],
+            id: 'leader1',
+            firstName: 'Mike',
+            lastName: 'Johnson',
+            instrument: 'Piano, Vocals',
             isLeader: true
         },
         {
-            id: 2,
-            name: 'Sarah Davis',
-            instruments: ['Saxophone'],
+            id: 'user2',
+            firstName: 'Sarah',
+            lastName: 'Davis',
+            instrument: 'Saxophone',
             isLeader: false
         },
         {
-            id: 3,
-            name: 'John Doe',
-            instruments: ['Guitar', 'Bass'],
+            id: 'user3',
+            firstName: 'John',
+            lastName: 'Doe',
+            instrument: 'Guitar, Bass',
             isLeader: false
         },
-        {
-            id: 4,
-            name: 'Lisa Williams',
-            instruments: ['Drums'],
-            isLeader: false
-        },
-        {
-            id: 5,
-            name: 'Tom Brown',
-            instruments: ['Trumpet'],
-            isLeader: false
-        }
     ]
 });
 
-const upcomingEvents = ref([
+const upcomingEvents = ref<BandEvent[]>([
     {
         id: 1,
-        name: 'Jazz Night at The Blue Note',
-        date: new Date('2024-06-25'),
-        time: '8:00 PM',
-        venue: 'The Blue Note',
+        eventTitle: 'Jazz Night at The Blue Note',
+        datetime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        location: 'The Blue Note',
         description: 'Weekly jazz night performance. Standard repertoire plus some original compositions.',
-        myAvailability: 'Available'
+        myAvailability: true // Sarah is available
     },
     {
         id: 2,
-        name: 'Summer Music Festival',
-        date: new Date('2024-07-15'),
-        time: '7:00 PM',
-        venue: 'Downtown Amphitheater',
+        eventTitle: 'Summer Music Festival',
+        datetime: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(),
+        location: 'Downtown Amphitheater',
         description: 'Main stage performance at the annual summer festival. 45-minute set.',
-        myAvailability: 'Pending'
+        myAvailability: null // Sarah hasn't responded yet (Pending)
     },
     {
         id: 3,
-        name: 'Private Wedding',
-        date: new Date('2024-08-03'),
-        time: '6:30 PM',
-        venue: 'Riverside Gardens',
+        eventTitle: 'Private Wedding',
+        datetime: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+        location: 'Riverside Gardens',
         description: 'Wedding reception performance. Mix of jazz standards and popular requests.',
-        myAvailability: 'Not Available'
+        myAvailability: false // Sarah is not available
     }
 ]);
 
 const showLeaveDialog = ref(false);
 
 // Utility functions
-const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-        weekday: 'long', 
+const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', { 
+        weekday: 'short', 
         year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+        month: 'short', 
+        day: 'numeric', 
+        hour: 'numeric', 
+        minute: '2-digit' 
     });
 };
 
-const getAvailabilitySeverity = (availability: string) => {
-    switch (availability) {
-        case 'Available': return 'success';
-        case 'Not Available': return 'danger';
-        case 'Pending': return 'warning';
-        default: return 'info';
-    }
+const getAvailabilityText = (availability: boolean | null): string => {
+    if (availability === true) return 'Available';
+    if (availability === false) return 'Not Available';
+    return 'Pending';
+};
+
+const getAvailabilitySeverity = (availability: boolean | null) => {
+    if (availability === true) return 'success';
+    if (availability === false) return 'danger';
+    return 'warning'; // For null (Pending)
 };
 
 // Actions
-const setAvailability = (eventId: number, availability: string) => {
+const setAvailability = (eventId: number, availability: boolean) => {
     const event = upcomingEvents.value.find(e => e.id === eventId);
     if (event) {
         event.myAvailability = availability;
-        console.log(`Set availability for event ${eventId} to ${availability}`);
-        // Would save to backend
+        console.log(`User ${mockCurrentMemberId.value} set availability for event ${eventId} to ${availability}`);
+        // In a real app, this would trigger an API call to update band_member_event_availability table
+        // with user_id, band_id, event_id, is_available
     }
 };
 
@@ -249,9 +280,13 @@ const confirmLeaveBand = () => {
 };
 
 const leaveBand = () => {
-    console.log('Leaving band:', bandInfo.value.name);
+    console.log(`User ${mockCurrentMemberId.value} is leaving band: ${bandInfo.value.name}`);
     showLeaveDialog.value = false;
-    // Would leave band and redirect to join/create band page
+    // In a real app, this would trigger an API call to:
+    // 1. Remove user from band_member table (or update their role)
+    // 2. Add a record to band_membership_history table with action 'left'
+    // Then, likely redirect the user (e.g., to /join-create-band or home)
+    // For mock: router.push('/'); 
 };
 </script>
 

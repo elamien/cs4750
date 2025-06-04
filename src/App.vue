@@ -189,6 +189,7 @@
 import { ref, computed, onMounted } from "vue";
 import { RouterView, useRouter } from 'vue-router';
 import Menubar from 'primevue/menubar';
+import type { MenuItem } from 'primevue/menuitem';
 import Badge from 'primevue/badge';
 import InputText from 'primevue/inputtext';
 import Avatar from 'primevue/avatar';
@@ -205,6 +206,14 @@ const router = useRouter();
 // User state - this would typically come from a store/auth service
 const isSignedIn = ref(false);
 const userRole = ref<'anonymous' | 'general' | 'band_member' | 'band_leader' | 'exec'>('anonymous');
+
+// NEW: Mock user profile details that might influence UI, based on SQL schema
+const mockUserProfile = ref({
+    userId: null as number | null,
+    hasCreatedBand: false, // Relevant for 'general' role, from general_user table
+    hasPendingBandRequest: false, // Relevant for 'general' role, from general_user table
+    bandId: null as number | null, // If they are a member or leader of a band
+});
 
 // Theme state
 const isDarkMode = ref(false);
@@ -227,7 +236,7 @@ const authForm = ref({
 });
 
 // Menu items for anonymous users (not signed in)
-const anonymousItems = [
+const anonymousItems: MenuItem[] = [
     {
         label: 'Browse Bands',
         icon: 'pi pi-users',
@@ -238,10 +247,12 @@ const anonymousItems = [
         icon: 'pi pi-calendar',
         route: '/browse/events'
     }
+    // No Sign In button here, it's handled separately in the #end template
 ];
 
-// Base menu items for all signed-in users
-const baseSignedInItems = [
+// Base menu items for all signed-in users (except anon)
+// According to permissions: Edit account, Browse bands/events, Save favorites, Create events, Accept fill-in requests
+const baseSignedInItems: MenuItem[] = [
     {
         label: 'Browse Bands',
         icon: 'pi pi-users',
@@ -252,72 +263,77 @@ const baseSignedInItems = [
         icon: 'pi pi-calendar',
         route: '/browse/events'
     },
-    {
-        label: 'Favorites',
-        icon: 'pi pi-heart',
-        route: '/favorites'
-    },
+    // Favorites is a dedicated icon button in navbar-end for signed-in users
     {
         label: 'Create Event',
         icon: 'pi pi-calendar-plus',
         route: '/create-event'
     },
     {
-        label: 'Fill-In Requests',
+        label: 'Fill-In Opportunities', // Renamed from "Fill-In Requests" for clarity as this is where users find them
         icon: 'pi pi-bell',
         route: '/fill-in-requests',
-        badge: '3' // Mock notification count
+        // badge: '3' // Mock notification count - can be added if actual notifications are implemented
     }
 ];
 
 // Menu items specific to general users
-const generalItems = [
+// Permissions: Create 1 band OR Request to join 1 band (handled by JoinCreateBandView)
+const generalUserExtraItems: MenuItem[] = [
     {
-        label: 'Join/Create Band',
+        label: 'Join or Create Band',
         icon: 'pi pi-plus-circle',
-        route: '/join-create-band'
+        route: '/join-create-band',
+        // This view should handle the logic of "OR" based on user's status (has_created_band, has_pending_band_request)
     }
 ];
 
 // Menu items for band members
-const bandMemberItems = [
+// Permissions: Leave band, View band approved event(s) and select (available vs not)
+const bandMemberExtraItems: MenuItem[] = [
     {
-        label: 'My Band',
+        label: 'My Band Dashboard', // For viewing events, setting availability, leaving band
         icon: 'pi pi-users',
-        route: '/my-band'
+        route: '/my-band' // MyBandView.vue
     }
 ];
 
-// Menu items for band leaders (includes band management)
-const bandLeaderItems = [
+// Menu items for band leaders
+// Permissions: Create/Delete 1 band or Transfer lead, View/Accept/Deny event/member requests, Create fill-in, Remove members
+const bandLeaderExtraItems: MenuItem[] = [
     {
-        label: 'My Band',
-        icon: 'pi pi-users',
+        label: 'Manage My Band',
+        icon: 'pi pi-cog', // Changed icon
         items: [
             {
-                label: 'Band Info',
+                label: 'Band Dashboard', // Link to MyBandView for general member actions too
+                icon: 'pi pi-desktop',
+                route: '/my-band'
+            },
+            {
+                label: 'Edit Band Info',
                 icon: 'pi pi-info-circle',
                 route: '/my-band/info'
             },
             {
-                label: 'Members',
+                label: 'Manage Members', // View, Add (via requests), Remove
                 icon: 'pi pi-users',
                 route: '/my-band/members'
             },
             {
-                label: 'Event Requests',
+                label: 'Event Applications', // Bands apply to events, or are requested
                 icon: 'pi pi-calendar-plus',
                 route: '/my-band/event-requests',
-                badge: '2'
+                // badge: '2'
             },
             {
-                label: 'Member Requests',
+                label: 'Membership Requests',
                 icon: 'pi pi-user-plus',
                 route: '/my-band/member-requests',
-                badge: '1'
+                // badge: '1'
             },
             {
-                label: 'Create Fill-In Request',
+                label: 'Post Fill-In Request', // Leader creates a fill-in request for their band
                 icon: 'pi pi-send',
                 route: '/my-band/create-fill-in'
             }
@@ -325,12 +341,13 @@ const bandLeaderItems = [
     }
 ];
 
-// Menu items for executives
-const execItems = [
-    {
-        label: 'Join/Create Band',
+// Menu items for WXTJ executives
+// Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
+const wxtjExecExtraItems: MenuItem[] = [
+     {
+        label: 'Join or Create Band', // Also allowed for Execs
         icon: 'pi pi-plus-circle',
-        route: '/join-create-band'
+        route: '/join-create-band',
     },
     {
         label: 'Admin Panel',
@@ -350,43 +367,44 @@ const execItems = [
                 label: 'Manage Events',
                 icon: 'pi pi-calendar',
                 route: '/admin/events'
+            },
+            {
+                label: 'System Reports', // Added based on AdminReportsView
+                icon: 'pi pi-chart-bar',
+                route: '/admin/reports'
             }
         ]
     }
 ];
 
 // Dev-only items
-const devItems = import.meta.env.DEV ? [] : [];
+const devItems: MenuItem[] = import.meta.env.DEV ? [] : [];
 
 // Computed menu items based on user role
-const menuItems = computed(() => {
+const menuItems = computed<MenuItem[]>(() => {
     if (!isSignedIn.value) {
         return [...anonymousItems, ...devItems];
     }
     
-    let currentBaseItems = [...baseSignedInItems];
-    
-    if (userRole.value === 'exec') {
-        // For execs, remove the text-based "Favorites" from the main menu
-        // as they have the dedicated heart icon button.
-        currentBaseItems = currentBaseItems.filter(item => item.label !== 'Favorites');
-    }
-    
-    let items = [...currentBaseItems];
+    let items = [...baseSignedInItems]; // Start with items all signed-in users get
     
     switch (userRole.value) {
         case 'general':
-            items = [...items, ...generalItems];
+            items = [...items, ...generalUserExtraItems];
             break;
         case 'band_member':
-            items = [...items, ...bandMemberItems];
+            // Band members might also have general user capabilities if not exclusively a band member
+            // For now, assume roles are somewhat exclusive for menu generation.
+            // If a band member can also create/join *another* band, that needs clarification.
+            // Based on current permissions, MyBand is their primary band-related action.
+            items = [...items, ...bandMemberExtraItems];
             break;
         case 'band_leader':
-            items = [...items, ...bandLeaderItems];
+            items = [...items, ...bandLeaderExtraItems];
             break;
         case 'exec':
-            // execItems are added to the (potentially filtered) base items
-            items = [...items, ...execItems];
+            // Execs get their specific items. "Join or Create Band" is part of execItems.
+            items = [...items, ...wxtjExecExtraItems];
             break;
     }
     
@@ -394,7 +412,7 @@ const menuItems = computed(() => {
 });
 
 // Profile menu items
-const profileMenuItems = computed(() => [
+const profileMenuItems = computed<MenuItem[]>(() => [
     {
         label: 'Account Info',
         icon: 'pi pi-user',
@@ -437,12 +455,28 @@ const toggleSignIn = () => {
     isSignedIn.value = !isSignedIn.value;
     if (!isSignedIn.value) {
         userRole.value = 'anonymous';
+        mockUserProfile.value = { userId: null, hasCreatedBand: false, hasPendingBandRequest: false, bandId: null };
+    } else {
+        // Default to general user on mock sign-in, dev panel can change it
+        userRole.value = 'general';
+        mockUserProfile.value.userId = Date.now(); // Mock user ID
     }
 };
 
 const setUserRole = (role: 'general' | 'band_member' | 'band_leader' | 'exec') => {
     if (isSignedIn.value) {
         userRole.value = role;
+        // Simulate some role-specific profile details
+        if (role === 'band_member' || role === 'band_leader') {
+            mockUserProfile.value.bandId = mockUserProfile.value.bandId || 123; // Mock band ID
+            mockUserProfile.value.hasCreatedBand = false;
+            mockUserProfile.value.hasPendingBandRequest = false;
+        } else if (role === 'general') {
+            mockUserProfile.value.bandId = null;
+            // reset these flags, JoinCreateBandView will manage them
+            // mockUserProfile.value.hasCreatedBand = false; 
+            // mockUserProfile.value.hasPendingBandRequest = false;
+        }
     }
 };
 
@@ -456,6 +490,9 @@ const handleSignIn = () => {
     // Mock successful sign in
     isSignedIn.value = true;
     userRole.value = 'general'; // Default role for new users
+    mockUserProfile.value.userId = Date.now(); // Mock user ID
+    mockUserProfile.value.hasCreatedBand = false; // Reset for new general user
+    mockUserProfile.value.hasPendingBandRequest = false;
     showAuthModal.value = false;
     
     // Reset form
@@ -473,6 +510,9 @@ const handleSignUp = () => {
     // Mock successful sign up - redirect to onboarding for new users
     isSignedIn.value = true;
     userRole.value = 'general'; // New users start as general
+    mockUserProfile.value.userId = Date.now(); // Mock user ID
+    mockUserProfile.value.hasCreatedBand = false;
+    mockUserProfile.value.hasPendingBandRequest = false;
     showAuthModal.value = false;
     
     // Reset form and redirect to onboarding for first-time users
@@ -517,7 +557,8 @@ if (import.meta.env.DEV) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).getDevState = () => ({ 
         isSignedIn: isSignedIn.value, 
-        userRole: userRole.value 
+        userRole: userRole.value,
+        profile: mockUserProfile.value // Expose mock profile too
     });
     
     console.log('🚧 Developer Controls Available:');

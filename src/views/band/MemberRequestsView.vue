@@ -1,13 +1,13 @@
 <template>
     <div class="member-requests">
         <div class="header">
-            <h1>Member Requests</h1>
-            <p>Review musicians who want to join your band</p>
+            <h1>Membership Applications</h1>
+            <p>Review and manage requests from musicians wanting to join your band.</p>
         </div>
         
         <Card>
             <template #content>
-                <p>Band leader view for accepting/denying band member requests.</p>
+                <p>Band Leader view for managing incoming membership requests. Functionality includes viewing applicant details, and accepting or denying their request to join the band.</p>
                 <p><em>This is a placeholder view. Full functionality coming soon.</em></p>
             </template>
         </Card>

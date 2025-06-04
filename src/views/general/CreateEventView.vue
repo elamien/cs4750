@@ -10,22 +10,29 @@
                 <div class="form-grid">
                     <div class="field">
                         <label for="eventName">Event Name</label>
-                        <InputText id="eventName" v-model="eventForm.name" placeholder="Enter event name" />
+                        <InputText id="eventName" v-model="eventForm.eventTitle" placeholder="Enter event name" />
                     </div>
                     
                     <div class="field">
                         <label for="venue">Venue</label>
-                        <InputText id="venue" v-model="eventForm.venue" placeholder="Event location" />
+                        <InputText id="venue" v-model="eventForm.location" placeholder="Event location" />
+                    </div>
+
+                    <div class="field">
+                        <label for="genre">Genre</label>
+                        <Dropdown 
+                            id="genre" 
+                            v-model="eventForm.genre" 
+                            :options="genreOptions" 
+                            optionLabel="name" 
+                            optionValue="value"
+                            placeholder="Select event genre"
+                        />
                     </div>
                     
                     <div class="field">
                         <label for="date">Date</label>
-                        <Calendar id="date" v-model="eventForm.date" placeholder="Select date" />
-                    </div>
-                    
-                    <div class="field">
-                        <label for="time">Time</label>
-                        <InputText id="time" v-model="eventForm.time" placeholder="Event time" />
+                        <Calendar id="date" v-model="eventForm.datetime" placeholder="Select date and time" showTime hourFormat="12" />
                     </div>
                     
                     <div class="field span-2">
@@ -55,34 +62,83 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Button from 'primevue/button';
+import Dropdown from 'primevue/dropdown';
 
-const eventForm = ref({
-    name: '',
-    venue: '',
-    date: null,
-    time: '',
-    description: ''
+// Mock current user ID - in a real app, this would come from auth state
+const mockCurrentUserId = ref(1); // Example user_id
+
+interface EventForm {
+    eventTitle: string;
+    location: string | null;
+    datetime: Date | null; // Changed to Date | null for Calendar v-model
+    genre: string | null;
+    description: string;
+    status: 'open' | 'filled' | 'expired'; // Default to 'open' on creation
+    user_id: number | null; // Creator of the event
+}
+
+const eventForm = ref<EventForm>({
+    eventTitle: '',
+    location: '',
+    datetime: null, // Stays null, but now typed as Date | null
+    genre: null,
+    description: '',
+    status: 'open',
+    user_id: mockCurrentUserId.value
 });
 
+const genreOptions = ref([
+    { name: 'Rock', value: 'Rock' },
+    { name: 'Jazz', value: 'Jazz' },
+    { name: 'Blues', value: 'Blues' },
+    { name: 'Folk', value: 'Folk' },
+    { name: 'Electronic', value: 'Electronic' },
+    { name: 'Pop', value: 'Pop' },
+    { name: 'Country', value: 'Country' },
+    { name: 'Hip Hop', value: 'Hip Hop' },
+    { name: 'Classical', value: 'Classical' },
+    { name: 'Other', value: 'Other' }
+]);
+
 const createEvent = () => {
-    console.log('Creating event:', eventForm.value);
-    // Would submit to backend
+    // Ensure user_id is set (should be from logged-in user)
+    if (!eventForm.value.user_id) {
+        console.error("User ID is missing, cannot create event.");
+        // Show error toast to user
+        return;
+    }
+    // Convert date to ISO string if it's a Date object from Calendar
+    let finalDateTimeISO: string | null = null;
+    if (eventForm.value.datetime instanceof Date) {
+        finalDateTimeISO = eventForm.value.datetime.toISOString();
+    }
+
+    const eventDataToSubmit = {
+        ...eventForm.value,
+        datetime: finalDateTimeISO, // Use the ISO string version
+        status: 'open' // Always 'open' on creation from this form
+    };
+    console.log('Creating event:', eventDataToSubmit);
+    // Would submit to backend here
+    // After successful submission, potentially reset form or navigate
 };
 
 const resetForm = () => {
     eventForm.value = {
-        name: '',
-        venue: '',
-        date: null,
-        time: '',
-        description: ''
+        eventTitle: '',
+        location: '',
+        datetime: null,
+        genre: null,
+        description: '',
+        status: 'open',
+        user_id: mockCurrentUserId.value // Reset with current user ID
     };
 };
 </script>
 
 <style scoped>
 .create-event {
-    max-width: 600px;
+    max-width: 700px; /* Increased width for better layout with genre */
     margin: 0 auto;
     padding: 2rem;
 }
@@ -95,7 +151,7 @@ const resetForm = () => {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
+    gap: 1.5rem; /* Increased gap slightly */
     margin-bottom: 2rem;
 }
 

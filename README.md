@@ -1,6 +1,13 @@
 # cs4750
 
 This template should help get you started developing with Vue 3 in Vite.
+
+## Prerequisites
+
+Before you begin, ensure you have Node.js installed on your system. This project requires Node.js version 20.0.0 or higher (which includes npm 10.0.0 or higher).
+
+- You can download Node.js from [nodejs.org](https://nodejs.org/).
+
 You mainly need to do:
 ```sh
 npm i
@@ -18,6 +25,25 @@ to get started!
 ## Type Support for `.vue` Imports in TS
 
 TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+
+## MySQL Database Setup
+
+This project uses MySQL for the database. You'll need:
+1. MySQL installed (via Homebrew on macOS)
+2. A configured login path for easy access
+
+### Current Setup
+We use MySQL login paths for secure credential management. The project expects a login path named `local`:
+
+```sh
+# Check your configured login paths
+mysql_config_editor print --all
+
+# Connect to MySQL using the login path
+mysql --login-path=local
+```
+
+> 🔄 Coming Soon: Instructions for setting up your own `local` login path configuration!
 
 ## Customize configuration
 
@@ -40,7 +66,6 @@ npm run dev
 ```sh
 npm run build
 ```
-
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
@@ -71,3 +96,4 @@ npm run test:e2e -- --debug
 ```sh
 npm run lint
 ```
+

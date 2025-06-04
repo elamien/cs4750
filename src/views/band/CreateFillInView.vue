@@ -1,13 +1,13 @@
 <template>
     <div class="create-fill-in">
         <div class="header">
-            <h1>Create Fill-In Request</h1>
-            <p>Find substitute musicians for your events</p>
+            <h1>Post a Fill-In Request</h1>
+            <p>Need a substitute musician for an upcoming event? Post a request here.</p>
         </div>
         
         <Card>
             <template #content>
-                <p>Band leader view for creating fill-in requests when regular members are unavailable.</p>
+                <p>Band Leader view for creating fill-in requests when a regular band member is unavailable for a scheduled event. Specify the event, instrument needed, and a description of the requirements.</p>
                 <p><em>This is a placeholder view. Full functionality coming soon.</em></p>
             </template>
         </Card>

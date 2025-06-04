@@ -12,20 +12,11 @@
                     <Dropdown 
                         id="genre"
                         v-model="selectedGenre" 
-                        :options="genres" 
+                        :options="genreOptions" 
                         optionLabel="name" 
+                        optionValue="value"
                         placeholder="All Genres"
-                        class="w-full"
-                    />
-                </div>
-                <div class="field">
-                    <label for="slot">Time Slot</label>
-                    <Dropdown 
-                        id="slot"
-                        v-model="selectedSlot" 
-                        :options="timeSlots" 
-                        optionLabel="name" 
-                        placeholder="Any Time"
+                        showClear
                         class="w-full"
                     />
                 </div>
@@ -34,7 +25,7 @@
                     <InputText 
                         id="search"
                         v-model="searchTerm" 
-                        placeholder="Search bands..."
+                        placeholder="Search bands by name or description..."
                         class="w-full"
                     />
                 </div>
@@ -44,14 +35,16 @@
         <div class="bands-grid">
             <Card v-for="band in filteredBands" :key="band.id" class="band-card">
                 <template #header>
-                    <img :src="band.image" :alt="band.name" class="band-image" />
+                    <img :src="band.mockImage || 'https://picsum.photos/400/200?random=' + band.id" :alt="band.name" class="band-image" />
                 </template>
                 <template #title>{{ band.name }}</template>
-                <template #subtitle>{{ band.genre }} • {{ band.members }} members</template>
+                <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members (mocked)</template>
                 <template #content>
-                    <p>{{ band.description }}</p>
-                    <div class="band-tags">
-                        <Tag v-for="tag in band.tags" :key="tag" :value="tag" severity="secondary" />
+                    <p class="band-description">{{ band.description || 'No description available.' }}</p>
+                    <div class="band-details">
+                        <span v-if="band.email"><i class="pi pi-envelope"></i> {{ band.email }}</span>
+                        <span v-if="band.phoneNumber"><i class="pi pi-phone"></i> {{ band.phoneNumber }}</span>
+                        <span><i class="pi pi-calendar-check"></i> Events Played: {{ band.totalEventsPlayed ?? 0 }}</span>
                     </div>
                 </template>
                 <template #footer>
@@ -79,105 +72,115 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
 
-// Mock data
-const isSignedIn = ref(true); // This would come from auth store
+const router = useRouter();
 
-const genres = ref([
-    { name: 'Rock', value: 'rock' },
-    { name: 'Jazz', value: 'jazz' },
-    { name: 'Blues', value: 'blues' },
-    { name: 'Folk', value: 'folk' },
-    { name: 'Electronic', value: 'electronic' },
-    { name: 'Pop', value: 'pop' }
+const isSignedIn = ref(true);
+
+interface BandListItem {
+    id: string | number;
+    name: string;
+    genre?: string | null;
+    description?: string | null;
+    email?: string | null;
+    phoneNumber?: string | null;
+    totalEventsPlayed?: number;
+    memberCount: number;
+    mockImage?: string;
+    isFavorite: boolean;
+}
+
+const genreOptions = ref([
+    { name: 'Rock', value: 'Rock' },
+    { name: 'Jazz', value: 'Jazz' },
+    { name: 'Blues', value: 'Blues' },
+    { name: 'Folk', value: 'Folk' },
+    { name: 'Electronic', value: 'Electronic' },
+    { name: 'Pop', value: 'Pop' },
+    { name: 'Country', value: 'Country' },
+    { name: 'Other', value: 'Other' }
 ]);
 
-const timeSlots = ref([
-    { name: 'Morning (9-12 PM)', value: 'morning' },
-    { name: 'Afternoon (12-5 PM)', value: 'afternoon' },
-    { name: 'Evening (5-9 PM)', value: 'evening' },
-    { name: 'Night (9+ PM)', value: 'night' }
-]);
-
-const bands = ref([
+const bands = ref<BandListItem[]>([
     {
-        id: 1,
+        id: 'band1',
         name: 'The Jazz Collective',
         genre: 'Jazz',
-        members: 5,
+        memberCount: 5,
         description: 'A smooth jazz ensemble bringing classic and contemporary sounds to Charlottesville.',
-        tags: ['Smooth Jazz', 'Instrumental', 'Available Weekends'],
-        image: 'https://picsum.photos/400/200?random=1',
+        email: 'jazz.collective@example.com',
+        phoneNumber: '555-1234',
+        totalEventsPlayed: 25,
+        mockImage: 'https://picsum.photos/400/200?random=1',
         isFavorite: false,
-        timeSlot: 'evening'
     },
     {
-        id: 2,
+        id: 'band2',
         name: 'Blue Ridge Rockers',
         genre: 'Rock',
-        members: 4,
+        memberCount: 4,
         description: 'High-energy rock band specializing in classic and modern rock hits.',
-        tags: ['Classic Rock', 'Modern Rock', 'Full Band'],
-        image: 'https://picsum.photos/400/200?random=2',
+        email: 'brr@example.com',
+        phoneNumber: '555-5678',
+        totalEventsPlayed: 150,
+        mockImage: 'https://picsum.photos/400/200?random=2',
         isFavorite: true,
-        timeSlot: 'night'
     },
     {
-        id: 3,
+        id: 'band3',
         name: 'Acoustic Duo',
         genre: 'Folk',
-        members: 2,
+        memberCount: 2,
         description: 'Intimate acoustic performances perfect for smaller venues and events.',
-        tags: ['Acoustic', 'Vocals', 'Covers & Originals'],
-        image: 'https://picsum.photos/400/200?random=3',
+        email: null,
+        phoneNumber: '555-9012',
+        totalEventsPlayed: 78,
+        mockImage: 'https://picsum.photos/400/200?random=3',
         isFavorite: false,
-        timeSlot: 'afternoon'
     },
     {
-        id: 4,
+        id: 'band4',
         name: 'Electronic Fusion',
         genre: 'Electronic',
-        members: 3,
+        memberCount: 3,
         description: 'Cutting-edge electronic music with live instrumental accompaniment.',
-        tags: ['EDM', 'Live Mixing', 'Dance'],
-        image: 'https://picsum.photos/400/200?random=4',
+        email: 'efusion@example.com',
+        phoneNumber: null,
+        totalEventsPlayed: 40,
+        mockImage: 'https://picsum.photos/400/200?random=4',
         isFavorite: false,
-        timeSlot: 'night'
     }
 ]);
 
-// Filters
-const selectedGenre = ref(null);
-const selectedSlot = ref(null);
+const selectedGenre = ref<string | null>(null);
 const searchTerm = ref('');
 
 const filteredBands = computed(() => {
     return bands.value.filter(band => {
-        const matchesGenre = !selectedGenre.value || band.genre === selectedGenre.value.name;
-        const matchesSlot = !selectedSlot.value || band.timeSlot === selectedSlot.value.value;
+        const matchesGenre = !selectedGenre.value || band.genre === selectedGenre.value;
         const matchesSearch = !searchTerm.value || 
             band.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-            band.description.toLowerCase().includes(searchTerm.value.toLowerCase());
+            (band.description && band.description.toLowerCase().includes(searchTerm.value.toLowerCase()));
         
-        return matchesGenre && matchesSlot && matchesSearch;
+        return matchesGenre && matchesSearch;
     });
 });
 
-// Actions
-const viewBandDetails = (bandId: number) => {
+const viewBandDetails = (bandId: string | number) => {
     console.log('Viewing band details for:', bandId);
-    // Would navigate to band detail page
+    router.push(`/browse/bands/${bandId}`);
 };
 
-const toggleFavorite = (bandId: number) => {
+const toggleFavorite = (bandId: string | number) => {
     const band = bands.value.find(b => b.id === bandId);
     if (band) {
         band.isFavorite = !band.isFavorite;
+        console.log(`Band ${bandId} favorite status: ${band.isFavorite}`);
     }
 };
 </script>
@@ -214,7 +217,7 @@ const toggleFavorite = (bandId: number) => {
 
 .filter-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
 }
 
@@ -237,25 +240,50 @@ const toggleFavorite = (bandId: number) => {
 
 .band-card {
     height: fit-content;
+    display: flex;
+    flex-direction: column;
+}
+
+.band-card .p-card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .band-image {
     width: 100%;
-    height: 200px;
+    height: 180px;
     object-fit: cover;
 }
 
-.band-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
+.band-description {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+    flex-grow: 1;
+}
+
+.band-details {
+    font-size: 0.85rem;
+    color: var(--p-text-color);
+    margin-bottom: 1rem;
+}
+
+.band-details span {
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.band-details i {
+    margin-right: 0.5rem;
+    color: var(--p-primary-color);
 }
 
 .band-actions {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    margin-top: auto;
 }
 
 .no-results {
@@ -266,5 +294,11 @@ const toggleFavorite = (bandId: number) => {
 
 .no-results h3 {
     margin: 1rem 0 0.5rem;
+}
+
+@media (max-width: 600px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
 }
 </style> 

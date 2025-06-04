@@ -49,7 +49,7 @@
                 <Column header="Desc." style="width: 5%; min-width: 50px; text-align: center;"> 
                     <template #body="slotProps">
                         <i class="pi pi-info-circle description-tooltip-icon" 
-                           v-tooltip.top="{ value: slotProps.data.description, showDelay: 300, hideDelay: 0 }"
+                           v-tooltip.top="{ value: slotProps.data.fillInDescription, showDelay: 300, hideDelay: 0 }"
                            tabindex="0" 
                         />
                     </template>
@@ -65,17 +65,20 @@
 
                 <Column header="Action" style="width: 18%; min-width: 150px; text-align: center;">
                     <template #body="slotProps">
-                        <div v-if="slotProps.data.status === 'open'">
+                        <div v-if="slotProps.data.status === 'pending'">
                             <Button 
                                 label="Offer to Fill In"
                                 icon="pi pi-user-plus"
                                 size="small"
                                 @click="handleOfferToFillIn(slotProps.data)"
-                                :disabled="slotProps.data.originalMemberId === 'user5'" /> <!-- Mock: Disable if current user (user5) is original -->
-                                <small v-if="slotProps.data.originalMemberId === 'user5'" class="text-muted-color">This is your request</small>
+                                :disabled="slotProps.data.fillInMemberId === mockCurrentUser.id" /> 
+                                <small v-if="slotProps.data.fillInMemberId === mockCurrentUser.id" class="text-muted-color">This is your request</small>
                         </div>
-                        <div v-else>
-                            <span>Filled by: <strong>{{ slotProps.data.filledByUserName }}</strong></span>
+                        <div v-else-if="slotProps.data.status === 'accepted'">
+                            <span>Filled by: <strong>{{ slotProps.data.acceptedByUserName }}</strong></span>
+                        </div>
+                        <div v-else-if="slotProps.data.status === 'rejected'">
+                            <Tag value="REJECTED" severity="danger" />
                         </div>
                     </template>
                 </Column>
@@ -108,46 +111,50 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// --- Mock Data ---
-interface User {
-  id: string;
-  name: string;
+// --- Mock Current User (simulating logged-in user from App.vue or auth store) ---
+const mockCurrentUser = ref({ id: 'user5', name: 'Edward Scissorhands' }); // Per permissions, any signed-in user can accept
+
+// --- Data Interfaces (aligned with core_db_structure.sql) ---
+interface User { // From user table
+  id: string; // Corresponds to user_id
+  name: string; // Concatenation of first_name, last_name
 }
 
-interface Band {
-  id: string;
+interface Band { // From band table
+  id: string; // Corresponds to band_id
   name: string;
   genre: string;
 }
 
-interface Event {
-  id: string;
-  bandId: string;
-  name: string;
-  date: string; // ISO string
-  venue: string;
+interface Event { // From event table
+  id: string; // Corresponds to event_id
+  bandId: string; // Assumed, though not directly in fill_in_request, but needed for context
+  name: string; // Corresponds to event_title
+  date: string; // Corresponds to datetime
+  venue: string; // Corresponds to location
 }
 
-interface FillInRequest {
-  id: string;
+interface FillInRequest { // From fill_in_request table
+  id: string; // Corresponds to fill_in_request_id
   bandId: string;
   eventId: string;
-  instrumentNeeded: string;
-  description: string;
-  originalMemberId: string; // Member needing to be filled in for
-  datePosted: string; // ISO string
-  status: 'open' | 'filled';
-  filledByMemberId?: string | null; // ID of the member who filled the request
-  // requestedByMemberId: string; // Band leader/member who created it - useful for context if needed later
+  instrumentNeeded: string; // Not directly in fill_in_request table, but essential info. Assume it's part of description or a related lookup. For simplicity, keeping it.
+  fillInDescription: string; // Corresponds to fill_in_description
+  fillInMemberId: string; // Corresponds to fill_in_member_id (original member)
+  timeCreated: string; // Corresponds to time_created (ISO string)
+  status: 'pending' | 'accepted' | 'rejected';
+  acceptedByUserId?: string | null; // Corresponds to accepted_by_user_id
+  timeResponded?: string | null; // Corresponds to time_responded (ISO string)
 }
 
+// --- Mock Data ---
 const mockUsers = ref<User[]>([
   { id: 'user1', name: 'Alice Wonderland' },
   { id: 'user2', name: 'Bob The Builder' },
   { id: 'user3', name: 'Charlie Chaplin' },
   { id: 'user4', name: 'Diana Prince' },
-  { id: 'user5', name: 'Edward Scissorhands' },
-  { id: 'leader1', name: 'Captain Kirk' }, // A band leader
+  { id: 'user5', name: 'Edward Scissorhands' }, // Current mock user
+  { id: 'leader1', name: 'Captain Kirk' }, 
 ]);
 
 const mockBands = ref<Band[]>([
@@ -167,32 +174,33 @@ const fillInRequests = ref<FillInRequest[]>([
     id: 'req1',
     bandId: 'band1',
     eventId: 'event1',
-    instrumentNeeded: 'Drums',
-    description: 'Our drummer spontaneously decided to join a silent retreat. Need a solid rock drummer for our upcoming festival slot. Originals and some classic rock covers.',
-    originalMemberId: 'user1', // Alice was the original drummer
-    datePosted: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'open',
+    instrumentNeeded: 'Drums', // Keeping for UI, though not in DB table directly
+    fillInDescription: 'Our drummer spontaneously decided to join a silent retreat. Need a solid rock drummer for our upcoming festival slot. Originals and some classic rock covers.',
+    fillInMemberId: 'user1', // Alice was the original drummer
+    timeCreated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
   },
   {
     id: 'req2',
     bandId: 'band2',
     eventId: 'event2',
     instrumentNeeded: 'Upright Bass',
-    description: 'Seeking a skilled upright bass player for a sophisticated jazz evening. Must be able_to read charts and improvise.',
-    originalMemberId: 'user2', // Bob
-    datePosted: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'filled',
-    filledByMemberId: 'user4', // Diana filled this
+    fillInDescription: 'Seeking a skilled upright bass player for a sophisticated jazz evening. Must be able_to read charts and improvise.',
+    fillInMemberId: 'user2', // Bob
+    timeCreated: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'accepted',
+    acceptedByUserId: 'user4', // Diana filled this
+    timeResponded: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'req3',
     bandId: 'band1',
     eventId: 'event3',
     instrumentNeeded: 'Keyboard (Synth)',
-    description: 'Keyboardist needed for a retro 80s night. Think Depeche Mode, New Order. Must have own vintage synth sounds or good emulations.',
-    originalMemberId: 'user3', // Charlie
-    datePosted: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'open',
+    fillInDescription: 'Keyboardist needed for a retro 80s night. Think Depeche Mode, New Order. Must have own vintage synth sounds or good emulations.',
+    fillInMemberId: 'user3', // Charlie
+    timeCreated: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
   },
 ]);
 
@@ -219,21 +227,25 @@ const formatDate = (dateString?: string): string => {
   });
 };
 
-const getStatusSeverity = (status: 'open' | 'filled') => {
-  return status === 'open' ? 'success' : 'secondary';
+const getStatusSeverity = (status: FillInRequest['status']) => {
+  switch (status) {
+    case 'pending': return 'success'; // 'pending' is the new 'open'
+    case 'accepted': return 'secondary'; // 'accepted' is the new 'filled'
+    case 'rejected': return 'danger';
+    default: return 'info';
+  }
 };
 
 // --- Actions ---
 const handleOfferToFillIn = (request: FillInRequest) => {
-  // In a real app, this would involve checking user eligibility,
-  // current role, if they are already in the band, etc.
-  // Then, an API call would be made.
-  // For mock purposes, let's assume 'user5' (Edward) is offering.
-  const offeringUserId = 'user5'; 
+  // Permission: "All users ROLE (except anon) can: Accept any pending fill in requests"
+  // This component view should ideally only be shown to signed-in users.
+  // The button is disabled if the current user is the original member.
   
-  // Prevent offering if already filled or if the user is the original member
-  if (request.status === 'filled' || request.originalMemberId === offeringUserId) {
-    console.warn('Cannot offer for this request.');
+  const offeringUserId = mockCurrentUser.value.id; 
+  
+  if (request.status !== 'pending' || request.fillInMemberId === offeringUserId) {
+    console.warn('Cannot offer for this request or already handled.');
     // Optionally, show a toast message to the user
     return;
   }
@@ -241,21 +253,21 @@ const handleOfferToFillIn = (request: FillInRequest) => {
   console.log(`User ${getUserName(offeringUserId)} offered to fill in for request ID: ${request.id}`);
   const reqIndex = fillInRequests.value.findIndex(r => r.id === request.id);
   if (reqIndex > -1) {
-    fillInRequests.value[reqIndex].status = 'filled';
-    fillInRequests.value[reqIndex].filledByMemberId = offeringUserId;
+    fillInRequests.value[reqIndex].status = 'accepted';
+    fillInRequests.value[reqIndex].acceptedByUserId = offeringUserId;
+    fillInRequests.value[reqIndex].timeResponded = new Date().toISOString();
     // In a real app, you might want to show a success message (e.g., PrimeVue Toast)
-    // alert('Your offer has been submitted! The band leader will be notified.');
+    // alert('Your offer has been submitted! The band leader will be notified.'); 
+    // The SQL implies the band leader creates the request, any user can accept.
   }
 };
 
 const viewBandDetails = (bandId: string) => {
-  // For now, just log. In a real app, this could navigate to a band profile page.
   console.log('View band details for:', bandId);
-  // Example navigation: router.push(`/browse/bands/${bandId}`);
+  // router.push(`/browse/bands/${bandId}`);
 };
 
 const viewEventDetails = (eventId: string) => {
-  // For now, just log. In a real app, this could navigate to an event details page.
   console.log('View event details for:', eventId);
 };
 
@@ -264,23 +276,18 @@ const displayRequests = computed(() => {
   return fillInRequests.value.map(req => {
     const event = getEventDetails(req.eventId);
     return {
-      ...req,
+      ...req, // Spread the original request object
       bandName: getBandName(req.bandId),
       eventName: event ? event.name : 'Unknown Event',
       eventDate: event ? formatDate(event.date) : 'N/A',
       eventVenue: event ? event.venue : 'N/A',
-      originalMemberName: getUserName(req.originalMemberId),
-      filledByUserName: req.status === 'filled' ? getUserName(req.filledByMemberId) : undefined,
-      postedDateFormatted: formatDate(req.datePosted)
+      originalMemberName: getUserName(req.fillInMemberId), // Use fillInMemberId
+      acceptedByUserName: req.status === 'accepted' ? getUserName(req.acceptedByUserId) : undefined,
+      postedDateFormatted: formatDate(req.timeCreated) // Use timeCreated
     };
   });
 });
 
-// Old functions below are no longer needed with the new workflow
-// const getUrgencySeverity = (urgency: string) => { ... };
-// const acceptRequest = (requestId: string) => { ... };
-// const declineRequest = (requestId: string) => { ... };
-// const contactBand = (requestId: string) => { ... };
 </script>
 
 <style scoped>

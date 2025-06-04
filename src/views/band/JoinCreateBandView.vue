@@ -5,56 +5,76 @@
             <p>Find your musical community</p>
         </div>
 
-        <TabView>
-            <TabPanel header="Join a Band">
-                <div class="search-section">
-                    <div class="search-filters">
-                        <InputText 
-                            v-model="searchTerm" 
-                            placeholder="Search bands by name or genre..." 
-                            class="search-input"
-                        />
-                        <Dropdown 
-                            v-model="selectedGenre" 
-                            :options="genres" 
-                            optionLabel="name" 
-                            placeholder="All Genres"
-                        />
-                    </div>
+        <TabView v-if="!currentUserProfile.hasCreatedBand">
+            <TabPanel header="Join a Band" value="join" :disabled="currentUserProfile.hasPendingBandRequest || currentUserProfile.hasCreatedBand">
+                <div v-if="currentUserProfile.hasPendingBandRequest" class="notice-message">
+                    <i class="pi pi-info-circle"></i>
+                    You have a pending request to join a band. You cannot send more requests or create a band until it's resolved.
                 </div>
-
-                <div v-if="filteredBands.length > 0" class="bands-list">
-                    <Card v-for="band in filteredBands" :key="band.id" class="band-card">
-                        <template #title>{{ band.name }}</template>
-                        <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members</template>
-                        <template #content>
-                            <p>{{ band.description }}</p>
-                            <div class="band-needs">
-                                <strong>Looking for:</strong>
-                                <div class="needs-tags">
-                                    <Tag v-for="need in band.needs" :key="need" :value="need" />
-                                </div>
-                            </div>
-                        </template>
-                        <template #footer>
-                            <Button 
-                                label="Request to Join" 
-                                icon="pi pi-user-plus" 
-                                @click="requestToJoin(band.id)"
+                <div v-else-if="currentUserProfile.hasCreatedBand" class="notice-message">
+                     <i class="pi pi-info-circle"></i>
+                    You have already created a band. You cannot join another or create more.
+                </div>
+                <div v-else>
+                    <div class="search-section">
+                        <div class="search-filters">
+                            <InputText 
+                                v-model="searchTerm" 
+                                placeholder="Search bands by name or genre..." 
+                                class="search-input"
                             />
-                        </template>
-                    </Card>
-                </div>
+                            <Dropdown 
+                                v-model="selectedGenre" 
+                                :options="genres" 
+                                optionLabel="name" 
+                                optionValue="value"
+                                placeholder="All Genres"
+                            />
+                        </div>
+                    </div>
 
-                <div v-else class="empty-state">
-                    <i class="pi pi-users" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
-                    <h3>No bands found</h3>
-                    <p>Try adjusting your search or create your own band</p>
+                    <div v-if="filteredBands.length > 0" class="bands-list">
+                        <Card v-for="band in filteredBands" :key="band.id" class="band-card">
+                            <template #title>{{ band.name }}</template>
+                            <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members</template>
+                            <template #content>
+                                <p>{{ band.description }}</p>
+                                <div class="band-needs" v-if="band.needs && band.needs.length > 0">
+                                    <strong>Looking for:</strong>
+                                    <div class="needs-tags">
+                                        <Tag v-for="need in band.needs" :key="need" :value="need" />
+                                    </div>
+                                </div>
+                            </template>
+                            <template #footer>
+                                <Button 
+                                    label="Request to Join" 
+                                    icon="pi pi-user-plus" 
+                                    @click="requestToJoin(band.id)"
+                                    :disabled="currentUserProfile.hasPendingBandRequest || currentUserProfile.hasCreatedBand"
+                                />
+                            </template>
+                        </Card>
+                    </div>
+
+                    <div v-else class="empty-state">
+                        <i class="pi pi-users" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
+                        <h3>No bands found</h3>
+                        <p>Try adjusting your search or create your own band (if eligible)</p>
+                    </div>
                 </div>
             </TabPanel>
 
-            <TabPanel header="Create a Band">
-                <Card class="create-band-form">
+            <TabPanel header="Create a Band" value="create" :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingBandRequest">
+                 <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
+                     <i class="pi pi-info-circle"></i>
+                    You have already created a band. You cannot create another.
+                </div>
+                 <div v-else-if="currentUserProfile.hasPendingBandRequest" class="notice-message">
+                    <i class="pi pi-info-circle"></i>
+                    You have a pending request to join a band. You cannot create a band now.
+                </div>
+                <Card v-else class="create-band-form">
                     <template #content>
                         <div class="form-grid">
                             <div class="field">
@@ -71,9 +91,29 @@
                                 <Dropdown 
                                     id="bandGenre"
                                     v-model="bandForm.genre" 
-                                    :options="genres"
+                                    :options="genres" 
                                     optionLabel="name"
+                                    optionValue="value" 
                                     placeholder="Select genre"
+                                />
+                            </div>
+
+                            <div class="field">
+                                <label for="bandEmail">Contact Email (Optional)</label>
+                                <InputText 
+                                    id="bandEmail" 
+                                    v-model="bandForm.email" 
+                                    type="email"
+                                    placeholder="band.email@example.com"
+                                />
+                            </div>
+
+                            <div class="field">
+                                <label for="bandPhone">Contact Phone (Optional)</label>
+                                <InputText 
+                                    id="bandPhone" 
+                                    v-model="bandForm.phoneNumber" 
+                                    placeholder="(555) 123-4567"
                                 />
                             </div>
                             
@@ -88,14 +128,17 @@
                             </div>
                             
                             <div class="field span-2">
-                                <label for="lookingFor">Looking for (instruments/roles)</label>
+                                <label for="lookingFor">Instruments/Roles Needed (Optional)</label>
                                 <MultiSelect 
                                     id="lookingFor"
-                                    v-model="bandForm.lookingFor" 
-                                    :options="instruments"
+                                    v-model="bandForm.lookingForInstruments" 
+                                    :options="instrumentOptions"
                                     optionLabel="name"
+                                    optionValue="value"
+                                    display="chip"
                                     placeholder="Select instruments you need"
                                 />
+                                <small>This helps musicians find your band if you're looking for members.</small>
                             </div>
                         </div>
                         
@@ -104,6 +147,7 @@
                                 label="Create Band" 
                                 icon="pi pi-plus" 
                                 @click="createBand"
+                                :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingBandRequest"
                             />
                             <Button 
                                 label="Reset" 
@@ -116,11 +160,17 @@
                 </Card>
             </TabPanel>
         </TabView>
+        <div v-else class="notice-message already-created-band-message">
+            <i class="pi pi-check-circle"></i>
+            You have successfully created a band! Manage your band from your dashboard.
+            <Button label="Go to My Band" @click="goToMyBand" class="p-button-sm p-button-raised p-button-primary" style="margin-top: 1rem;"/>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
@@ -131,27 +181,58 @@ import MultiSelect from 'primevue/multiselect';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 
-// Mock data
+const router = useRouter();
+
+const currentUserProfile = ref({
+    userId: 'user-gen-123',
+    hasCreatedBand: false, 
+    hasPendingBandRequest: false,
+});
+
+interface BandListItem {
+    id: number | string;
+    name: string;
+    genre: string;
+    memberCount: number;
+    description: string;
+    needs?: string[];
+}
+
+interface BandForm {
+    name: string;
+    genre: string | null;
+    description: string;
+    email?: string | null;
+    phoneNumber?: string | null;
+    lookingForInstruments?: string[];
+}
+
 const genres = ref([
-    { name: 'Rock', value: 'rock' },
-    { name: 'Jazz', value: 'jazz' },
-    { name: 'Blues', value: 'blues' },
-    { name: 'Folk', value: 'folk' },
-    { name: 'Electronic', value: 'electronic' },
-    { name: 'Pop', value: 'pop' }
+    { name: 'Rock', value: 'Rock' },
+    { name: 'Jazz', value: 'Jazz' },
+    { name: 'Blues', value: 'Blues' },
+    { name: 'Folk', value: 'Folk' },
+    { name: 'Electronic', value: 'Electronic' },
+    { name: 'Pop', value: 'Pop' },
+    { name: 'Country', value: 'Country' },
+    { name: 'Hip Hop', value: 'Hip Hop' },
+    { name: 'Classical', value: 'Classical' },
+    { name: 'Other', value: 'Other' }
 ]);
 
-const instruments = ref([
+const instrumentOptions = ref([
     { name: 'Guitar', value: 'guitar' },
     { name: 'Bass', value: 'bass' },
     { name: 'Drums', value: 'drums' },
     { name: 'Piano', value: 'piano' },
     { name: 'Vocals', value: 'vocals' },
     { name: 'Saxophone', value: 'saxophone' },
-    { name: 'Trumpet', value: 'trumpet' }
+    { name: 'Trumpet', value: 'trumpet' },
+    { name: 'Violin', value: 'violin' },
+    { name: 'Other', value: 'other' }
 ]);
 
-const bands = ref([
+const bands = ref<BandListItem[]>([
     {
         id: 1,
         name: 'The Groove Collective',
@@ -178,38 +259,40 @@ const bands = ref([
     }
 ]);
 
-// Search and filters
 const searchTerm = ref('');
-const selectedGenre = ref(null);
+const selectedGenre = ref<string | null>(null);
 
 const filteredBands = computed(() => {
     return bands.value.filter(band => {
         const matchesSearch = !searchTerm.value || 
             band.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
             band.description.toLowerCase().includes(searchTerm.value.toLowerCase());
-        const matchesGenre = !selectedGenre.value || band.genre === selectedGenre.value.name;
+        const matchesGenre = !selectedGenre.value || band.genre === selectedGenre.value;
         
         return matchesSearch && matchesGenre;
     });
 });
 
-// Create band form
-const bandForm = ref({
+const bandForm = ref<BandForm>({
     name: '',
     genre: null,
     description: '',
-    lookingFor: []
+    email: '',
+    phoneNumber: '',
+    lookingForInstruments: []
 });
 
-// Actions
-const requestToJoin = (bandId: number) => {
-    console.log('Requesting to join band:', bandId);
-    // Would send join request to backend
+const requestToJoin = (bandId: number | string) => {
+    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingBandRequest) return;
+    console.log(`User ${currentUserProfile.value.userId} requesting to join band: ${bandId}`);
+    currentUserProfile.value.hasPendingBandRequest = true;
 };
 
 const createBand = () => {
-    console.log('Creating band:', bandForm.value);
-    // Would create band and make user the leader
+    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingBandRequest) return;
+    console.log(`User ${currentUserProfile.value.userId} creating band:`, bandForm.value);
+    currentUserProfile.value.hasCreatedBand = true;
+    alert('Band created successfully! You are now the band leader.');
 };
 
 const resetBandForm = () => {
@@ -217,8 +300,14 @@ const resetBandForm = () => {
         name: '',
         genre: null,
         description: '',
-        lookingFor: []
+        email: '',
+        phoneNumber: '',
+        lookingForInstruments: []
     };
+};
+
+const goToMyBand = () => {
+    router.push('/my-band');
 };
 </script>
 
@@ -287,20 +376,46 @@ const resetBandForm = () => {
     color: var(--p-text-color);
 }
 
+.field small {
+    font-size: 0.8rem;
+    color: var(--p-text-muted-color);
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
 }
 
-.empty-state {
+.empty-state, .notice-message {
     text-align: center;
-    padding: 3rem;
+    padding: 2rem;
     color: var(--p-text-muted-color);
+    border: 1px dashed var(--p-surface-border);
+    border-radius: 8px;
+    margin-bottom: 1rem;
 }
 
-.empty-state h3 {
+.notice-message i {
+    margin-right: 0.5rem;
+    color: var(--p-primary-color);
+    font-size: 1.2rem;
+}
+
+.empty-state h3, .notice-message h3 {
     margin: 1rem 0 0.5rem;
     color: var(--p-text-color);
+}
+
+.already-created-band-message {
+    padding: 3rem;
+    font-size: 1.2rem;
+    background-color: var(--p-highlight-bg);
+}
+.already-created-band-message i {
+    font-size: 2rem;
+    color: var(--p-primary-color);
+    display: block;
+    margin-bottom: 1rem;
 }
 </style> 

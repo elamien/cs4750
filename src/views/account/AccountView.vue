@@ -40,7 +40,7 @@
                                 <label for="phone">Phone</label>
                                 <InputText 
                                     id="phone" 
-                                    v-model="profile.phone" 
+                                    v-model="profile.phoneNumber" 
                                     class="w-full"
                                 />
                             </div>
@@ -55,67 +55,37 @@
                                 />
                             </div>
                         </div>
+                        <div class="form-grid musical-info-grid">
+                             <div class="field">
+                                <label for="instrument">Primary Instrument</label>
+                                <Dropdown 
+                                    id="instrument"
+                                    v-model="profile.instrument"
+                                    :options="instrumentOptions"
+                                    optionLabel="name"
+                                    optionValue="value"
+                                    placeholder="Select your primary instrument"
+                                    class="w-full"
+                                />
+                            </div>
+                            <div class="field">
+                                <label for="genre">Primary Genre</label>
+                                <Dropdown 
+                                    id="genre"
+                                    v-model="profile.genre"
+                                    :options="genreOptions"
+                                    optionLabel="name"
+                                    optionValue="value"
+                                    placeholder="Select your primary genre"
+                                    class="w-full"
+                                />
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <Button label="Save Profile" icon="pi pi-save" @click="saveProfile" />
                         </div>
                     </template>
                 </Card>
-
-                <Card class="musical-info-section">
-                    <template #title>Musical Information</template>
-                    <template #content>
-                        <div class="form-grid">
-                            <div class="field">
-                                <label for="instruments">Primary Instruments</label>
-                                <MultiSelect 
-                                    id="instruments"
-                                    v-model="profile.instruments" 
-                                    :options="instrumentOptions"
-                                    optionLabel="name"
-                                    placeholder="Select your instruments"
-                                    class="w-full"
-                                />
-                            </div>
-                            <div class="field">
-                                <label for="genres">Preferred Genres</label>
-                                <MultiSelect 
-                                    id="genres"
-                                    v-model="profile.genres" 
-                                    :options="genreOptions"
-                                    optionLabel="name"
-                                    placeholder="Select your genres"
-                                    class="w-full"
-                                />
-                            </div>
-                            <div class="field">
-                                <label for="experience">Years of Experience</label>
-                                <Dropdown 
-                                    id="experience"
-                                    v-model="profile.experience" 
-                                    :options="experienceOptions"
-                                    optionLabel="label"
-                                    placeholder="Select experience level"
-                                    class="w-full"
-                                />
-                            </div>
-                            <div class="field">
-                                <label for="availability">Availability</label>
-                                <MultiSelect 
-                                    id="availability"
-                                    v-model="profile.availability" 
-                                    :options="availabilityOptions"
-                                    optionLabel="label"
-                                    placeholder="Select your availability"
-                                    class="w-full"
-                                />
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <Button label="Save Musical Info" icon="pi pi-save" @click="saveMusicalInfo" />
-                        </div>
-                    </template>
-                </Card>
-
 
             </div>
         </div>
@@ -127,35 +97,29 @@ import { ref } from 'vue';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
-import MultiSelect from 'primevue/multiselect';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 
-// Mock profile data
-const profile = ref({
+interface UserProfile {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string | null;
+    bio: string | null;
+    instrument: string | null;
+    genre: string | null;
+}
+
+const profile = ref<UserProfile>({
     firstName: 'John',
     lastName: 'Doe',
     email: 'john.doe@example.com',
-    phone: '(555) 123-4567',
+    phoneNumber: '555-123-4567',
     bio: 'Passionate musician with 10+ years of experience in jazz and blues.',
-    instruments: [
-        { name: 'Guitar', value: 'guitar' },
-        { name: 'Bass', value: 'bass' }
-    ],
-    genres: [
-        { name: 'Jazz', value: 'jazz' },
-        { name: 'Blues', value: 'blues' }
-    ],
-    experience: { label: '5-10 years', value: '5-10' },
-    availability: [
-        { label: 'Weekends', value: 'weekends' },
-        { label: 'Evenings', value: 'evenings' }
-    ]
+    instrument: 'guitar',
+    genre: 'jazz'
 });
 
-
-
-// Options for dropdowns and multiselects
 const instrumentOptions = ref([
     { name: 'Guitar', value: 'guitar' },
     { name: 'Bass', value: 'bass' },
@@ -164,7 +128,8 @@ const instrumentOptions = ref([
     { name: 'Vocals', value: 'vocals' },
     { name: 'Saxophone', value: 'saxophone' },
     { name: 'Trumpet', value: 'trumpet' },
-    { name: 'Violin', value: 'violin' }
+    { name: 'Violin', value: 'violin' },
+    { name: 'Other', value: 'other' }
 ]);
 
 const genreOptions = ref([
@@ -175,41 +140,14 @@ const genreOptions = ref([
     { name: 'Electronic', value: 'electronic' },
     { name: 'Pop', value: 'pop' },
     { name: 'Classical', value: 'classical' },
-    { name: 'Country', value: 'country' }
+    { name: 'Country', value: 'country' },
+    { name: 'Hip Hop', value: 'hiphop' },
+    { name: 'Other', value: 'other' }
 ]);
 
-const experienceOptions = ref([
-    { label: 'Beginner (0-2 years)', value: '0-2' },
-    { label: 'Intermediate (3-5 years)', value: '3-5' },
-    { label: 'Advanced (5-10 years)', value: '5-10' },
-    { label: 'Professional (10+ years)', value: '10+' }
-]);
-
-const availabilityOptions = ref([
-    { label: 'Weekdays', value: 'weekdays' },
-    { label: 'Weekends', value: 'weekends' },
-    { label: 'Mornings', value: 'mornings' },
-    { label: 'Afternoons', value: 'afternoons' },
-    { label: 'Evenings', value: 'evenings' },
-    { label: 'Nights', value: 'nights' }
-]);
-
-// Actions
 const saveProfile = () => {
-    console.log('Saving profile:', profile.value);
-    // Would save to backend
+    console.log('Saving profile (all user table fields):', profile.value);
 };
-
-const saveMusicalInfo = () => {
-    console.log('Saving musical info:', {
-        instruments: profile.value.instruments,
-        genres: profile.value.genres,
-        experience: profile.value.experience,
-        availability: profile.value.availability
-    });
-    // Would save to backend
-};
-
 
 </script>
 
@@ -248,6 +186,10 @@ const saveMusicalInfo = () => {
     margin-bottom: 1.5rem;
 }
 
+.musical-info-grid {
+    margin-top: 1.5rem;
+}
+
 .field {
     display: flex;
     flex-direction: column;
@@ -266,7 +208,7 @@ const saveMusicalInfo = () => {
 .form-actions {
     display: flex;
     justify-content: flex-end;
+    margin-top: 1rem;
 }
-
 
 </style> 

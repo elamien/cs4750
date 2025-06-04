@@ -1,13 +1,13 @@
 <template>
     <div class="band-members">
         <div class="header">
-            <h1>Band Members</h1>
-            <p>Manage your band's membership</p>
+            <h1>Manage Band Members</h1>
+            <p>View your current band members and manage membership.</p>
         </div>
         
         <Card>
             <template #content>
-                <p>Band leader view for managing members, viewing member details, and removing members.</p>
+                <p>Band Leader view for managing band members. Functionality includes viewing current member details and removing members from the band. Adding new members is typically handled via approving Membership Applications.</p>
                 <p><em>This is a placeholder view. Full functionality coming soon.</em></p>
             </template>
         </Card>
