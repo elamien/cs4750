@@ -8,6 +8,16 @@ A Vue 3 + TypeScript frontend with Node.js/Express backend and MySQL database fo
 - Node.js 20.0.0+ (includes npm 10.0.0+)
 - MySQL with configured login path named `local`
 
+### Environment Setup
+Create a `.env` file in the `backend/` directory:
+```env
+DB_HOST=localhost
+DB_USER=adminuser
+DB_PASSWORD=HooJams2024!
+DB_NAME=hoojams
+PORT=3001
+```
+
 ### Installation & Development
 ```bash
 # Install frontend dependencies
@@ -16,6 +26,15 @@ npm install
 # Install backend dependencies
 cd backend
 npm install
+
+# Create backend environment file
+cp .env.example .env
+# OR create .env manually with:
+# DB_HOST=localhost
+# DB_USER=adminuser
+# DB_PASSWORD=HooJams2024!
+# DB_NAME=hoojams
+# PORT=3001
 
 # Start backend server (port 3001)
 npm start
