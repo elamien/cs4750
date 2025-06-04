@@ -1,141 +1,165 @@
-# cs4750
+# HooJams - Band & Event Management Platform
 
-This template should help get you started developing with Vue 3 in Vite.
+A Vue 3 + TypeScript frontend with Node.js/Express backend and MySQL database for managing bands, events, and fill-in requests.
 
-## Prerequisites
+## 🚀 Quick Start
 
-Before you begin, ensure you have Node.js installed on your system. This project requires Node.js version 20.0.0 or higher (which includes npm 10.0.0 or higher).
+### Prerequisites
+- Node.js 20.0.0+ (includes npm 10.0.0+)
+- MySQL with configured login path named `local`
 
-- You can download Node.js from [nodejs.org](https://nodejs.org/).
+### Installation & Development
+```bash
+# Install frontend dependencies
+npm install
 
-You mainly need to do:
-```sh
-npm i
-```
-and
-```sh
+# Install backend dependencies
+cd backend
+npm install
+
+# Start backend server (port 3001)
+npm start
+
+# Start frontend dev server (port 5173)
+cd ..
 npm run dev
 ```
-to get started!
 
-## Recommended IDE Setup
+## 📁 Project Structure
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+```
+cs4750/
+├── src/                    # Vue 3 + TypeScript frontend
+│   ├── views/             # Page components
+│   ├── components/        # Reusable components
+│   ├── router/            # Vue Router setup
+│   └── stores/            # Pinia state management
+├── backend/               # Node.js/Express API
+│   ├── server.js          # Main server (modular, 41 lines)
+│   ├── config/            # Database configuration
+│   ├── middleware/        # Error handling middleware
+│   └── routes/            # API route modules
+└── db/                    # Database files
+    ├── core_db_structure.sql  # Database schema (source of truth)
+    ├── database_commands.sql  # Test data insertion
+    └── *.md               # Database documentation
+```
 
-## Type Support for `.vue` Imports in TS
+## 🗄️ Database Setup
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### MySQL Configuration
+The project uses MySQL with login paths for secure access:
 
-## MySQL Database Setup
-
-This project uses MySQL for the database. You'll need:
-1. MySQL installed (via Homebrew on macOS)
-2. A configured login path for easy access
-
-### Current Setup
-We use MySQL login paths for secure credential management. The project expects a login path named `local`:
-
-```sh
-# Check your configured login paths
+```bash
+# Check configured login paths
 mysql_config_editor print --all
 
-# Connect to MySQL using the login path
+# Expected: [local] path with your MySQL credentials
+
+# Connect to database
 mysql --login-path=local
+
+# Import schema and test data
+mysql --login-path=local < db/core_db_structure.sql
+mysql --login-path=local < db/database_commands.sql
 ```
 
-> 🔄 Coming Soon: Instructions for setting up your own `local` login path configuration!
+### Database Schema
+- **16 tables** including users, bands, events, roles, favorites
+- **Role-based permissions** via `user_roles` table
+- **Test data** includes 8 users, 3 bands, 6 events
+- See `db/TEST_DATA_SUMMARY.md` for complete test data details
 
-## Customize configuration
+## 🛠️ Development
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+### Frontend (Vue 3 + TypeScript)
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm run type-check   # TypeScript checking
+npm run lint         # ESLint + Oxlint
+npm run format       # Prettier formatting
+npm run test:unit    # Vitest unit tests
+npm run test:e2e     # Playwright E2E tests
 ```
 
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
+### Backend (Node.js + Express)
+```bash
+cd backend
+npm start            # Start server on port 3001
 ```
 
-### Type-Check, Compile and Minify for Production
+**Modular Architecture:**
+- `routes/events.js` - Event management
+- `routes/users.js` - User profiles & favorites
+- `routes/bands.js` - Band management
+- `routes/fillInRequests.js` - Fill-in requests
+- `config/database.js` - MySQL connection pool
+- `middleware/errorHandler.js` - Centralized error handling
 
-```sh
-npm run build
-```
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+## 🎭 Test Users
 
-```sh
-npm run test:unit
-```
+| Role | Email | Password | Permissions |
+|------|-------|----------|-------------|
+| Band Leader | bandleader@test.com | - | Create/manage bands, handle requests |
+| Band Member | bandmember@test.com | - | View band events, mark availability |
+| General User | general@test.com | - | Join or create one band |
+| WXTJ Executive | wxtj.exec@virginia.edu | - | Full admin privileges |
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+*Additional users: John Bonham, Charles Mingus, David Gilmour, Diana Krall*
 
-```sh
-# Install browsers for the first run
-npx playwright install
+## 🔧 Tech Stack
 
-# When testing on CI, must build the project first
-npm run build
+**Frontend:**
+- Vue 3 + TypeScript
+- PrimeVue UI components
+- Vue Router + Pinia
+- Vite build tool
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+**Backend:**
+- Node.js + Express
+- MySQL2 database driver
+- CORS enabled
+- Environment variables
 
-### Lint with [ESLint](https://eslint.org/)
+**Development:**
+- ESLint + Oxlint linting
+- Prettier code formatting
+- Vitest unit testing
+- Playwright E2E testing
 
-```sh
-npm run lint
-```
+## 📋 Available Scripts
 
-## Test Users
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start frontend development server |
+| `npm run build` | Build for production |
+| `npm run lint` | Run all linters |
+| `npm test:unit` | Run unit tests |
+| `npm test:e2e` | Run E2E tests |
+| Backend: `npm start` | Start API server |
 
-The following test users are available in the database for development and testing purposes:
+## 🔗 API Endpoints
 
-### Band Leader
-- **Name:** Sarah Leader
-- **Email:** bandleader@test.com
-- **Role:** Band Leader
-- **Instrument:** Guitar
-- **Genre:** Rock
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/events` | List all events |
+| POST | `/api/events` | Create new event |
+| GET | `/api/bands` | List all bands |
+| POST | `/api/bands` | Create new band |
+| GET | `/api/users/:id` | Get user profile |
+| GET | `/api/fill-in-requests` | List fill-in requests |
 
-### Band Member
-- **Name:** Mike Member
-- **Email:** bandmember@test.com
-- **Role:** Band Member
-- **Instrument:** Piano
-- **Genre:** Jazz
+*Full API documentation in `backend/routes/` files*
 
-### General User
-- **Name:** Gary General
-- **Email:** general@test.com
-- **Role:** General User
-- **Instrument:** Vocals
-- **Genre:** Pop
+## 📚 Additional Documentation
 
-### WXTJ Executive
-- **Name:** Wesley Executive
-- **Email:** wxtj.exec@virginia.edu
-- **Role:** WXTJ Executive
-- **Instrument:** Production
-- **Genre:** Alternative
+- `db/SETUP_NOTES.md` - Detailed database setup
+- `db/TEST_DATA_SUMMARY.md` - Complete test data reference
 
-### User Permissions
-Each user type has specific permissions as defined in the database schema:
+---
 
-- **Band Leader:** Can create/delete band, transfer leadership, manage band members, handle event requests
-- **Band Member:** Can leave band, view band events, mark availability
-- **General User:** Can create one band OR request to join one band
-- **WXTJ Executive:** Can manage all users, bands, and events (full admin privileges)
+**IDE Recommendation:** VSCode + Volar extension (disable Vetur)
 
-For development purposes, you can impersonate any of these users to test different role-based functionalities.
+For issues or questions, refer to the source files or database schema in `db/core_db_structure.sql`.
 
