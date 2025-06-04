@@ -51,7 +51,45 @@
                 </div>
                 
                 <div v-if="isSignedIn" class="control-group">
-                    <label>Switch Role:</label>
+                    <label>Development Mode:</label>
+                    <div class="mode-selector">
+                        <Button 
+                            label="Impersonate User" 
+                            size="small"
+                            :severity="devMode === 'impersonate' ? 'primary' : 'secondary'"
+                            :outlined="devMode !== 'impersonate'"
+                            @click="setDevMode('impersonate')"
+                        />
+                        <Button 
+                            label="Preview Role" 
+                            size="small"
+                            :severity="devMode === 'preview' ? 'primary' : 'secondary'"
+                            :outlined="devMode !== 'preview'"
+                            @click="setDevMode('preview')"
+                        />
+                    </div>
+                </div>
+                
+                <div v-if="isSignedIn && devMode === 'impersonate'" class="control-group">
+                    <label>Impersonate Test User:</label>
+                    <div class="user-buttons">
+                        <Button 
+                            v-for="user in testUsers" 
+                            :key="user.id"
+                            :label="user.name"
+                            size="small"
+                            :severity="currentTestUser?.id === user.id ? 'primary' : 'secondary'"
+                            :outlined="currentTestUser?.id !== user.id"
+                            @click="impersonateUser(user)"
+                        />
+                    </div>
+                    <div v-if="currentTestUser" class="impersonation-info">
+                        <small><strong>Full access as:</strong> {{ currentTestUser.name }} ({{ currentTestUser.email }})</small>
+                    </div>
+                </div>
+                
+                <div v-if="isSignedIn && devMode === 'preview'" class="control-group">
+                    <label>Preview Role View (Read-Only):</label>
                     <div class="role-buttons">
                         <Button 
                             v-for="role in roles" 
@@ -60,8 +98,11 @@
                             size="small"
                             :severity="userRole === role.value ? 'primary' : 'secondary'"
                             :outlined="userRole !== role.value"
-                            @click="switchRole(role.value)"
+                            @click="previewRole(role.value as 'general' | 'band_member' | 'band_leader' | 'exec')"
                         />
+                    </div>
+                    <div class="preview-info">
+                        <small><strong>Preview mode:</strong> Read-only view of {{ formatRole(userRole) }} permissions</small>
                     </div>
                 </div>
                 
@@ -102,11 +143,11 @@
             <div class="tips">
                 <strong>💡 Developer Tips:</strong>
                 <ul>
-                    <li>Click the arrow to collapse/expand this panel</li>
-                    <li>Drag the header to move this panel</li>
-                    <li>Test role switching to see different navigation items</li>
-                    <li>Sign out to see anonymous user experience</li>
-                    <li>Position is saved automatically</li>
+                    <li><strong>Impersonate Mode:</strong> Full CRUD access as specific test users</li>
+                    <li><strong>Preview Mode:</strong> Read-only view of what each role type sees</li>
+                    <li>Test user credentials are shown for reference (not needed for dev)</li>
+                    <li>Drag the header to move this panel around</li>
+                    <li>Sign out to test anonymous user experience</li>
                 </ul>
             </div>
             
@@ -143,12 +184,87 @@ const position = ref({ x: 16, y: 16 }); // Default position (1rem = 16px)
 const isSignedIn = ref(false);
 const userRole = ref<'general' | 'band_member' | 'band_leader' | 'exec'>('general');
 
+// Development mode state
+const devMode = ref<'impersonate' | 'preview'>('preview');
+const currentTestUser = ref<TestUser | null>(null);
+
+// Test user interface
+interface TestUser {
+    id: string;
+    name: string;
+    email: string;
+    role: 'general' | 'band_member' | 'band_leader' | 'exec';
+    credentials: {
+        password: string;
+    };
+}
+
 // Role definitions
 const roles = ref([
     { value: 'general', label: 'General User' },
     { value: 'band_member', label: 'Band Member' },
     { value: 'band_leader', label: 'Band Leader' },
     { value: 'exec', label: 'WXTJ Executive' }
+]);
+
+// Test users from database (aligned with test data)
+const testUsers = ref<TestUser[]>([
+    {
+        id: '1',
+        name: 'John Bonham',
+        email: 'john.bonham@test.com', 
+        role: 'band_member',
+        credentials: { password: 'drummer123' }
+    },
+    {
+        id: '2', 
+        name: 'Charles Mingus',
+        email: 'charles.mingus@test.com',
+        role: 'band_member', 
+        credentials: { password: 'bass123' }
+    },
+    {
+        id: '3',
+        name: 'David Gilmour', 
+        email: 'david.gilmour@test.com',
+        role: 'band_member',
+        credentials: { password: 'guitar123' }
+    },
+    {
+        id: '4',
+        name: 'Diana Krall',
+        email: 'diana.krall@test.com', 
+        role: 'band_member',
+        credentials: { password: 'piano123' }
+    },
+    {
+        id: '5',
+        name: 'Sarah Leader',
+        email: 'bandleader@test.com',
+        role: 'band_leader', 
+        credentials: { password: 'leader123' }
+    },
+    {
+        id: '6',
+        name: 'Mike Member', 
+        email: 'bandmember@test.com',
+        role: 'band_member',
+        credentials: { password: 'member123' }
+    },
+    {
+        id: '7',
+        name: 'Gary General',
+        email: 'general@test.com',
+        role: 'general',
+        credentials: { password: 'general123' }
+    },
+    {
+        id: '8',
+        name: 'Wesley Executive',
+        email: 'wxtj.exec@virginia.edu', 
+        role: 'exec',
+        credentials: { password: 'exec123' }
+    }
 ]);
 
 // Mock navigation items based on role
@@ -289,12 +405,33 @@ const signOut = () => {
     }
 };
 
-const switchRole = (role: string) => {
-    userRole.value = role as 'general' | 'band_member' | 'band_leader' | 'exec';
+// Development mode functions
+const setDevMode = (mode: 'impersonate' | 'preview') => {
+    devMode.value = mode;
+    // Reset any current impersonation when switching modes
+    if (mode === 'preview') {
+        currentTestUser.value = null;
+    }
+};
+
+const impersonateUser = (user: TestUser) => {
+    currentTestUser.value = user;
+    userRole.value = user.role;
     // Call global function if available
+    if (window.setUserRole) {
+        window.setUserRole(user.role);
+    }
+    console.log(`🎭 Impersonating ${user.name} (${user.email}) with full CRUD access`);
+};
+
+const previewRole = (role: 'general' | 'band_member' | 'band_leader' | 'exec') => {
+    userRole.value = role;
+    currentTestUser.value = null; // Clear any impersonation
+    // Call global function if available  
     if (window.setUserRole) {
         window.setUserRole(role);
     }
+    console.log(`👀 Previewing ${formatRole(role)} view (read-only)`);
 };
 
 const showAuth = () => {
@@ -340,7 +477,7 @@ if (typeof window !== 'undefined') {
         if (window.getDevState) {
             const state = window.getDevState();
             isSignedIn.value = state.isSignedIn;
-            userRole.value = state.userRole;
+            userRole.value = state.userRole as 'general' | 'band_member' | 'band_leader' | 'exec';
         }
     }, 1000);
 }
@@ -472,10 +609,39 @@ if (typeof window !== 'undefined') {
     gap: 0.5rem;
 }
 
+.mode-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .role-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
+}
+
+.user-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.impersonation-info,
+.preview-info {
+    background: var(--p-highlight-bg);
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.impersonation-info {
+    border-left: 3px solid var(--hoojams-orange);
+}
+
+.preview-info {
+    border-left: 3px solid var(--p-primary-color);
 }
 
 .navigation-preview {
