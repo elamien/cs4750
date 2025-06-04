@@ -1,6 +1,15 @@
 # cs4750
 
 This template should help get you started developing with Vue 3 in Vite.
+You mainly need to do:
+```sh
+npm i
+```
+and
+```sh
+npm run dev
+```
+to get started!
 
 ## Recommended IDE Setup
 
