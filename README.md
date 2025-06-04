@@ -97,3 +97,45 @@ npm run test:e2e -- --debug
 npm run lint
 ```
 
+## Test Users
+
+The following test users are available in the database for development and testing purposes:
+
+### Band Leader
+- **Name:** Sarah Leader
+- **Email:** bandleader@test.com
+- **Role:** Band Leader
+- **Instrument:** Guitar
+- **Genre:** Rock
+
+### Band Member
+- **Name:** Mike Member
+- **Email:** bandmember@test.com
+- **Role:** Band Member
+- **Instrument:** Piano
+- **Genre:** Jazz
+
+### General User
+- **Name:** Gary General
+- **Email:** general@test.com
+- **Role:** General User
+- **Instrument:** Vocals
+- **Genre:** Pop
+
+### WXTJ Executive
+- **Name:** Wesley Executive
+- **Email:** wxtj.exec@virginia.edu
+- **Role:** WXTJ Executive
+- **Instrument:** Production
+- **Genre:** Alternative
+
+### User Permissions
+Each user type has specific permissions as defined in the database schema:
+
+- **Band Leader:** Can create/delete band, transfer leadership, manage band members, handle event requests
+- **Band Member:** Can leave band, view band events, mark availability
+- **General User:** Can create one band OR request to join one band
+- **WXTJ Executive:** Can manage all users, bands, and events (full admin privileges)
+
+For development purposes, you can impersonate any of these users to test different role-based functionalities.
+

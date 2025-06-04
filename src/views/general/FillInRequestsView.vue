@@ -42,8 +42,6 @@
                     </template>
                 </Column>
 
-                <Column field="instrumentNeeded" header="Instrument" sortable style="width: 10%; min-width: 80px;"/>
-                
                 <Column field="originalMemberName" header="Original Member" sortable style="width: 12%; min-width: 110px;" />
 
                 <Column header="Desc." style="width: 5%; min-width: 50px; text-align: center;"> 
@@ -71,8 +69,8 @@
                                 icon="pi pi-user-plus"
                                 size="small"
                                 @click="handleOfferToFillIn(slotProps.data)"
-                                :disabled="slotProps.data.fillInMemberId === mockCurrentUser.id" /> 
-                                <small v-if="slotProps.data.fillInMemberId === mockCurrentUser.id" class="text-muted-color">This is your request</small>
+                                :disabled="slotProps.data.fillInMemberId === currentUser.id" /> 
+                                <small v-if="slotProps.data.fillInMemberId === currentUser.id" class="text-muted-color">This is your request</small>
                         </div>
                         <div v-else-if="slotProps.data.status === 'accepted'">
                             <span>Filled by: <strong>{{ slotProps.data.acceptedByUserName }}</strong></span>
@@ -102,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
@@ -111,114 +109,70 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// --- Mock Current User (simulating logged-in user from App.vue or auth store) ---
-const mockCurrentUser = ref({ id: 'user5', name: 'Edward Scissorhands' }); // Per permissions, any signed-in user can accept
+// TODO: Replace with actual logged-in user from auth store or context
+const currentUser = ref({ id: 'user5', firstName: 'Edward', lastName: 'Scissorhands' }); 
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
+// Note: IDs are INT in DB but often string in APIs/frontend. Kept as string for now.
+// TODO: These interfaces will be used when API calls are implemented to type responses or request bodies.
+/*
 interface User { // From user table
-  id: string; // Corresponds to user_id
-  name: string; // Concatenation of first_name, last_name
+  id: string; // Corresponds to user_id INT
+  firstName: string; // Corresponds to first_name VARCHAR(100)
+  lastName: string; // Corresponds to last_name VARCHAR(100)
+  // bio, email, phone_number, genre, instrument can be added if needed by this view
 }
 
 interface Band { // From band table
-  id: string; // Corresponds to band_id
-  name: string;
-  genre: string;
+  id: string; // Corresponds to band_id INT
+  name: string; // Corresponds to name VARCHAR(255)
+  // genre, email, phone_number, description, etc. can be added if needed
 }
 
-interface Event { // From event table
-  id: string; // Corresponds to event_id
-  bandId: string; // Assumed, though not directly in fill_in_request, but needed for context
-  name: string; // Corresponds to event_title
-  date: string; // Corresponds to datetime
-  venue: string; // Corresponds to location
+interface EventDetails { // Represents event details as needed by this view (likely a DTO from API)
+  id: string; // Corresponds to event_id INT
+  name: string; // Corresponds to event_title VARCHAR(255)
+  date: string; // Corresponds to datetime DATETIME (formatted string)
+  venue: string; // Corresponds to location VARCHAR(255)
+  // Other event fields like genre, description can be added
 }
+*/
 
 interface FillInRequest { // From fill_in_request table
-  id: string; // Corresponds to fill_in_request_id
-  bandId: string;
-  eventId: string;
-  instrumentNeeded: string; // Not directly in fill_in_request table, but essential info. Assume it's part of description or a related lookup. For simplicity, keeping it.
-  fillInDescription: string; // Corresponds to fill_in_description
-  fillInMemberId: string; // Corresponds to fill_in_member_id (original member)
-  timeCreated: string; // Corresponds to time_created (ISO string)
-  status: 'pending' | 'accepted' | 'rejected';
-  acceptedByUserId?: string | null; // Corresponds to accepted_by_user_id
-  timeResponded?: string | null; // Corresponds to time_responded (ISO string)
+  id: string; // Corresponds to fill_in_request_id INT
+  bandId: string; // Corresponds to band_id INT
+  eventId: string; // Corresponds to event_id INT
+  fillInDescription: string; // Corresponds to fill_in_description TEXT
+  fillInMemberId: string; // Corresponds to fill_in_member_id INT (original member)
+  timeCreated: string; // Corresponds to time_created TIMESTAMP (ISO string)
+  status: 'pending' | 'accepted' | 'rejected'; // Corresponds to status ENUM
+  acceptedByUserId?: string | null; // Corresponds to accepted_by_user_id INT
+  timeResponded?: string | null; // Corresponds to time_responded TIMESTAMP (ISO string)
+
+  // Fields to be populated by joining/API, matching displayRequests structure:
+  bandName?: string;
+  eventName?: string;
+  eventDate?: string;
+  eventVenue?: string;
+  originalMemberName?: string; // e.g., "firstName lastName"
+  acceptedByUserName?: string; // e.g., "firstName lastName"
+  postedDateFormatted?: string;
 }
 
-// --- Mock Data ---
-const mockUsers = ref<User[]>([
-  { id: 'user1', name: 'Alice Wonderland' },
-  { id: 'user2', name: 'Bob The Builder' },
-  { id: 'user3', name: 'Charlie Chaplin' },
-  { id: 'user4', name: 'Diana Prince' },
-  { id: 'user5', name: 'Edward Scissorhands' }, // Current mock user
-  { id: 'leader1', name: 'Captain Kirk' }, 
-]);
-
-const mockBands = ref<Band[]>([
-  { id: 'band1', name: 'The Cosmic Keys', genre: 'Psychedelic Rock' },
-  { id: 'band2', name: 'Blue Note Trio', genre: 'Jazz Fusion' },
-  { id: 'band3', name: 'Country Road', genre: 'Modern Country' },
-]);
-
-const mockEvents = ref<Event[]>([
-  { id: 'event1', bandId: 'band1', name: 'Galaxy Grooves Fest', date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), venue: 'The Starship Club' },
-  { id: 'event2', bandId: 'band2', name: 'Smooth Jazz Night', date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), venue: 'The Velvet Lounge' },
-  { id: 'event3', bandId: 'band1', name: 'Retro Rewind', date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(), venue: '8-Bit Bar' },
-]);
-
-const fillInRequests = ref<FillInRequest[]>([
-  {
-    id: 'req1',
-    bandId: 'band1',
-    eventId: 'event1',
-    instrumentNeeded: 'Drums', // Keeping for UI, though not in DB table directly
-    fillInDescription: 'Our drummer spontaneously decided to join a silent retreat. Need a solid rock drummer for our upcoming festival slot. Originals and some classic rock covers.',
-    fillInMemberId: 'user1', // Alice was the original drummer
-    timeCreated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-  },
-  {
-    id: 'req2',
-    bandId: 'band2',
-    eventId: 'event2',
-    instrumentNeeded: 'Upright Bass',
-    fillInDescription: 'Seeking a skilled upright bass player for a sophisticated jazz evening. Must be able_to read charts and improvise.',
-    fillInMemberId: 'user2', // Bob
-    timeCreated: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'accepted',
-    acceptedByUserId: 'user4', // Diana filled this
-    timeResponded: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'req3',
-    bandId: 'band1',
-    eventId: 'event3',
-    instrumentNeeded: 'Keyboard (Synth)',
-    fillInDescription: 'Keyboardist needed for a retro 80s night. Think Depeche Mode, New Order. Must have own vintage synth sounds or good emulations.',
-    fillInMemberId: 'user3', // Charlie
-    timeCreated: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-  },
-]);
+// --- Data State ---
+// This will be populated by an API call, e.g., in onMounted
+const allFillInRequests = ref<FillInRequest[]>([]); 
 
 // --- Helper Functions ---
-const getUserName = (userId?: string | null): string => {
-  if (!userId) return 'N/A';
-  const user = mockUsers.value.find(u => u.id === userId);
-  return user ? user.name : 'Unknown User';
-};
+// TODO: These helper functions for resolving names/details might become obsolete 
+// if the API provides fully populated FillInRequest objects.
 
-const getBandName = (bandId: string): string => {
-  const band = mockBands.value.find(b => b.id === bandId);
-  return band ? band.name : 'Unknown Band';
+/*
+const formatUserName = (user?: { firstName: string; lastName: string }): string => {
+  if (!user || !user.firstName || !user.lastName) return 'Unknown User';
+  return `${user.firstName} ${user.lastName}`;
 };
-
-const getEventDetails = (eventId: string): Event | undefined => {
-  return mockEvents.value.find(e => e.id === eventId);
-};
+*/
 
 const formatDate = (dateString?: string): string => {
   if (!dateString) return 'N/A';
@@ -236,29 +190,65 @@ const getStatusSeverity = (status: FillInRequest['status']) => {
   }
 };
 
-// --- Actions ---
-const handleOfferToFillIn = (request: FillInRequest) => {
-  // Permission: "All users ROLE (except anon) can: Accept any pending fill in requests"
-  // This component view should ideally only be shown to signed-in users.
-  // The button is disabled if the current user is the original member.
-  
-  const offeringUserId = mockCurrentUser.value.id; 
-  
+const API_BASE_URL = 'http://localhost:3001/api'; // Backend API URL
+
+// Fetch all fill-in requests
+const fetchFillInRequests = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/fill-in-requests`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    allFillInRequests.value = data;
+  } catch (error) {
+    console.error('Failed to fetch fill-in requests:', error);
+    // TODO: Show user-friendly error message in UI (e.g., using a toast)
+  }
+};
+
+onMounted(() => {
+  fetchFillInRequests();
+});
+
+// Update handleOfferToFillIn to call the API
+const handleOfferToFillIn = async (request: FillInRequest) => {
+  const offeringUserId = currentUser.value.id;
+
   if (request.status !== 'pending' || request.fillInMemberId === offeringUserId) {
     console.warn('Cannot offer for this request or already handled.');
-    // Optionally, show a toast message to the user
+    // TODO: Show toast message to user
     return;
   }
 
-  console.log(`User ${getUserName(offeringUserId)} offered to fill in for request ID: ${request.id}`);
-  const reqIndex = fillInRequests.value.findIndex(r => r.id === request.id);
-  if (reqIndex > -1) {
-    fillInRequests.value[reqIndex].status = 'accepted';
-    fillInRequests.value[reqIndex].acceptedByUserId = offeringUserId;
-    fillInRequests.value[reqIndex].timeResponded = new Date().toISOString();
-    // In a real app, you might want to show a success message (e.g., PrimeVue Toast)
-    // alert('Your offer has been submitted! The band leader will be notified.'); 
-    // The SQL implies the band leader creates the request, any user can accept.
+  try {
+    const response = await fetch(`${API_BASE_URL}/fill-in-requests/${request.id}/accept`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId: offeringUserId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log(result.message, result.request);
+
+    // Update the local state with the accepted request from the server response
+    const reqIndex = allFillInRequests.value.findIndex(r => r.id === result.request.id);
+    if (reqIndex > -1) {
+      allFillInRequests.value[reqIndex] = result.request;
+    }
+    // TODO: Show success toast message
+
+  } catch (error) {
+    console.error('Failed to accept fill-in request:', error);
+    // TODO: Show user-friendly error message in UI (e.g., using a toast)
+    // alert(`Error: ${error.message}`); // Temporary alert
   }
 };
 
@@ -269,23 +259,27 @@ const viewBandDetails = (bandId: string) => {
 
 const viewEventDetails = (eventId: string) => {
   console.log('View event details for:', eventId);
+  // router.push(`/events/${eventId}`); // Example future route
 };
 
-// Computed property for display, joining request data with names
+// Computed property for display. 
+// Assumes API will provide most of this data pre-joined or additional fetches are made.
 const displayRequests = computed(() => {
-  return fillInRequests.value.map(req => {
-    const event = getEventDetails(req.eventId);
-    return {
-      ...req, // Spread the original request object
-      bandName: getBandName(req.bandId),
-      eventName: event ? event.name : 'Unknown Event',
-      eventDate: event ? formatDate(event.date) : 'N/A',
-      eventVenue: event ? event.venue : 'N/A',
-      originalMemberName: getUserName(req.fillInMemberId), // Use fillInMemberId
-      acceptedByUserName: req.status === 'accepted' ? getUserName(req.acceptedByUserId) : undefined,
-      postedDateFormatted: formatDate(req.timeCreated) // Use timeCreated
-    };
-  });
+  // TODO: This mapping will change significantly based on how data is fetched from the API.
+  // If API returns fully formed FillInRequest objects (with bandName, eventName, etc.),
+  // then this map might just format dates or names.
+  // For now, it directly uses fields from the updated FillInRequest interface.
+  return allFillInRequests.value.map(req => ({
+    ...req,
+    // Ensure these fields are provided by the API or fetched separately and added to `allFillInRequests` items
+    // bandName: req.bandName || 'Unknown Band', // Example placeholder
+    // eventName: req.eventName || 'Unknown Event', // Example placeholder
+    // eventDate: req.eventDate ? formatDate(req.eventDate) : 'N/A', // Assuming eventDate is ISO string
+    // eventVenue: req.eventVenue || 'N/A', // Example placeholder
+    // originalMemberName: req.originalMemberName || 'Unknown Member', // Example placeholder
+    // acceptedByUserName: req.status === 'accepted' ? (req.acceptedByUserName || 'Unknown Accepter') : undefined,
+    postedDateFormatted: req.timeCreated ? formatDate(req.timeCreated) : 'N/A'
+  }));
 });
 
 </script>
