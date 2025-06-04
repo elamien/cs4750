@@ -139,7 +139,7 @@ router.get('/:id/details', async (req, res, next) => {
         isSignedIn: true,
         userRole: userRole,
         relationshipToBand: isInThisBand ? 'same_band' : (hasAnyBand ? 'different_band' : 'no_band'),
-        canSeeMembers: isInThisBand || userRole === 'WXTJ Executive',
+        canSeeMembers: true, // Any signed-in user can see band members
         canSeeContact: isInThisBand || userRole === 'WXTJ Executive',
         canSeePerformanceHistory: true, // Basic performance history for all signed-in users
         canRequestToJoin: !hasAnyBand && !isInThisBand && userRole !== 'WXTJ Executive',
