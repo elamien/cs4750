@@ -118,14 +118,21 @@ npm start            # Start server on port 3001
 
 ## 🎭 Test Users
 
-| Role | Email | Password | Permissions |
-|------|-------|----------|-------------|
-| Band Leader | bandleader@test.com | - | Create/manage bands, handle requests |
-| Band Member | bandmember@test.com | - | View band events, mark availability |
-| General User | general@test.com | - | Join or create one band |
-| WXTJ Executive | wxtj.exec@virginia.edu | - | Full admin privileges |
+| Role | Email | Password | Name | Permissions |
+|------|-------|----------|------|-------------|
+| **Band Leader** | `bandleader@test.com` | `test123` | Sarah Leader | Create/manage bands, handle requests |
+| **Band Member** | `bandmember@test.com` | `test123` | Mike Member | View band events, mark availability |
+| **General User** | `general@test.com` | `test123` | Gary General | Join or create one band |
+| **WXTJ Executive** | `wxtj.exec@virginia.edu` | `test123` | Wesley Executive | Full admin privileges |
 
-*Additional users: John Bonham, Charles Mingus, David Gilmour, Diana Krall*
+### Quick Role Switching (3-5 seconds)
+1. Click your **profile avatar** (top right)
+2. Click **"Sign Out"**
+3. Click **"Sign In"** 
+4. Enter new **email + `test123`**
+5. **Done!** - Instant role switch
+
+*These are the only 4 users in the database for clean testing*
 
 ## 🔧 Tech Stack
 
