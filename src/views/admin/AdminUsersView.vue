@@ -22,17 +22,23 @@
                     </div>
                 </div>
                 
+                <div v-if="loading" class="loading-state">
+                    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                    <p>Loading users...</p>
+                </div>
+                
+                <div v-else-if="users.length === 0" class="empty-state">
+                    <p>No users found.</p>
+                </div>
+                
                 <DataTable 
+                    v-else
                     :value="users" 
-                    :loading="loading"
                     stripedRows
                     showGridlines
                     responsiveLayout="scroll"
                     :paginator="true"
                     :rows="10"
-                    :rowsPerPageOptions="[5, 10, 20, 50]"
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
                 >
                     <Column field="id" header="ID" sortable style="width: 80px">
                         <template #body="{ data }">
@@ -110,16 +116,22 @@
                 </DataTable>
             </template>
         </Card>
+        
+        <!-- Confirmation Dialog -->
+        <ConfirmDialog />
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import Card from 'primevue/card'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import ConfirmDialog from 'primevue/confirmdialog'
 
 interface User {
     id: string
@@ -136,6 +148,8 @@ interface User {
 
 const users = ref<User[]>([])
 const loading = ref(true)
+const confirm = useConfirm()
+const toast = useToast()
 
 const fetchUsers = async () => {
     loading.value = true
@@ -184,8 +198,51 @@ const editUser = (user: User) => {
 }
 
 const deleteUser = (user: User) => {
-    // TODO: Implement delete user confirmation
-    console.log('Delete user:', user)
+    confirm.require({
+        message: `Are you sure you want to delete "${user.firstName} ${user.lastName}"?`,
+        header: 'Delete User Confirmation',
+        icon: 'pi pi-exclamation-triangle',
+        rejectLabel: 'Cancel',
+        acceptLabel: 'Delete',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-danger',
+        accept: async () => {
+            try {
+                const response = await fetch(`/api/users/${user.id}`, {
+                    method: 'DELETE'
+                })
+                
+                const data = await response.json()
+                
+                if (response.ok) {
+                    toast.add({
+                        severity: 'success',
+                        summary: 'User Deleted',
+                        detail: `${user.firstName} ${user.lastName} has been deleted successfully.`,
+                        life: 5000
+                    })
+                    
+                    // Refresh the users list
+                    await fetchUsers()
+                } else {
+                    toast.add({
+                        severity: 'error',
+                        summary: 'Delete Failed',
+                        detail: data.message || 'Failed to delete user.',
+                        life: 5000
+                    })
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error)
+                toast.add({
+                    severity: 'error',
+                    summary: 'Delete Error',
+                    detail: 'An error occurred while deleting the user.',
+                    life: 5000
+                })
+            }
+        }
+    })
 }
 
 onMounted(() => {
@@ -239,6 +296,20 @@ onMounted(() => {
 .action-buttons {
     display: flex;
     gap: 0.25rem;
+}
+
+.loading-state,
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--p-text-muted-color);
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 /* Responsive adjustments */

@@ -537,9 +537,9 @@ const handleSignUp = async () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                firstName: authForm.value.firstName,
-                lastName: authForm.value.lastName,
-                email: authForm.value.email,
+        firstName: authForm.value.firstName,
+        lastName: authForm.value.lastName,
+        email: authForm.value.email,
                 password: authForm.value.password,
                 isWXTJExecutive: authForm.value.isWXTJExecutive,
                 wxtjAccessKey: authForm.value.wxtjAccessKey
@@ -555,7 +555,7 @@ const handleSignUp = async () => {
         }
 
         // Successful registration
-        isSignedIn.value = true;
+    isSignedIn.value = true;
         userRole.value = data.user.role;
         mockUserProfile.value.userId = data.user.userId;
         mockUserProfile.value.firstName = data.user.firstName;
@@ -567,13 +567,13 @@ const handleSignUp = async () => {
         // Store user data in localStorage for persistence
         localStorage.setItem('currentUser', JSON.stringify(data.user));
         
-        showAuthModal.value = false;
-        resetAuthForm();
+    showAuthModal.value = false;
+    resetAuthForm();
         
         console.log('Registration successful:', data.user);
-        
-        // Redirect new users to onboarding
-        router.push('/onboarding');
+    
+    // Redirect new users to onboarding
+    router.push('/onboarding');
         
     } catch (error) {
         console.error('Registration error:', error);

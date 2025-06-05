@@ -8,6 +8,7 @@ import Aura from '@primeuix/themes/aura'
 import Tooltip from 'primevue/tooltip'
 import Ripple from 'primevue/ripple'
 import ToastService from 'primevue/toastservice'
+import ConfirmationService from 'primevue/confirmationservice'
 
 import App from './App.vue'
 import router from './router'
@@ -22,6 +23,7 @@ app.use(PrimeVue, {
     }
 })
 app.use(ToastService)
+app.use(ConfirmationService)
 app.directive('tooltip', Tooltip)
 app.directive('ripple', Ripple)
 

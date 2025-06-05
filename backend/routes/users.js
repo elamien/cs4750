@@ -344,4 +344,38 @@ router.get('/:id/band-status', async (req, res, next) => {
   }
 });
 
+// DELETE /api/users/:id - Delete a user (admin only)
+router.delete('/:id', async (req, res, next) => {
+  const { id: userId } = req.params;
+  
+  try {
+    // Check if user exists first
+    const [userCheck] = await pool.query('SELECT user_id FROM user WHERE user_id = ?', [userId]);
+    
+    if (userCheck.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    
+    // Delete user (CASCADE will handle related records)
+    const [result] = await pool.query('DELETE FROM user WHERE user_id = ?', [userId]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    
+    res.json({ 
+      message: 'User deleted successfully.',
+      deletedUserId: userId 
+    });
+  } catch (error) {
+    console.error('Failed to delete user:', error);
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(409).json({ 
+        message: 'Cannot delete user: User has associated records that must be removed first.' 
+      });
+    }
+    next(error);
+  }
+});
+
 export default router; 
