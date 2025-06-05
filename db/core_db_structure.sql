@@ -42,6 +42,7 @@ DROP TABLE IF EXISTS event;
 DROP TABLE IF EXISTS band;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS reference_instruments;
 
 -- Create user table
 CREATE TABLE user (
@@ -54,6 +55,15 @@ CREATE TABLE user (
     genre ENUM('Classic rock', 'Country', 'Pop', 'R n B', 'Metal', 'Classical', 'Folk', 'Hip hop', 'Electronic', 'Jazz', 'Indie', 'Alternative'),
     instrument VARCHAR(100),
     password VARCHAR(255) NOT NULL DEFAULT 'test123'
+);
+
+-- Create reference_instruments table for common instruments
+CREATE TABLE reference_instruments (
+    instrument_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    value VARCHAR(100) NOT NULL UNIQUE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create roles table
@@ -245,6 +255,21 @@ INSERT INTO roles (role_name) VALUES
     ('Band Member'),
     ('General User'),
     ('WXTJ Executive');
+
+-- Insert common instruments for reference data
+INSERT INTO reference_instruments (name, value) VALUES
+    ('Guitar', 'Guitar'),
+    ('Bass', 'Bass'),
+    ('Drums', 'Drums'),
+    ('Piano', 'Piano'),
+    ('Vocals', 'Vocals'),
+    ('Saxophone', 'Saxophone'),
+    ('Trumpet', 'Trumpet'),
+    ('Violin', 'Violin'),
+    ('Keyboard', 'Keyboard'),
+    ('Flute', 'Flute'),
+    ('Clarinet', 'Clarinet'),
+    ('Other', 'Other');
 
 -- Create indexes for better performance
 CREATE INDEX idx_user_email ON user(email);

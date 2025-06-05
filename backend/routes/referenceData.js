@@ -59,41 +59,21 @@ router.get('/genres', async (req, res) => {
     }
 });
 
-// GET /api/reference/instruments - Fetch common instrument options
+// GET /api/reference/instruments - Fetch instrument options from reference table
 router.get('/instruments', async (req, res) => {
     try {
-        // For instruments, we can either:
-        // 1. Query existing data to get unique instrument values
-        // 2. Return a predefined list
-        // Let's get unique instruments from existing user data
+        // Query the reference_instruments table for all active instruments
         const [rows] = await pool.query(`
-            SELECT DISTINCT instrument 
-            FROM user 
-            WHERE instrument IS NOT NULL 
-            AND instrument != ''
-            ORDER BY instrument
+            SELECT name, value 
+            FROM reference_instruments 
+            WHERE is_active = TRUE 
+            ORDER BY name
         `);
 
         const instruments = rows.map(row => ({
-            name: row.instrument,
-            value: row.instrument
+            name: row.name,
+            value: row.value
         }));
-
-        // Add some common instruments if not present
-        const commonInstruments = [
-            'Guitar', 'Bass', 'Drums', 'Vocals', 'Piano', 'Keyboard', 
-            'Violin', 'Saxophone', 'Trumpet', 'Flute', 'Clarinet'
-        ];
-
-        const existingValues = new Set(instruments.map(i => i.value));
-        commonInstruments.forEach(instrument => {
-            if (!existingValues.has(instrument)) {
-                instruments.push({ name: instrument, value: instrument });
-            }
-        });
-
-        // Sort alphabetically
-        instruments.sort((a, b) => a.name.localeCompare(b.name));
 
         res.json({
             success: true,

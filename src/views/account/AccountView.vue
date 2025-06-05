@@ -17,7 +17,7 @@
         </div>
 
         <div v-else class="account-content">
-            <Card class="profile-section">
+                <Card class="profile-section">
                 <template #title>
                     <div class="section-header">
                         <span>Profile Information</span>
@@ -48,7 +48,7 @@
                         </div>
                     </div>
                 </template>
-                <template #content>
+                    <template #content>
                     <!-- View Mode -->
                     <div v-if="!isEditing" class="profile-view">
                         <div class="view-grid">
@@ -151,7 +151,7 @@
                             <div class="field span-2" :class="{ 'field-modified': isFieldModified('bio') }">
                                 <label for="bio">Bio</label>
                                 <Textarea 
-                                    id="bio"
+                                    id="bio" 
                                     v-model="editForm.bio"
                                     rows="4"
                                     placeholder="Tell us about yourself..."
@@ -166,9 +166,9 @@
                                 <span>You have unsaved changes</span>
                             </div>
                         </div>
-                    </div>
-                </template>
-            </Card>
+                        </div>
+                    </template>
+                </Card>
         </div>
         
         <!-- Unsaved Changes Confirmation Dialog -->
@@ -201,7 +201,7 @@
                         @click="confirmCancelEditing"
                         severity="danger"
                     />
-                </div>
+        </div>
             </template>
         </Dialog>
     </div>

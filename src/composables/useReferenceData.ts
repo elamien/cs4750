@@ -51,24 +51,10 @@ export function useReferenceData() {
         } catch (error) {
             console.error('Failed to fetch genres:', error);
             
-            // Fallback to hardcoded values if API fails
-            const fallbackGenres: OptionItem[] = [
-                { name: 'Classic rock', value: 'Classic rock' },
-                { name: 'Country', value: 'Country' },
-                { name: 'Pop', value: 'Pop' },
-                { name: 'R n B', value: 'R n B' },
-                { name: 'Metal', value: 'Metal' },
-                { name: 'Classical', value: 'Classical' },
-                { name: 'Folk', value: 'Folk' },
-                { name: 'Hip hop', value: 'Hip hop' },
-                { name: 'Electronic', value: 'Electronic' },
-                { name: 'Jazz', value: 'Jazz' },
-                { name: 'Indie', value: 'Indie' },
-                { name: 'Alternative', value: 'Alternative' }
-            ];
-            
-            genresCache.value = fallbackGenres;
-            return fallbackGenres;
+            // Return empty array if API fails - data should be properly initialized in database
+            console.warn('Genres API failed. Ensure database is properly initialized with core_db_structure.sql');
+            genresCache.value = [];
+            return [];
         } finally {
             isLoadingGenres.value = false;
         }
@@ -98,21 +84,10 @@ export function useReferenceData() {
         } catch (error) {
             console.error('Failed to fetch instruments:', error);
             
-            // Fallback to hardcoded values if API fails
-            const fallbackInstruments: OptionItem[] = [
-                { name: 'Guitar', value: 'Guitar' },
-                { name: 'Bass', value: 'Bass' },
-                { name: 'Drums', value: 'Drums' },
-                { name: 'Vocals', value: 'Vocals' },
-                { name: 'Piano', value: 'Piano' },
-                { name: 'Keyboard', value: 'Keyboard' },
-                { name: 'Violin', value: 'Violin' },
-                { name: 'Saxophone', value: 'Saxophone' },
-                { name: 'Trumpet', value: 'Trumpet' }
-            ];
-            
-            instrumentsCache.value = fallbackInstruments;
-            return fallbackInstruments;
+            // Return empty array if API fails - data should be properly initialized in database
+            console.warn('Instruments API failed. Ensure database is properly initialized with core_db_structure.sql');
+            instrumentsCache.value = [];
+            return [];
         } finally {
             isLoadingInstruments.value = false;
         }
