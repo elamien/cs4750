@@ -287,9 +287,9 @@ const baseSignedInItems: MenuItem[] = [
     },
     // Favorites is a dedicated icon button in navbar-end for signed-in users
     {
-        label: 'Create Event',
-        icon: 'pi pi-calendar-plus',
-        route: '/create-event'
+        label: 'My Events',
+        icon: 'pi pi-calendar-edit',
+        route: '/my-events'
     },
     {
         label: 'Fill-In Opportunities', // Renamed from "Fill-In Requests" for clarity as this is where users find them
