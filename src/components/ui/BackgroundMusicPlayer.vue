@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useMusicState } from '@/composables/useMusicState'
 
 const audioPlayer = ref<HTMLAudioElement>()
 const isPlaying = ref(false)
@@ -72,6 +73,9 @@ const isVisible = ref(true)
 const showPlayer = ref(false)
 const hasInteracted = ref(false)
 const isDismissedThisSession = ref(false)
+
+// Global music state management
+const { setMusicPlaying } = useMusicState()
 
 // Music notes animation
 const musicNotes = ref<Array<{
@@ -145,10 +149,12 @@ const togglePlay = async () => {
     if (isPlaying.value) {
       audioPlayer.value.pause()
       isPlaying.value = false
+      setMusicPlaying(false)
       stopMusicNotes()
     } else {
       await audioPlayer.value.play()
       isPlaying.value = true
+      setMusicPlaying(true)
       startMusicNotes()
     }
   } catch (error) {
@@ -160,6 +166,7 @@ const hidePlayer = () => {
   if (isPlaying.value) {
     audioPlayer.value?.pause()
     isPlaying.value = false
+    setMusicPlaying(false)
     stopMusicNotes()
   }
   isDismissedThisSession.value = true

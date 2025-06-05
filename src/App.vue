@@ -1,6 +1,6 @@
 <template>
     <div class="app">
-        <div class="card">
+        <div :class="styles.card">
             <Menubar :model="menuItems">
                 <template #start>
                     <router-link to="/home-dashboard" class="navbar-brand">
@@ -61,7 +61,10 @@
             </Menubar>
         </div>
         
-        <main class="main-content">
+        <!-- Ambient Music Background -->
+        <AmbientMusicBackground />
+        
+        <main :class="styles.mainContent">
             <RouterView />
         </main>
         
@@ -224,6 +227,8 @@ import Checkbox from 'primevue/checkbox';
 import Menu from 'primevue/menu';
 import Toast from 'primevue/toast';
 import BackgroundMusicPlayer from './components/ui/BackgroundMusicPlayer.vue';
+import AmbientMusicBackground from './components/ui/AmbientMusicBackground.vue';
+import styles from './styles/App.module.css';
 
 // Router instance
 const router = useRouter();

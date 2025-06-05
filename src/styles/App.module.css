@@ -1,0 +1,13 @@
+/* App.vue Styles */
+
+/* Ensure main content appears above ambient background */
+.mainContent {
+  position: relative;
+  z-index: 10;
+  background: transparent;
+}
+
+.card {
+  position: relative;
+  z-index: 20;
+} 
