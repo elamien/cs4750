@@ -42,7 +42,7 @@ DROP TABLE IF EXISTS event;
 DROP TABLE IF EXISTS band;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS reference_instruments;
+DROP TABLE IF EXISTS instruments;
 
 -- Create user table
 CREATE TABLE user (
@@ -57,8 +57,8 @@ CREATE TABLE user (
     password VARCHAR(255) NOT NULL DEFAULT 'test123'
 );
 
--- Create reference_instruments table for common instruments
-CREATE TABLE reference_instruments (
+-- Create instruments table for common instruments
+CREATE TABLE instruments (
     instrument_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL UNIQUE,
     value VARCHAR(100) NOT NULL UNIQUE,
@@ -257,7 +257,7 @@ INSERT INTO roles (role_name) VALUES
     ('WXTJ Executive');
 
 -- Insert common instruments for reference data
-INSERT INTO reference_instruments (name, value) VALUES
+INSERT INTO instruments (name, value) VALUES
     ('Guitar', 'Guitar'),
     ('Bass', 'Bass'),
     ('Drums', 'Drums'),

@@ -59,13 +59,13 @@ router.get('/genres', async (req, res) => {
     }
 });
 
-// GET /api/reference/instruments - Fetch instrument options from reference table
+// GET /api/reference/instruments - Fetch instrument options from instruments table
 router.get('/instruments', async (req, res) => {
     try {
-        // Query the reference_instruments table for all active instruments
+        // Query the instruments table for all active instruments
         const [rows] = await pool.query(`
             SELECT name, value 
-            FROM reference_instruments 
+            FROM instruments 
             WHERE is_active = TRUE 
             ORDER BY name
         `);
