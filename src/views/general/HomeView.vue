@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // About page for the HooJams music platform
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 
@@ -21,7 +21,7 @@ const isSignedIn = computed(() => {
       <div class="hero-content">
         <div class="hero-text-container">
           <h1>About HooJams</h1>
-          <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
+          <p class="hero-subtitle">Your local band management platform for connecting musicians, discovering opportunities, and building the local music community</p>
         </div>
       </div>
     </div>
