@@ -44,26 +44,6 @@ cd ..
 npm run dev
 ```
 
-
-## 🗄️ Database Setup
-
-### MySQL Configuration
-The project uses MySQL with login paths for secure access:
-
-```bash
-# Check configured login paths
-mysql_config_editor print --all
-
-# Expected: [local] path with your MySQL credentials
-
-# Connect to database
-mysql --login-path=local
-
-# Import schema and test data
-mysql --login-path=local < db/core_db_structure.sql
-mysql --login-path=local < db/database_commands.sql
-```
-
 ### Database Schema
 - **16 tables** including users, bands, events, roles, favorites
 - **Role-based permissions** via `user_roles` table
