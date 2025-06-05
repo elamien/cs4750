@@ -623,15 +623,42 @@ router.post('/:bandId/membership-requests/:requestId/reject', async (req, res, n
 // GET /api/bands/:id/events - Get band's events with availability 
 router.get('/:id/events', async (req, res, next) => {
   const { id: bandId } = req.params;
-  
-  // TODO: Get userId from authenticated session, NOT from query params!
-  // This is a SECURITY VULNERABILITY if userId comes from URL
-  const userId = null; // For now, always anonymous until proper auth is implemented
+  const { userId } = req.query; // Get userId from query params for availability
   
   try {
-    // This would need a band_event join table which doesn't exist yet
-    // For now, return empty array
-    res.json([]);
+    // Get events where this band has accepted invitations (status = 'approved')
+    const query = `
+      SELECT 
+        e.event_id AS id,
+        e.event_title AS eventTitle,
+        e.datetime,
+        e.location,
+        e.description,
+        e.genre,
+        er.time_responded AS acceptedAt,
+        CASE 
+          WHEN bmea.is_available IS NOT NULL THEN bmea.is_available
+          ELSE NULL
+        END AS myAvailability
+      FROM event e
+      JOIN event_request er ON e.event_id = er.event_id
+      LEFT JOIN band_member_event_availability bmea ON e.event_id = bmea.event_id 
+        AND bmea.band_id = ? AND bmea.user_id = ?
+      WHERE er.band_id = ? AND er.status = 'approved'
+      ORDER BY e.datetime ASC
+    `;
+    
+    const [rows] = await pool.query(query, [bandId, userId || null, bandId]);
+    
+    const events = rows.map(row => ({
+      ...row,
+      id: String(row.id),
+      datetime: row.datetime ? new Date(row.datetime).toISOString() : null,
+      acceptedAt: row.acceptedAt ? new Date(row.acceptedAt).toISOString() : null,
+      myAvailability: row.myAvailability
+    }));
+    
+    res.json(events);
   } catch (error) {
     console.error('Failed to fetch band events:', error);
     next(error);

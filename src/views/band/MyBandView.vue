@@ -316,7 +316,7 @@ const fetchBandInfo = async () => {
     try {
         console.log('MyBandView - Fetching band info for user:', currentUserId.value);
         // First, get the user's band information
-        const response = await fetch(`/api/users/${currentUserId.value}/band-status`);
+        const response = await fetch(`http://localhost:3001/api/users/${currentUserId.value}/band-status`);
         if (!response.ok) throw new Error('Failed to fetch user band status');
         
         const bandStatus = await response.json();
@@ -341,7 +341,7 @@ const fetchBandInfo = async () => {
         const bandId = userBand.id;
         
         // Fetch detailed band information
-        const bandResponse = await fetch(`/api/bands/${bandId}`);
+        const bandResponse = await fetch(`http://localhost:3001/api/bands/${bandId}`);
         if (!bandResponse.ok) throw new Error('Failed to fetch band details');
         
         const band = await bandResponse.json();
@@ -367,7 +367,7 @@ const fetchBandInfo = async () => {
 const fetchBandMembers = async () => {
     try {
         const bandId = bandInfo.value.id || '1';
-        const response = await fetch(`/api/bands/${bandId}/members`);
+        const response = await fetch(`http://localhost:3001/api/bands/${bandId}/members`);
         if (!response.ok) throw new Error('Failed to fetch band members');
         
         const members: APIBandMember[] = await response.json();
@@ -392,10 +392,10 @@ const fetchBandMembers = async () => {
 const fetchBandEvents = async () => {
     try {
         const bandId = bandInfo.value.id || '1';
-        const response = await fetch(`/api/bands/${bandId}/events`);
+        const response = await fetch(`http://localhost:3001/api/bands/${bandId}/events?userId=${currentUserId.value}`);
         // TODO: User authentication should be handled via secure session/tokens, not URL params
         if (!response.ok) throw new Error('Failed to fetch band events');
-        
+
         const events: APIBandEvent[] = await response.json();
 
         // Filter for upcoming events only
@@ -424,7 +424,7 @@ const fetchBandEvents = async () => {
 const setAvailability = async (eventId: string, availability: boolean) => {
     try {
         const bandId = bandInfo.value.id || '1';
-        const response = await fetch(`/api/bands/${bandId}/events/${eventId}/availability`, {
+        const response = await fetch(`http://localhost:3001/api/bands/${bandId}/events/${eventId}/availability`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -464,7 +464,7 @@ const setAvailability = async (eventId: string, availability: boolean) => {
 const fetchEligibleLeaders = async () => {
     try {
         const bandId = bandInfo.value.id;
-        const response = await fetch(`/api/bands/${bandId}/eligible-leaders?currentUserId=${currentUserId.value}`);
+        const response = await fetch(`http://localhost:3001/api/bands/${bandId}/eligible-leaders?currentUserId=${currentUserId.value}`);
         if (!response.ok) throw new Error('Failed to fetch eligible leaders');
         
         const members = await response.json();
@@ -489,7 +489,7 @@ const getInitials = (firstName: string, lastName: string): string => {
 const checkLeaderStatusAndLeave = async () => {
     try {
         const bandId = bandInfo.value.id;
-        const response = await fetch(`/api/bands/${bandId}/leave`, {
+        const response = await fetch(`http://localhost:3001/api/bands/${bandId}/leave`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -547,7 +547,7 @@ const promoteAndLeave = async () => {
     try {
         // First promote the new leader
         const bandId = bandInfo.value.id;
-        const promoteResponse = await fetch(`/api/bands/${bandId}/promote-leader`, {
+        const promoteResponse = await fetch(`http://localhost:3001/api/bands/${bandId}/promote-leader`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -571,7 +571,7 @@ const promoteAndLeave = async () => {
         }
         
         // Then leave the band
-        const leaveResponse = await fetch(`/api/bands/${bandId}/leave`, {
+        const leaveResponse = await fetch(`http://localhost:3001/api/bands/${bandId}/leave`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -626,7 +626,7 @@ const forceLeaveAsLastMember = async () => {
     leavingBand.value = true;
     try {
         const bandId = bandInfo.value.id;
-        const response = await fetch(`/api/bands/${bandId}/leave`, {
+        const response = await fetch(`http://localhost:3001/api/bands/${bandId}/leave`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
