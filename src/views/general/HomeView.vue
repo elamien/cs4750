@@ -24,9 +24,9 @@ const showAuthModal = ref(false);
         <div class="hero-text-container">
           <h1>About HooJams</h1>
           <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
-          <div class="hero-actions">
-            <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
-            <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/browse/events')" />
+        <div class="hero-actions">
+          <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
+          <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/browse/events')" />
           </div>
         </div>
       </div>

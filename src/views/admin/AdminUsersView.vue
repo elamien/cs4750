@@ -100,7 +100,7 @@
                                     icon="pi pi-pencil" 
                                     severity="warning" 
                                     text 
-                                    @click="editUser(data)"
+                                    @click="editUser()"
                                     v-tooltip="'Edit Role'"
                                 />
                                 <Button 
@@ -286,10 +286,8 @@ const viewUser = (user: User) => {
 }
 
 const editUserFromModal = () => {
-    if (selectedUser.value) {
-        editUser(selectedUser.value)
-        showUserDetailsModal.value = false
-    }
+    editUser()
+    showUserDetailsModal.value = false
 }
 
 const deleteUserFromModal = () => {
@@ -299,9 +297,13 @@ const deleteUserFromModal = () => {
     }
 }
 
-const editUser = (user: User) => {
-    // TODO: Implement edit user role modal
-    console.log('Edit user:', user)
+const editUser = () => {
+    toast.add({
+        severity: 'info',
+        summary: 'Feature Coming Soon',
+        detail: 'User editing functionality will be available in a future update.',
+        life: 4000
+    })
 }
 
 const deleteUser = (user: User) => {
