@@ -65,6 +65,9 @@ router.post('/', async (req, res, next) => {
   }
 
   try {
+    // Convert ISO datetime to MySQL format (YYYY-MM-DD HH:MM:SS)
+    const mysqlDatetime = new Date(datetime).toISOString().slice(0, 19).replace('T', ' ');
+    
     const query = `
       INSERT INTO event (user_id, event_title, datetime, location, genre, status, description, slot_one, slot_two, slot_three, slot_four)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -72,7 +75,7 @@ router.post('/', async (req, res, next) => {
     const params = [
       userId,
       eventTitle,
-      datetime,
+      mysqlDatetime,
       location || null,
       genre || null,
       status,
