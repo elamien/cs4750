@@ -3,7 +3,7 @@
         <div class="card">
             <Menubar :model="menuItems">
                 <template #start>
-                    <router-link to="/" class="navbar-brand">
+                    <router-link to="/browse/bands" class="navbar-brand">
                         <img src="@/assets/hoojams-logo-v2.png" alt="HooJams Logo" class="navbar-logo" />
                         <span class="navbar-brand-text">HooJams</span>
                     </router-link>
@@ -248,11 +248,6 @@ const authForm = ref({
 // Menu items for anonymous users (not signed in)
 const anonymousItems: MenuItem[] = [
     {
-        label: 'Browse Bands',
-        icon: 'pi pi-users',
-        route: '/browse/bands'
-    },
-    {
         label: 'Browse Events',
         icon: 'pi pi-calendar',
         route: '/browse/events'
@@ -261,13 +256,8 @@ const anonymousItems: MenuItem[] = [
 ];
 
 // Base menu items for all signed-in users (except anon)
-// According to permissions: Edit account, Browse bands/events, Save favorites, Create events, Accept fill-in requests
+// According to permissions: Edit account, Browse events, Save favorites, Create events, Accept fill-in requests
 const baseSignedInItems: MenuItem[] = [
-    {
-        label: 'Browse Bands',
-        icon: 'pi pi-users',
-        route: '/browse/bands'
-    },
     {
         label: 'Browse Events',
         icon: 'pi pi-calendar',

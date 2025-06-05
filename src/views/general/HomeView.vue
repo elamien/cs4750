@@ -1,11 +1,19 @@
 <script setup lang="ts">
-// Home page for the band management system
-import { ref } from 'vue';
+// About page for the HooJams music platform
+import { ref, computed } from 'vue';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 
-// Mock auth state - this would come from a store in a real app
-const isSignedIn = ref(false);
+// Get real authentication state from localStorage
+const getCurrentUser = () => {
+  const savedUser = localStorage.getItem('currentUser');
+  return savedUser ? JSON.parse(savedUser) : null;
+};
+
+const isSignedIn = computed(() => {
+  return getCurrentUser() !== null;
+});
+
 const showAuthModal = ref(false);
 </script>
 
@@ -14,11 +22,10 @@ const showAuthModal = ref(false);
     <div class="hero-section">
       <div class="hero-content">
         <img src="@/assets/hoojams-logo-v2.png" alt="HooJams Logo" class="hero-logo" />
-        <h1>Welcome to HooJams</h1>
-        <p class="hero-subtitle">Connect with musicians, find gigs, and create amazing music together</p>
+        <h1>About HooJams</h1>
+        <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
         <div class="hero-actions">
           <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
-          <Button label="Browse Bands" icon="pi pi-users" severity="secondary" outlined @click="$router.push('/browse/bands')" />
           <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/browse/events')" />
         </div>
       </div>
@@ -26,15 +33,15 @@ const showAuthModal = ref(false);
     
     <div class="features-section">
       <div class="container">
-        <h2>Why Choose HooJams?</h2>
+        <h2>What We Offer</h2>
         <div class="features-grid">
           <Card class="feature-card">
             <template #header>
               <i class="pi pi-users feature-icon"></i>
             </template>
-            <template #title>Find Your Band</template>
+            <template #title>Band Management</template>
             <template #content>
-              <p>Connect with like-minded musicians and form lasting musical partnerships</p>
+              <p>Create and manage your band, invite members, and coordinate activities all in one place</p>
             </template>
           </Card>
           
@@ -42,19 +49,19 @@ const showAuthModal = ref(false);
             <template #header>
               <i class="pi pi-calendar feature-icon"></i>
             </template>
-            <template #title>Discover Gigs</template>
+            <template #title>Event Discovery</template>
             <template #content>
-              <p>Browse local events and performances looking for talented musicians</p>
+              <p>Find local performances, gigs, and music events looking for talented artists</p>
             </template>
           </Card>
           
           <Card class="feature-card">
             <template #header>
-              <i class="pi pi-music feature-icon"></i>
+              <i class="pi pi-network feature-icon"></i>
             </template>
-            <template #title>Showcase Your Talent</template>
+            <template #title>Music Community</template>
             <template #content>
-              <p>Create a profile that highlights your musical skills and experience</p>
+              <p>Connect with fellow musicians, find fill-in opportunities, and grow your network</p>
             </template>
           </Card>
         </div>
@@ -63,8 +70,8 @@ const showAuthModal = ref(false);
     
     <div class="cta-section">
       <div class="container">
-        <h2>Ready to Make Music?</h2>
-        <p>Join the HooJams community and start your musical journey today</p>
+        <h2>Join the HooJams Community</h2>
+        <p>Whether you're a seasoned musician or just starting out, HooJams helps you connect with the local music scene and find your place in it.</p>
         <Button v-if="!isSignedIn" label="Sign Up Now" icon="pi pi-user-plus" size="large" @click="showAuthModal = true" />
         <Button v-else label="Complete Your Profile" icon="pi pi-user" size="large" @click="$router.push('/account')" />
       </div>
