@@ -117,19 +117,7 @@
                                 />
                             </div>
                             
-                            <div class="field span-2">
-                                <label for="lookingFor">Instruments/Roles Needed (Optional)</label>
-                                <MultiSelect 
-                                    id="lookingFor"
-                                    v-model="bandForm.lookingForInstruments" 
-                                    :options="instruments"
-                                    optionLabel="name"
-                                    optionValue="value"
-                                    display="chip"
-                                    placeholder="Select instruments you need"
-                                />
-                                <small>This helps musicians find your band if you're looking for members.</small>
-                            </div>
+
                         </div>
                         
                         <div class="form-actions">
@@ -168,14 +156,13 @@ import TabPanel from 'primevue/tabpanel';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
-import MultiSelect from 'primevue/multiselect';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useReferenceData } from '@/composables/useReferenceData';
 
 const router = useRouter();
 const toast = useToast();
-const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData();
+const { genres, initializeGenres } = useReferenceData();
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface BandListItem {
@@ -193,7 +180,6 @@ interface BandForm {
     genre: string | null;
     description: string;
     location?: string | null;
-    lookingForInstruments?: string[];
 }
 
 interface UserBandStatus {
@@ -225,8 +211,7 @@ const bandForm = ref<BandForm>({
     name: '',
     genre: null,
     description: '',
-    location: '',
-    lookingForInstruments: []
+    location: ''
 });
 
 // --- Computed Properties ---
@@ -391,8 +376,7 @@ const resetBandForm = () => {
         name: '',
         genre: null,
         description: '',
-        location: '',
-        lookingForInstruments: []
+        location: ''
     };
 };
 
@@ -402,10 +386,7 @@ const goToMyBand = () => {
 
 // --- Lifecycle ---
 onMounted(async () => {
-    await Promise.all([
-        initializeGenres(),
-        initializeInstruments()
-    ]);
+    await initializeGenres();
     
     try {
         loading.value = true;
