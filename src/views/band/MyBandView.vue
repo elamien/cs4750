@@ -109,6 +109,64 @@
             </div>
         </div>
 
+        <!-- Leader Promotion Dialog -->
+        <Dialog 
+            v-model:visible="showPromoteDialog" 
+            modal 
+            header="Promote New Leader" 
+            :style="{ width: '30rem' }"
+        >
+            <div class="promote-leader-content">
+                <p>As the band leader, you must promote another member to leader before leaving the band.</p>
+                <p><strong>Choose a new leader:</strong></p>
+                
+                <div v-if="eligibleLeaders.length === 0" class="no-members">
+                    <p>No other members are available to promote. You are the only member of this band.</p>
+                </div>
+                
+                <div v-else class="leader-candidates">
+                    <div 
+                        v-for="member in eligibleLeaders" 
+                        :key="member.id" 
+                        class="candidate-item"
+                        :class="{ selected: selectedNewLeader === member.id }"
+                        @click="selectedNewLeader = member.id"
+                    >
+                        <Avatar :label="getInitials(member.firstName, member.lastName)" shape="circle" />
+                        <div class="candidate-info">
+                            <strong>{{ member.firstName }} {{ member.lastName }}</strong>
+                            <span class="candidate-details">
+                                {{ member.instrument || 'No instrument specified' }}
+                            </span>
+                        </div>
+                        <i v-if="selectedNewLeader === member.id" class="pi pi-check-circle selected-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <template #footer>
+                <Button 
+                    label="Cancel" 
+                    severity="secondary" 
+                    @click="cancelPromotion" 
+                />
+                <Button 
+                    v-if="eligibleLeaders.length === 0"
+                    label="Leave Anyway" 
+                    severity="danger" 
+                    @click="forceLeaveAsLastMember"
+                />
+                <Button 
+                    v-else
+                    label="Promote & Leave" 
+                    severity="primary" 
+                    @click="promoteAndLeave"
+                    :disabled="!selectedNewLeader"
+                    :loading="promotingLeader"
+                />
+            </template>
+        </Dialog>
+
         <!-- Leave Band Confirmation Dialog -->
         <Dialog 
             v-model:visible="showLeaveDialog" 
@@ -126,7 +184,8 @@
                 <Button 
                     label="Leave Band" 
                     severity="danger" 
-                    @click="leaveBand" 
+                    @click="leaveBand"
+                    :loading="leavingBand"
                 />
             </template>
         </Dialog>
@@ -204,7 +263,13 @@ const bandInfo = ref<BandInfo>({
 
 const upcomingEvents = ref<BandEvent[]>([]);
 const showLeaveDialog = ref(false);
+const showPromoteDialog = ref(false);
 const loading = ref(true);
+const leavingBand = ref(false);
+const promotingLeader = ref(false);
+
+const eligibleLeaders = ref<BandUser[]>([]);
+const selectedNewLeader = ref<string | null>(null);
 
 // TypeScript interface for dev state
 
@@ -403,9 +468,35 @@ const setAvailability = async (eventId: string, availability: boolean) => {
     }
 };
 
-const leaveBand = async () => {
+// Fetch eligible leaders for promotion
+const fetchEligibleLeaders = async () => {
     try {
-        const bandId = bandInfo.value.id || '1';
+        const bandId = bandInfo.value.id;
+        const response = await fetch(`/api/bands/${bandId}/eligible-leaders?currentUserId=${currentUserId.value}`);
+        if (!response.ok) throw new Error('Failed to fetch eligible leaders');
+        
+        const members = await response.json();
+        eligibleLeaders.value = members;
+    } catch (error) {
+        console.error('Error fetching eligible leaders:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load eligible leaders',
+            life: 3000
+        });
+    }
+};
+
+// Utility function for initials
+const getInitials = (firstName: string, lastName: string): string => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+};
+
+// Check if user is leader and handle leave band logic
+const checkLeaderStatusAndLeave = async () => {
+    try {
+        const bandId = bandInfo.value.id;
         const response = await fetch(`/api/bands/${bandId}/leave`, {
             method: 'DELETE',
             headers: {
@@ -416,8 +507,20 @@ const leaveBand = async () => {
             })
         });
         
-        if (!response.ok) throw new Error('Failed to leave band');
+        const result = await response.json();
         
+        if (!response.ok) {
+            if (result.requiresLeaderPromotion) {
+                // User is leader and needs to promote someone
+                await fetchEligibleLeaders();
+                showLeaveDialog.value = false;
+                showPromoteDialog.value = true;
+                return;
+            }
+            throw new Error(result.message || 'Failed to leave band');
+        }
+        
+        // Successfully left
         toast.add({
             severity: 'success',
             summary: 'Success',
@@ -427,7 +530,7 @@ const leaveBand = async () => {
         
         showLeaveDialog.value = false;
         
-        // Redirect to home or band selection page
+        // Redirect to home
         setTimeout(() => {
             router.push('/');
         }, 1000);
@@ -437,10 +540,141 @@ const leaveBand = async () => {
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to leave band',
+            detail: error instanceof Error ? error.message : 'Failed to leave band',
             life: 3000
         });
         showLeaveDialog.value = false;
+    }
+};
+
+// Promote member to leader and then leave
+const promoteAndLeave = async () => {
+    if (!selectedNewLeader.value) return;
+    
+    promotingLeader.value = true;
+    try {
+        // First promote the new leader
+        const bandId = bandInfo.value.id;
+        const promoteResponse = await fetch(`/api/bands/${bandId}/promote-leader`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                currentUserId: currentUserId.value,
+                newLeaderId: selectedNewLeader.value
+            })
+        });
+        
+        if (!promoteResponse.ok) {
+            const error = await promoteResponse.json();
+            throw new Error(error.message || 'Failed to promote leader');
+        }
+        
+        // Then leave the band
+        const leaveResponse = await fetch(`/api/bands/${bandId}/leave`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value
+            })
+        });
+        
+        if (!leaveResponse.ok) {
+            throw new Error('Failed to leave band after promotion');
+        }
+        
+        const newLeaderName = eligibleLeaders.value.find(m => m.id === selectedNewLeader.value);
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `${newLeaderName?.firstName} ${newLeaderName?.lastName} is now the band leader. You have left ${bandInfo.value.name}.`,
+            life: 5000
+        });
+        
+        showPromoteDialog.value = false;
+        
+        // Redirect to home
+        setTimeout(() => {
+            router.push('/');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error promoting leader and leaving:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error instanceof Error ? error.message : 'Failed to promote leader and leave band',
+            life: 3000
+        });
+    } finally {
+        promotingLeader.value = false;
+    }
+};
+
+// Cancel promotion dialog
+const cancelPromotion = () => {
+    showPromoteDialog.value = false;
+    selectedNewLeader.value = null;
+    eligibleLeaders.value = [];
+};
+
+// Force leave as last member
+const forceLeaveAsLastMember = async () => {
+    leavingBand.value = true;
+    try {
+        const bandId = bandInfo.value.id;
+        const response = await fetch(`/api/bands/${bandId}/leave`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to leave band');
+        }
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `You have left ${bandInfo.value.name}`,
+            life: 3000
+        });
+        
+        showPromoteDialog.value = false;
+        
+        // Redirect to home
+        setTimeout(() => {
+            router.push('/');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error leaving band:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error instanceof Error ? error.message : 'Failed to leave band',
+            life: 3000
+        });
+    } finally {
+        leavingBand.value = false;
+    }
+};
+
+const leaveBand = async () => {
+    leavingBand.value = true;
+    try {
+        await checkLeaderStatusAndLeave();
+    } finally {
+        leavingBand.value = false;
     }
 };
 
@@ -616,6 +850,71 @@ onMounted(async () => {
     justify-content: center;
 }
 
+.promote-leader-content {
+    padding: 1rem 0;
+}
+
+.promote-leader-content p {
+    margin-bottom: 1rem;
+    color: var(--theme-main-text);
+}
+
+.no-members {
+    text-align: center;
+    padding: 1rem;
+    color: var(--theme-secondary-text);
+}
+
+.leader-candidates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.candidate-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--p-surface-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--p-surface-0);
+}
+
+.candidate-item:hover {
+    background: var(--p-surface-50);
+    border-color: var(--hoojams-orange);
+}
+
+.candidate-item.selected {
+    background: var(--p-primary-50);
+    border-color: var(--p-primary-500);
+}
+
+.candidate-info {
+    flex: 1;
+}
+
+.candidate-info strong {
+    display: block;
+    color: var(--theme-main-text);
+    margin-bottom: 0.25rem;
+}
+
+.candidate-details {
+    font-size: 0.9rem;
+    color: var(--theme-secondary-text);
+}
+
+.selected-icon {
+    color: var(--p-primary-500);
+    font-size: 1.2rem;
+}
+
 @media (max-width: 768px) {
     .event-meta {
         flex-direction: column;
@@ -634,6 +933,16 @@ onMounted(async () => {
     
     .availability-actions .p-button {
         flex: 1;
+    }
+    
+    .candidate-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .selected-icon {
+        margin-top: 0.5rem;
     }
 }
 </style> 
