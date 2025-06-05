@@ -347,10 +347,10 @@ INSERT INTO user (first_name, last_name, bio, email, phone_number, genre, instru
 
 -- Create user roles for test users
 INSERT INTO user_roles (user_id, role_id) VALUES
-    (2, 4),  -- wxtj exec -> WXTJ Executive
-    (5, 3),  -- Test User -> General User  
-    (6, 1),  -- Alex Rockstar -> Band Leader
-    (7, 2);  -- Jamie Beats -> Band Member
+    (1, 4),  -- wxtj exec -> WXTJ Executive
+    (2, 3),  -- Test User -> General User  
+    (3, 1),  -- Alex Rockstar -> Band Leader
+    (4, 2);  -- Jamie Beats -> Band Member
 
 -- Create a test band for the band leader
 INSERT INTO band (name, email, phone_number, genre, total_events_played, events_played_ytd, description) VALUES
@@ -358,16 +358,16 @@ INSERT INTO band (name, email, phone_number, genre, total_events_played, events_
 
 -- Create band leadership relationship
 INSERT INTO band_leader (user_role_id, band_id) VALUES
-    (6, 1);  -- Alex (user_role_id 6) leads Electric Vibes (band_id 1)
+    (3, 1);  -- Alex (user_role_id 3) leads Electric Vibes (band_id 1)
 
 -- Create band membership relationship  
 INSERT INTO band_member (user_role_id, band_id) VALUES
-    (7, 1);  -- Jamie (user_role_id 7) is member of Electric Vibes (band_id 1)
+    (4, 1);  -- Jamie (user_role_id 4) is member of Electric Vibes (band_id 1)
 
 -- Create WXTJ executive record
 INSERT INTO wxtj_exec (user_role_id, exec_title) VALUES
-    (4, 'Executive');  -- wxtj exec with title
+    (1, 'Executive');  -- wxtj exec with title
 
 -- Create general user record
 INSERT INTO general_user (user_role_id, looking_for_a_band, has_created_band, has_pending_band_request) VALUES
-    (5, 0, 0, 0);  -- Test User - general user status
+    (2, 0, 0, 0);  -- Test User - general user status
