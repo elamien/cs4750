@@ -345,7 +345,14 @@ const createBand = async () => {
             throw new Error(error.message || 'Failed to create band');
         }
         
-        const createdBand = await response.json();
+        const result = await response.json();
+        const createdBand = result.band;
+        const updatedUser = result.updatedUser;
+        
+        // Update localStorage with new user role
+        if (updatedUser) {
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        }
         
         toast.add({
             severity: 'success',
@@ -359,6 +366,11 @@ const createBand = async () => {
         
         // Clear form
         resetBandForm();
+        
+        // Redirect to band management page
+        setTimeout(() => {
+            router.push('/my-band');
+        }, 1000);
         
     } catch (error) {
         console.error('Error creating band:', error);

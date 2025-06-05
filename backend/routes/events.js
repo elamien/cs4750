@@ -113,48 +113,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// POST /api/events/requests - Submit request for band to play at an event
-router.post('/requests', async (req, res, next) => {
-  const { bandId, eventId, message, requestingUserId } = req.body;
-
-  if (!bandId || !eventId || !requestingUserId) {
-    return res.status(400).json({ message: 'Band ID, Event ID, and Requesting User ID are required.' });
-  }
-
-  try {
-    // Check if the event is still 'open' or accepting requests
-    const [eventRows] = await pool.query('SELECT status FROM event WHERE event_id = ?', [eventId]);
-    if (eventRows.length === 0 || eventRows[0].status !== 'open') {
-        return res.status(400).json({ message: 'Event not found or no longer accepting requests.' });
-    }
-
-    // Check if this band has already requested to play this event
-    const [existingRequests] = await pool.query(
-      'SELECT event_request_id FROM event_request WHERE band_id = ? AND event_id = ? AND status = \'pending\'',
-      [bandId, eventId]
-    );
-    if (existingRequests.length > 0) {
-        return res.status(409).json({ message: 'Your band has already sent a pending request for this event.'});
-    }
-
-    const query = `
-      INSERT INTO event_request (band_id, event_id, message)
-      VALUES (?, ?, ?)
-    `;
-
-    const [result] = await pool.query(query, [bandId, eventId, message || null]);
-
-    res.status(201).json({ 
-        message: 'Event request submitted successfully.', 
-        eventRequestId: result.insertId 
-    });
-  } catch (error) {
-    console.error('Failed to submit event request:', error);
-    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
-        return res.status(404).json({ message: 'Band, Event, or Requesting User not found.'});
-    }
-    next(error);
-  }
-});
+// NOTE: Bands can no longer apply to events. Event organizers invite bands instead.
+// The event_request table is now used for invitations FROM event organizers TO bands.
 
 export default router; 

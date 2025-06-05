@@ -326,7 +326,7 @@ const bandLeaderExtraItems: MenuItem[] = [
                 route: '/my-band/members'
             },
             {
-                label: 'Event Applications', // Bands apply to events, or are requested
+                label: 'Event Invitations', // Event organizers invite bands to play
                 icon: 'pi pi-calendar-plus',
                 route: '/my-band/event-requests',
                 // badge: '2'

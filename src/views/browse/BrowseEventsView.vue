@@ -68,13 +68,6 @@
                 <template #footer>
                     <div class="event-actions">
                         <Button 
-                            v-if="isSignedIn && event.status === 'open'"
-                            label="Request to Play" 
-                            icon="pi pi-send" 
-                            severity="success"
-                            @click="requestToPlay(event.id)" 
-                        />
-                        <Button 
                             v-if="isSignedIn" 
                             :label="event.isFavorite ? 'Unfavorite' : 'Favorite'" 
                             :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
@@ -184,47 +177,6 @@ const getEventStatusSeverity = (status: EventListItem['status']) => {
 
 // Actions
 
-const requestToPlay = async (eventId: string) => {
-    console.log('Requesting to play at event:', eventId);
-    
-    // Check if user is signed in and has a valid ID
-    if (!currentUser.value || !currentUser.value.id) {
-        console.error('User not signed in or invalid user ID');
-        return;
-    }
-    
-    const requestingUserId = currentUser.value.id;
-    // TODO: Get actual band ID - for now using a mock band ID
-    const bandId = '1'; // Mock band ID - should come from user's band context
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/event-requests`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                bandId: bandId,
-                eventId: eventId,
-                requestingUserId: requestingUserId,
-                message: 'We would love to play at your event!' // Default message
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to submit request');
-        }
-
-        const result = await response.json();
-        console.log('Event request submitted:', result.message);
-        // TODO: Show success toast message
-        alert('Request to play submitted successfully!'); // Temporary success display
-    } catch (error) {
-        console.error('Failed to submit event request:', error);
-        // TODO: Show error toast message
-        const errorMessage = error instanceof Error ? error.message : 'Failed to submit request';
-        alert(`Error: ${errorMessage}`); // Temporary error display
-    }
-};
 
 const toggleFavorite = async (eventId: string) => {
     // Check if user is signed in and has a valid ID

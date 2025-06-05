@@ -346,27 +346,77 @@ router.post('/', async (req, res, next) => {
   }
   
   try {
-    // Insert new band
-    const [bandResult] = await pool.query(
-      `INSERT INTO band (name, genre, description) VALUES (?, ?, ?)`,
-      [name, genre || null, description || null]
-    );
+    // Start transaction for data consistency
+    await pool.query('START TRANSACTION');
     
-    const bandId = bandResult.insertId;
-    
-    // This is complex because we need to work with the role system
-    // For now, just return the created band without adding the user as leader
-    // This would need to be implemented properly with the role system
-    
-    const createdBand = {
-      id: String(bandId),
-      name,
-      genre: genre || null,
-      description: description || null,
-      location: null
-    };
-    
-    res.status(201).json(createdBand);
+    try {
+      // Insert new band
+      const [bandResult] = await pool.query(
+        `INSERT INTO band (name, genre, description) VALUES (?, ?, ?)`,
+        [name, genre || null, description || null]
+      );
+      
+      const bandId = bandResult.insertId;
+      
+      // Check if user has existing role entry
+      const [userRoleCheck] = await pool.query(
+        'SELECT user_role_id FROM user_roles WHERE user_id = ?',
+        [creatorUserId]
+      );
+      
+      let userRoleId;
+      if (userRoleCheck.length > 0) {
+        userRoleId = userRoleCheck[0].user_role_id;
+        
+        // Update their role to Band Leader (role_id = 1)
+        await pool.query(
+          'UPDATE user_roles SET role_id = 1 WHERE user_role_id = ?',
+          [userRoleId]
+        );
+      } else {
+        // Create new user_role entry for Band Leader
+        const [roleResult] = await pool.query(
+          'INSERT INTO user_roles (user_id, role_id) VALUES (?, 1)',
+          [creatorUserId]
+        );
+        userRoleId = roleResult.insertId;
+      }
+      
+      // Add to band_leader table
+      await pool.query(
+        'INSERT INTO band_leader (user_role_id, band_id) VALUES (?, ?)',
+        [userRoleId, bandId]
+      );
+      
+             // Get updated user info to return
+       const [userInfo] = await pool.query(
+         `SELECT u.user_id AS userId, u.first_name AS firstName, u.last_name AS lastName, 
+                 u.email, u.instrument, u.genre, u.bio, r.role_name AS role
+          FROM user u 
+          JOIN user_roles ur ON u.user_id = ur.user_id 
+          JOIN roles r ON ur.role_id = r.role_id 
+          WHERE u.user_id = ?`,
+         [creatorUserId]
+       );
+      
+      await pool.query('COMMIT');
+      
+      const createdBand = {
+        id: String(bandId),
+        name,
+        genre: genre || null,
+        description: description || null,
+        location: null
+      };
+      
+      res.status(201).json({
+        band: createdBand,
+        updatedUser: userInfo[0] || null
+      });
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     console.error('Failed to create band:', error);
     if (error.code === 'ER_DUP_ENTRY') {
@@ -943,6 +993,167 @@ router.delete('/:id/leave', async (req, res, next) => {
     }
   } catch (error) {
     console.error('Failed to leave band:', error);
+    next(error);
+  }
+});
+
+// GET /api/bands/:bandId/event-invitations - Get event invitations for a band
+router.get('/:bandId/event-invitations', async (req, res, next) => {
+  const { bandId } = req.params;
+  
+  try {
+    const query = `
+      SELECT 
+        er.event_request_id AS id,
+        er.event_id AS eventId,
+        er.band_id AS bandId,
+        er.status,
+        er.message,
+        er.time_created AS timeCreated,
+        er.time_responded AS timeResponded,
+        e.event_title AS eventTitle,
+        e.datetime AS eventDateTime,
+        e.location AS eventLocation,
+        e.genre AS eventGenre,
+        e.description AS eventDescription,
+        CONCAT(u.first_name, ' ', u.last_name) AS organizerName
+      FROM event_request er
+      JOIN event e ON er.event_id = e.event_id
+      JOIN user u ON e.user_id = u.user_id
+      WHERE er.band_id = ?
+      ORDER BY er.time_created DESC
+    `;
+    
+    const [rows] = await pool.query(query, [bandId]);
+    
+    const invitations = rows.map(row => ({
+      ...row,
+      id: String(row.id),
+      eventId: String(row.eventId),
+      bandId: String(row.bandId),
+      eventDateTime: row.eventDateTime ? new Date(row.eventDateTime).toISOString() : null,
+      timeCreated: row.timeCreated ? new Date(row.timeCreated).toISOString() : null,
+      timeResponded: row.timeResponded ? new Date(row.timeResponded).toISOString() : null
+    }));
+    
+    res.json(invitations);
+  } catch (error) {
+    console.error('Failed to fetch event invitations:', error);
+    next(error);
+  }
+});
+
+// POST /api/bands/:bandId/event-invitations/:invitationId/accept - Accept an event invitation
+router.post('/:bandId/event-invitations/:invitationId/accept', async (req, res, next) => {
+  const { bandId, invitationId } = req.params;
+  const { userId } = req.body;
+  
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+  
+  try {
+    // Start transaction for data consistency
+    await pool.query('START TRANSACTION');
+    
+    try {
+      // 1. Verify the invitation exists and is pending
+      const [invitationRows] = await pool.query(
+        'SELECT er.*, e.event_title FROM event_request er JOIN event e ON er.event_id = e.event_id WHERE er.event_request_id = ? AND er.band_id = ? AND er.status = "pending"',
+        [invitationId, bandId]
+      );
+      
+      if (invitationRows.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(404).json({ message: 'Invitation not found or already responded to.' });
+      }
+      
+      const invitation = invitationRows[0];
+      
+      // 2. Verify user is a band leader for this band
+      const [leaderCheck] = await pool.query(
+        `SELECT bl.user_role_id FROM band_leader bl 
+         JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+         WHERE bl.band_id = ? AND ur.user_id = ?`,
+        [bandId, userId]
+      );
+      
+      if (leaderCheck.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(403).json({ message: 'Only band leaders can accept invitations.' });
+      }
+      
+      // 3. Update the invitation status
+      await pool.query(
+        'UPDATE event_request SET status = "approved", responded_by_user_id = ?, time_responded = NOW() WHERE event_request_id = ?',
+        [userId, invitationId]
+      );
+      
+      // 4. TODO: Add band to event slot (this would require additional logic to determine which slot)
+      // For now, we'll just mark the invitation as accepted
+      
+      await pool.query('COMMIT');
+      
+      res.json({ 
+        message: 'Event invitation accepted successfully',
+        eventTitle: invitation.event_title
+      });
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error('Failed to accept invitation:', error);
+    next(error);
+  }
+});
+
+// POST /api/bands/:bandId/event-invitations/:invitationId/decline - Decline an event invitation
+router.post('/:bandId/event-invitations/:invitationId/decline', async (req, res, next) => {
+  const { bandId, invitationId } = req.params;
+  const { userId } = req.body;
+  
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+  
+  try {
+    // 1. Verify the invitation exists and is pending
+    const [invitationRows] = await pool.query(
+      'SELECT er.*, e.event_title FROM event_request er JOIN event e ON er.event_id = e.event_id WHERE er.event_request_id = ? AND er.band_id = ? AND er.status = "pending"',
+      [invitationId, bandId]
+    );
+    
+    if (invitationRows.length === 0) {
+      return res.status(404).json({ message: 'Invitation not found or already responded to.' });
+    }
+    
+    const invitation = invitationRows[0];
+    
+    // 2. Verify user is a band leader for this band
+    const [leaderCheck] = await pool.query(
+      `SELECT bl.user_role_id FROM band_leader bl 
+       JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+       WHERE bl.band_id = ? AND ur.user_id = ?`,
+      [bandId, userId]
+    );
+    
+    if (leaderCheck.length === 0) {
+      return res.status(403).json({ message: 'Only band leaders can decline invitations.' });
+    }
+    
+    // 3. Update the invitation status
+    await pool.query(
+      'UPDATE event_request SET status = "rejected", responded_by_user_id = ?, time_responded = NOW() WHERE event_request_id = ?',
+      [userId, invitationId]
+    );
+    
+    res.json({ 
+      message: 'Event invitation declined',
+      eventTitle: invitation.event_title
+    });
+  } catch (error) {
+    console.error('Failed to decline invitation:', error);
     next(error);
   }
 });
