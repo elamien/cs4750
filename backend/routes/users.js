@@ -3,6 +3,57 @@ import { pool } from '../config/database.js';
 
 const router = express.Router();
 
+// GET /api/users - Fetch all users (for admin use)
+router.get('/', async (req, res, next) => {
+  try {
+    const query = `
+      SELECT 
+        u.user_id AS id,
+        u.first_name AS firstName,
+        u.last_name AS lastName,
+        u.bio,
+        u.email,
+        u.phone_number AS phoneNumber,
+        u.genre,
+        u.instrument,
+        r.role_name AS roleName,
+        CASE 
+          WHEN r.role_name = 'General User' THEN 
+            CASE 
+              WHEN g.has_created_band = 1 THEN 'Has Created Band'
+              WHEN g.has_pending_band_request = 1 THEN 'Pending Band Request'
+              WHEN g.looking_for_a_band = 1 THEN 'Looking for Band'
+              ELSE 'General User'
+            END
+          WHEN r.role_name = 'WXTJ Executive' THEN CONCAT('Executive: ', COALESCE(w.exec_title, 'Executive'))
+          WHEN r.role_name IN ('Band Leader', 'Band Member') THEN 
+            CONCAT(r.role_name, ' (', COALESCE(b.name, 'Unknown Band'), ')')
+          ELSE r.role_name
+        END AS roleDetails
+      FROM user u
+      JOIN user_roles ur ON u.user_id = ur.user_id
+      JOIN roles r ON ur.role_id = r.role_id
+      LEFT JOIN general_user g ON ur.user_role_id = g.user_role_id
+      LEFT JOIN wxtj_exec w ON ur.user_role_id = w.user_role_id
+      LEFT JOIN band_leader bl ON ur.user_role_id = bl.user_role_id
+      LEFT JOIN band_member bm ON ur.user_role_id = bm.user_role_id
+      LEFT JOIN band b ON (bl.band_id = b.band_id OR bm.band_id = b.band_id)
+      ORDER BY u.user_id ASC;
+    `;
+    const [rows] = await pool.query(query);
+    
+    const users = rows.map(user => ({
+      ...user,
+      id: String(user.id)
+    }));
+    
+    res.json(users);
+  } catch (error) {
+    console.error('Failed to fetch all users:', error);
+    next(error);
+  }
+});
+
 // GET /api/users/:id - Fetch a specific user by ID
 router.get('/:id', async (req, res, next) => {
   const { id: userId } = req.params;

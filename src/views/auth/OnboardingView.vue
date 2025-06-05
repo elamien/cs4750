@@ -2,41 +2,23 @@
   <div class="onboarding">
     <div class="header">
       <h1>Welcome to HooJams!</h1>
-      <p>Let's set up your profile to help you connect with the right musicians and opportunities</p>
+      <p>Let's set up your musical profile to help you connect with the right musicians and opportunities</p>
     </div>
 
     <Card class="onboarding-card">
       <template #content>
-        <Steps :model="steps" :readonly="false" />
-        
-        <!-- Step 1: Basic Info -->
-        <div v-if="currentStep === 0" class="step-content">
-          <h3>Tell us about yourself</h3>
+        <div class="step-content">
+          <h3>Tell us about your musical journey</h3>
           <div class="form-grid">
-            <div class="field">
-              <label for="firstName">First Name</label>
-              <InputText id="firstName" v-model="profile.firstName" />
-            </div>
-            <div class="field">
-              <label for="lastName">Last Name</label>
-              <InputText id="lastName" v-model="profile.lastName" />
-            </div>
             <div class="field span-2">
               <label for="bio">Bio</label>
               <Textarea 
                 id="bio" 
                 v-model="profile.bio" 
-                placeholder="Tell us about your musical journey..."
+                placeholder="Tell us about your musical journey, experience, and what you're looking for..."
                 rows="4"
               />
             </div>
-          </div>
-        </div>
-
-        <!-- Step 2: Musical Info -->
-        <div v-if="currentStep === 1" class="step-content">
-          <h3>Your musical background</h3>
-          <div class="form-grid">
             <div class="field">
               <label for="instruments">Instruments</label>
               <MultiSelect 
@@ -62,22 +44,8 @@
 
         <!-- Navigation -->
         <div class="step-navigation">
-          <Button 
-            v-if="currentStep > 0" 
-            label="Previous" 
-            severity="secondary" 
-            outlined
-            @click="previousStep"
-          />
           <div class="spacer"></div>
           <Button 
-            v-if="currentStep < steps.length - 1"
-            label="Next" 
-            @click="nextStep"
-            :disabled="!canProceed"
-          />
-          <Button 
-            v-else
             label="Complete Setup" 
             @click="completeOnboarding"
             :disabled="!canProceed"
@@ -92,8 +60,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
-import Steps from 'primevue/steps'
-import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
@@ -102,22 +68,11 @@ import { useReferenceData } from '@/composables/useReferenceData'
 const router = useRouter()
 const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData()
 
-const currentStep = ref(0)
-
-const steps = ref([
-  { label: 'Basic Info' },
-  { label: 'Musical Background' }
-])
-
 const profile = ref<{
-  firstName: string;
-  lastName: string;
   bio: string;
   instruments: string[];
   genres: string[];
 }>({
-  firstName: '',
-  lastName: '',
   bio: '',
   instruments: [],
   genres: []
@@ -132,27 +87,10 @@ onMounted(async () => {
 })
 
 const canProceed = computed(() => {
-  switch (currentStep.value) {
-    case 0:
-      return profile.value.firstName && profile.value.lastName
-    case 1:
-      return profile.value.instruments.length > 0 && profile.value.genres.length > 0
-    default:
-      return false
-  }
+  return profile.value.bio.trim() && 
+         profile.value.instruments.length > 0 && 
+         profile.value.genres.length > 0
 })
-
-const nextStep = () => {
-  if (currentStep.value < steps.value.length - 1) {
-    currentStep.value++
-  }
-}
-
-const previousStep = () => {
-  if (currentStep.value > 0) {
-    currentStep.value--
-  }
-}
 
 const completeOnboarding = () => {
   console.log('Onboarding completed:', profile.value)
@@ -189,7 +127,6 @@ const completeOnboarding = () => {
 
 .step-content {
   margin: 2rem 0;
-  min-height: 300px;
 }
 
 .step-content h3 {

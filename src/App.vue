@@ -167,6 +167,21 @@
                             />
                         </div>
                         <div class="field-checkbox">
+                            <Checkbox id="wxtjExec" v-model="authForm.isWXTJExecutive" :binary="true" />
+                            <label for="wxtjExec">I am a WXTJ Executive</label>
+                        </div>
+                        <div v-if="authForm.isWXTJExecutive" class="field">
+                            <label for="wxtjKey">Executive Access Key</label>
+                            <InputText 
+                                id="wxtjKey" 
+                                v-model="authForm.wxtjAccessKey" 
+                                type="password"
+                                placeholder="Enter the executive access key" 
+                                class="w-full"
+                            />
+                            <small class="p-text-secondary">You should have received this key from an already registered WXTJ executive</small>
+                        </div>
+                        <div class="field-checkbox">
                             <Checkbox id="terms" v-model="authForm.acceptTerms" :binary="true" />
                             <label for="terms">I agree to the Terms and Conditions</label>
                         </div>
@@ -242,7 +257,9 @@ const authForm = ref({
     firstName: '',
     lastName: '',
     rememberMe: false,
-    acceptTerms: false
+    acceptTerms: false,
+    isWXTJExecutive: false,
+    wxtjAccessKey: ''
 });
 
 // Menu items for anonymous users (not signed in)
@@ -512,27 +529,55 @@ const handleSignIn = async () => {
     }
 };
 
-const handleSignUp = () => {
-    console.log('Sign up attempted:', {
-        firstName: authForm.value.firstName,
-        lastName: authForm.value.lastName,
-        email: authForm.value.email,
-        acceptTerms: authForm.value.acceptTerms
-    });
-    
-    // Mock successful sign up - redirect to onboarding for new users
-    isSignedIn.value = true;
-    userRole.value = 'general'; // New users start as general
-    mockUserProfile.value.userId = Date.now(); // Mock user ID
-    mockUserProfile.value.hasCreatedBand = false;
-    mockUserProfile.value.hasPendingBandRequest = false;
-    showAuthModal.value = false;
-    
-    // Reset form and redirect to onboarding for first-time users
-    resetAuthForm();
-    
-    // Redirect new users to onboarding
-    router.push('/onboarding');
+const handleSignUp = async () => {
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                firstName: authForm.value.firstName,
+                lastName: authForm.value.lastName,
+                email: authForm.value.email,
+                password: authForm.value.password,
+                isWXTJExecutive: authForm.value.isWXTJExecutive,
+                wxtjAccessKey: authForm.value.wxtjAccessKey
+            })
+        });
+        
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Show error toast
+            console.error('Registration failed:', data.message);
+            return;
+        }
+
+        // Successful registration
+        isSignedIn.value = true;
+        userRole.value = data.user.role;
+        mockUserProfile.value.userId = data.user.userId;
+        mockUserProfile.value.firstName = data.user.firstName;
+        mockUserProfile.value.lastName = data.user.lastName;
+        mockUserProfile.value.email = data.user.email;
+        mockUserProfile.value.hasCreatedBand = false;
+        mockUserProfile.value.hasPendingBandRequest = false;
+        
+        // Store user data in localStorage for persistence
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        
+        showAuthModal.value = false;
+        resetAuthForm();
+        
+        console.log('Registration successful:', data.user);
+        
+        // Redirect new users to onboarding
+        router.push('/onboarding');
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+    }
 };
 
 const resetAuthForm = () => {
@@ -543,7 +588,9 @@ const resetAuthForm = () => {
         firstName: '',
         lastName: '',
         rememberMe: false,
-        acceptTerms: false
+        acceptTerms: false,
+        isWXTJExecutive: false,
+        wxtjAccessKey: ''
     };
     authMode.value = 'signin';
 };

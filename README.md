@@ -64,14 +64,25 @@ cd backend
 npm start            # Start server on port 3001
 ```
 
-## 🎭 Test Users
+## 🎭 Test Users & Registration
 
+### Existing Test Users
 | Role | Email | Password | Name | Permissions |
 |------|-------|----------|------|-------------|
 | **Band Leader** | `bandleader@test.com` | `test123` | Sarah Leader | Create/manage bands, handle requests |
 | **Band Member** | `bandmember@test.com` | `test123` | Mike Member | View band events, mark availability |
 | **General User** | `general@test.com` | `test123` | Gary General | Join or create one band |
 | **WXTJ Executive** | `wxtj.exec@virginia.edu` | `test123` | Wesley Executive | Full admin privileges |
+
+### Creating New Users
+- **General Users**: Simply register with name, email, and password
+- **WXTJ Executives**: Check "I am a WXTJ Executive" and enter access key
+
+#### WXTJ Executive Access Key
+```
+HooJams2024_WXTJ
+```
+*This key should be shared only with legitimate WXTJ staff members*
 
 ### Quick Role Switching (3-5 seconds)
 1. Click your **profile avatar** (top right)

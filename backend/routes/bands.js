@@ -3,10 +3,12 @@ import { pool } from '../config/database.js';
 
 const router = express.Router();
 
-// GET /api/bands - Fetch all bands with member counts for join view
+// GET /api/bands - Fetch all bands with member counts for join view (with optional search)
 router.get('/', async (req, res, next) => {
+  const { search } = req.query;
+  
   try {
-    const query = `
+    let query = `
       SELECT 
         b.band_id AS id,
         b.name,
@@ -16,10 +18,19 @@ router.get('/', async (req, res, next) => {
         COUNT(bm.user_role_id) AS memberCount
       FROM band b
       LEFT JOIN band_member bm ON b.band_id = bm.band_id
+    `;
+    
+    const params = [];
+    if (search) {
+      query += ` WHERE b.name LIKE ?`;
+      params.push(`%${search}%`);
+    }
+    
+    query += `
       GROUP BY b.band_id, b.name, b.genre, b.description
       ORDER BY b.name;
     `;
-    const [rows] = await pool.query(query);
+    const [rows] = await pool.query(query, params);
     
     const bands = rows.map(band => ({
       ...band,
@@ -1116,8 +1127,11 @@ router.post('/:bandId/event-invitations/:invitationId/accept', async (req, res, 
         [userId, invitationId]
       );
       
-      // 4. TODO: Add band to event slot (this would require additional logic to determine which slot)
-      // For now, we'll just mark the invitation as accepted
+      // 4. Assign band to the event (single band per event in new system)
+      await pool.query(
+        'UPDATE event SET assigned_band_id = ?, status = "filled" WHERE event_id = ?',
+        [bandId, invitation.event_id]
+      );
       
       await pool.query('COMMIT');
       
@@ -1169,11 +1183,17 @@ router.post('/:bandId/event-invitations/:invitationId/decline', async (req, res,
       return res.status(403).json({ message: 'Only band leaders can decline invitations.' });
     }
     
-    // 3. Update the invitation status
-    await pool.query(
-      'UPDATE event_request SET status = "rejected", responded_by_user_id = ?, time_responded = NOW() WHERE event_request_id = ?',
-      [userId, invitationId]
-    );
+          // 3. Update the invitation status
+      await pool.query(
+        'UPDATE event_request SET status = "rejected", responded_by_user_id = ?, time_responded = NOW() WHERE event_request_id = ?',
+        [userId, invitationId]
+      );
+      
+      // 4. Remove band from event if they were previously assigned
+      await pool.query(
+        'UPDATE event SET assigned_band_id = NULL, status = "open" WHERE event_id = ? AND assigned_band_id = ?',
+        [invitation.event_id, bandId]
+      );
     
     res.json({ 
       message: 'Event invitation declined',

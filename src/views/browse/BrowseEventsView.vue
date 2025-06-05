@@ -44,8 +44,8 @@
                 <template #title>{{ event.eventTitle }}</template>
                 <template #subtitle>
                     <div class="event-meta">
-                        <span><i class="pi pi-calendar"></i> {{ formatDate(event.datetime) }}</span>
-                        <span><i class="pi pi-clock"></i> {{ formatTime(event.datetime) }}</span>
+                        <span><i class="pi pi-calendar"></i> {{ formatDate(event.eventDate) }}</span>
+                        <span><i class="pi pi-clock"></i> {{ getTimeSlotText(event.timeSlot) }}</span>
                         <span><i class="pi pi-map-marker"></i> {{ event.location || 'Venue TBD' }}</span>
                     </div>
                 </template>
@@ -58,10 +58,19 @@
                         <div class="detail-item">
                             <strong>Posted by:</strong> {{ event.creatorName }} ({{ event.creatorRole }})
                         </div>
-                        <div class="detail-item status-row">
-                            <div class="status-tag">
-                                <strong>Status:</strong> <Tag :value="event.status.toUpperCase()" :severity="getEventStatusSeverity(event.status)" />
-                        </div>
+                        <div class="detail-item">
+                            <strong>Performing:</strong>
+                            <div class="bands-list">
+                                <div v-if="event.bandName" class="band-tags">
+                                    <Tag 
+                                        :value="event.bandName" 
+                                        severity="info" 
+                                        class="band-tag clickable"
+                                        @click="viewBandDetails(event.bandName)"
+                                    />
+                                </div>
+                                <span v-else class="tba">TBA</span>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -89,6 +98,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
@@ -97,6 +108,8 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useReferenceData } from '@/composables/useReferenceData';
 
+const router = useRouter();
+const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
 
 // TypeScript interface for dev state
@@ -116,14 +129,18 @@ const currentUser = computed(() => authState.value.currentUser);
 interface EventListItem {
     id: string; // event_id (INT in DB, string from API)
     eventTitle: string; // Corresponds to event_title
-    datetime: string; // ISO string from DB DATETIME field
+    eventDate: string; // Date in YYYY-MM-DD format
+    timeSlot: number; // 1-4 representing 8-9am, 9-10am, 10-11am, 11am-12pm
+    datetime: string; // ISO string from DB DATETIME field (for compatibility)
     location?: string | null;
     genre?: string | null;
     status: 'open' | 'filled' | 'expired';
     description?: string | null;
     creatorName: string; // Event creator's full name
     creatorRole: string; // Event creator's role
-    // Consider adding slot_one to slot_four if to be displayed directly
+    // Single band assignment
+    assignedBandId?: number | null;
+    bandName?: string | null;
     isFavorite: boolean; // Derived by API based on current user
 }
 
@@ -149,9 +166,9 @@ const filteredEvents = computed(() => {
 });
 
 // Utility functions
-const formatDate = (isoDateTimeString: string): string => {
-    if (!isoDateTimeString) return 'Date TBD';
-    const date = new Date(isoDateTimeString);
+const formatDate = (dateString: string): string => {
+    if (!dateString) return 'Date TBD';
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
@@ -160,19 +177,40 @@ const formatDate = (isoDateTimeString: string): string => {
     });
 };
 
-const formatTime = (isoDateTimeString: string): string => {
-    if (!isoDateTimeString) return 'Time TBD';
-    const date = new Date(isoDateTimeString);
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+
+// Get time slot display text
+const getTimeSlotText = (timeSlot: number): string => {
+    const timeSlotMapping = {
+        1: '8:00 AM - 9:00 AM',
+        2: '9:00 AM - 10:00 AM', 
+        3: '10:00 AM - 11:00 AM',
+        4: '11:00 AM - 12:00 PM'
+    };
+    return timeSlotMapping[timeSlot as keyof typeof timeSlotMapping] || 'Unknown Time';
 };
 
-const getEventStatusSeverity = (status: EventListItem['status']) => {
-  switch (status) {
-    case 'open': return 'success';
-    case 'filled': return 'warning';
-    case 'expired': return 'danger';
-    default: return 'info';
-  }
+// Navigate to band details page
+const viewBandDetails = async (bandName: string) => {
+    // Find band ID by name
+    try {
+        const response = await fetch(`${API_BASE_URL}/bands?search=${encodeURIComponent(bandName)}`);
+        if (response.ok) {
+            const bands: { id: string; name: string }[] = await response.json();
+            const band = bands.find(b => b.name === bandName);
+            if (band) {
+                router.push(`/browse/bands/${band.id}`);
+            }
+        }
+    } catch (error) {
+        console.error('Error finding band:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Could not find band details',
+            life: 3000
+        });
+    }
 };
 
 // Actions
@@ -366,18 +404,7 @@ onMounted(async () => {
     font-size: 0.9rem;
 }
 
-.detail-item.status-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-}
 
-.detail-item .status-tag {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
 
 .detail-item strong {
     color: var(--theme-main-text);
@@ -430,5 +457,34 @@ onMounted(async () => {
 
 .event-card :deep(.p-card-body) {
     padding: 0;
+}
+
+.bands-list {
+    margin-top: 0.5rem;
+}
+
+.band-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.band-tag {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.band-tag:hover {
+    transform: scale(1.05);
+}
+
+.tba {
+    color: var(--theme-secondary-text);
+    font-style: italic;
+    font-size: 0.9rem;
+    background: var(--p-surface-100);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px dashed var(--p-surface-300);
 }
 </style> 

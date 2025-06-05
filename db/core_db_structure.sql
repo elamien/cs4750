@@ -1,31 +1,53 @@
 -- This File is for only core intialization and no select like commands
 
--- COMPLETED DB STUCT BASED ON
+-- COMPLETED DB STRUCT BASED ON TIME SLOT SYSTEM
+-- Event Structure: Daily events run 8AM-12PM with 4 time slots:
+-- Slot 1: 8:00 AM - 9:00 AM
+-- Slot 2: 9:00 AM - 10:00 AM  
+-- Slot 3: 10:00 AM - 11:00 AM
+-- Slot 4: 11:00 AM - 12:00 PM
+-- Rules: 1 event per time slot per day, 1 band per event, no overlaps
+
+-- COMPLETED DB STRUCT BASED ON
 
 /*
+ROLE-BASED PERMISSIONS SYSTEM:
+
 Only Anon ROLE (not signed in) can:
 -- ONLY Browse/filter bands/events by genre/slot
+
 Only All users ROLE (except anon) can:
 -- Edit account info (everything from sql table)
 -- Browse/filter bands/events by genre/slot
 -- Save bands/events in favorites
 -- Create events, request bands to play
 -- Accept any pending fill in requests
+
 Only Band leader ROLE can:
 -- Create/Delete 1 band or Transfer lead
 -- View and Accept/deny event requests
 -- View and Accept/deny band member requests
 -- Create fill-in requests (leader only)
 -- Ability to remove existing members
+
 Only Band member ROLE can:
 -- Leave band
 -- View band approved event(s) and select (available vs not)
+
 Only General ROLE can:
 -- Create 1 band OR Request to join 1 band
+
 Only WXTJ Exec ROLE can:
 -- Manage all/any users (delete/change role)
 -- Manage all/any bands/events (all already possible actions, all CRUD operations, etc)
 -- Create 1 band OR Request to join 1 band
+
+REGISTRATION SYSTEM:
+-- General Users: Register normally → assigned General User role automatically
+-- WXTJ Executives: Must provide valid access key during registration
+-- Access key is stored in app_settings table for flexibility and rotation
+-- Invalid access key → registration denied
+-- This prevents unauthorized users from claiming executive privileges
 */
 
 -- Music Band Database Schema
@@ -62,7 +84,7 @@ CREATE TABLE instruments (
     instrument_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL UNIQUE,
     value VARCHAR(100) NOT NULL UNIQUE,
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -94,21 +116,27 @@ CREATE TABLE band (
     description TEXT
 );
 
--- Create event table
+-- Create event table with time slot system
+-- Each event represents one time slot (1-4) on a specific date
+-- Time slots: 1=8-9am, 2=9-10am, 3=10-11am, 4=11am-12pm
 CREATE TABLE event (
     event_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     event_title VARCHAR(255) NOT NULL,
     datetime DATETIME NOT NULL,
-    location VARCHAR(255),
-    genre ENUM('Classic rock', 'Country', 'Pop', 'R n B', 'Metal', 'Classical', 'Folk', 'Hip hop', 'Electronic', 'Jazz', 'Indie', 'Alternative'),
+    event_date DATE NOT NULL DEFAULT '2025-01-01',
+    time_slot INT NOT NULL DEFAULT '1',
+    assigned_band_id INT DEFAULT NULL,
+    location VARCHAR(255) DEFAULT NULL,
+    genre ENUM('Classic rock', 'Country', 'Pop', 'R n B', 'Metal', 'Classical', 'Folk', 'Hip hop', 'Electronic', 'Jazz', 'Indie', 'Alternative') DEFAULT NULL,
     status ENUM('open', 'filled', 'expired') DEFAULT 'open',
     description TEXT,
-    slot_one VARCHAR(100),
-    slot_two VARCHAR(100),
-    slot_three VARCHAR(100),
-    slot_four VARCHAR(100),
-    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
+    UNIQUE KEY idx_unique_date_slot (event_date, time_slot),
+    KEY user_id (user_id),
+    KEY assigned_band_id (assigned_band_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_band_id) REFERENCES band(band_id) ON DELETE SET NULL,
+    CONSTRAINT event_chk_1 CHECK (time_slot IN (1,2,3,4))
 );
 
 -- Create event_request table
@@ -185,10 +213,10 @@ CREATE TABLE band_member (
 -- Create general_user table
 CREATE TABLE general_user (
     user_role_id INT PRIMARY KEY,
-    looking_for_a_band BOOLEAN DEFAULT FALSE,
+    looking_for_a_band TINYINT(1) DEFAULT 0,
     -- NEW: Track if general user has created/joined a band (they can only do ONE of: create 1 band OR request to join 1 band)
-    has_created_band BOOLEAN DEFAULT FALSE,
-    has_pending_band_request BOOLEAN DEFAULT FALSE,
+    has_created_band TINYINT(1) DEFAULT 0,
+    has_pending_band_request TINYINT(1) DEFAULT 0,
     FOREIGN KEY (user_role_id) REFERENCES user_roles(user_role_id) ON DELETE CASCADE
 );
 
@@ -227,7 +255,7 @@ CREATE TABLE band_member_event_availability (
     user_id INT NOT NULL,
     band_id INT NOT NULL,
     event_id INT NOT NULL,
-    is_available BOOLEAN NOT NULL,
+    is_available TINYINT(1) NOT NULL,
     time_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
     FOREIGN KEY (band_id) REFERENCES band(band_id) ON DELETE CASCADE,
@@ -249,12 +277,28 @@ CREATE TABLE band_membership_history (
     FOREIGN KEY (performed_by_user_id) REFERENCES user(user_id) ON DELETE SET NULL
 );
 
+-- Create app_settings table for application configuration
+CREATE TABLE app_settings (
+    setting_id INT PRIMARY KEY AUTO_INCREMENT,
+    setting_name VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Insert default roles
 INSERT INTO roles (role_name) VALUES
     ('Band Leader'),
     ('Band Member'),
     ('General User'),
     ('WXTJ Executive');
+
+-- Insert application settings
+INSERT INTO app_settings (setting_name, setting_value, description) VALUES
+    ('wxtj_access_key', 'HooJams2024_WXTJ', 'Access key required for WXTJ Executive registration'),
+    ('app_name', 'HooJams', 'Application name'),
+    ('app_version', '1.0.0', 'Current application version');
 
 -- Insert common instruments for reference data
 INSERT INTO instruments (name, value) VALUES
@@ -274,8 +318,10 @@ INSERT INTO instruments (name, value) VALUES
 -- Create indexes for better performance
 CREATE INDEX idx_user_email ON user(email);
 CREATE INDEX idx_event_datetime ON event(datetime);
+CREATE INDEX idx_event_date ON event(event_date);
+CREATE INDEX idx_event_time_slot ON event(time_slot);
 CREATE INDEX idx_event_status ON event(status);
-CREATE INDEX idx_event_user ON event(user_id);
+-- Note: user_id and assigned_band_id indexes are created as part of foreign key constraints
 CREATE INDEX idx_membership_request_status ON membership_request(status);
 CREATE INDEX idx_event_request_status ON event_request(status);
 CREATE INDEX idx_user_roles_user ON user_roles(user_id);
@@ -283,8 +329,7 @@ CREATE INDEX idx_user_roles_role ON user_roles(role_id);
 -- NEW: Indexes for new tables
 CREATE INDEX idx_fill_in_request_status ON fill_in_request(status);
 CREATE INDEX idx_fill_in_request_slot ON fill_in_request(slot_number);
-CREATE INDEX idx_user_favorites_bands_user ON user_favorites_bands(user_id);
-CREATE INDEX idx_user_favorites_events_user ON user_favorites_events(user_id);
-CREATE INDEX idx_band_member_availability ON band_member_event_availability(user_id, band_id, event_id);
-CREATE INDEX idx_band_membership_history_user ON band_membership_history(user_id);
-CREATE INDEX idx_band_membership_history_band ON band_membership_history(band_id);
+CREATE INDEX idx_app_settings_name ON app_settings(setting_name);
+-- Note: idx_user_favorites_bands_user, idx_user_favorites_events_user, idx_band_member_availability, 
+-- idx_band_membership_history_user, and idx_band_membership_history_band are automatically created 
+-- by MySQL as part of the table definitions above
