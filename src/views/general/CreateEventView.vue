@@ -63,11 +63,29 @@ import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
+import { useToast } from 'primevue/usetoast';
+import { useRouter } from 'vue-router';
 import { useReferenceData } from '@/composables/useReferenceData';
 
-// Mock current user ID - in a real app, this would come from auth state
-const mockCurrentUserId = ref(1); // Example user_id
-// TODO: Replace mockCurrentUserId with actual user ID from an authentication store/service
+const toast = useToast();
+const router = useRouter();
+
+// Get current user ID from localStorage
+const getCurrentUserId = () => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            return user.userId;
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            return null;
+        }
+    }
+    return null;
+};
+
+const currentUserId = ref(getCurrentUserId());
 
 // Reference data (fetched from API)
 const { genres, initializeGenres } = useReferenceData();
@@ -89,7 +107,7 @@ const eventForm = ref<EventForm>({
     genre: null,
     description: '',
     status: 'open',
-    user_id: mockCurrentUserId.value
+    user_id: currentUserId.value
     // Note: slot_one, slot_two, slot_three, slot_four from event table are not included here.
     // They are nullable and may be handled in a different view/process (e.g., event update by owner/admin).
 });
@@ -100,7 +118,12 @@ const createEvent = async () => {
     // Ensure user_id is set (should be from logged-in user)
     if (!eventForm.value.user_id) {
         console.error("User ID is missing, cannot create event.");
-        // TODO: Show error toast to user
+        toast.add({
+            severity: 'error',
+            summary: 'Authentication Error',
+            detail: 'Please sign in to create events',
+            life: 3000
+        });
         return;
     }
     // Convert date to ISO string if it's a Date object from Calendar
@@ -133,17 +156,30 @@ const createEvent = async () => {
             throw new Error(errorResult.message || 'Failed to create event');
         }
         
-        const createdEvent = await response.json();
+                const createdEvent = await response.json();
         console.log('Event created successfully:', createdEvent);
-        // TODO: Show success toast
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Event Created!',
+            detail: `"${eventForm.value.eventTitle}" has been successfully created`,
+            life: 4000
+        });
+        
         resetForm(); // Reset form after successful creation
-        // TODO: Optionally navigate to event details or browse events
-        // router.push(`/browse/events/${createdEvent.id}`); 
+        
+        // Navigate to browse events page
+        router.push('/browse/events');
     } catch (error) {
         console.error('Error creating event:', error);
-        // TODO: Show error toast to user
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        alert(`Error creating event: ${errorMessage}`); // Temporary error display
+        
+        toast.add({
+            severity: 'error',
+            summary: 'Event Creation Failed',
+            detail: errorMessage,
+            life: 5000
+        });
     }
 };
 
@@ -155,7 +191,7 @@ const resetForm = () => {
         genre: null,
         description: '',
         status: 'open',
-        user_id: mockCurrentUserId.value // Reset with current user ID
+        user_id: currentUserId.value // Reset with current user ID
     };
 };
 

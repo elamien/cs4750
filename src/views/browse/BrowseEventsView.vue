@@ -62,7 +62,6 @@
                             <div class="status-tag">
                                 <strong>Status:</strong> <Tag :value="event.status.toUpperCase()" :severity="getEventStatusSeverity(event.status)" />
                         </div>
-                            <Button label="View Details" icon="pi pi-eye" @click="viewEventDetails(event.id)" />
                         </div>
                     </div>
                 </template>
@@ -184,10 +183,6 @@ const getEventStatusSeverity = (status: EventListItem['status']) => {
 };
 
 // Actions
-const viewEventDetails = (eventId: string) => {
-    console.log('Viewing event details for:', eventId);
-    // router.push(`/browse/events/${eventId}`);
-};
 
 const requestToPlay = async (eventId: string) => {
     console.log('Requesting to play at event:', eventId);

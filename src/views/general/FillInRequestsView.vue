@@ -33,7 +33,7 @@
                 <Column field="eventName" header="Event" sortable style="width: 22%; min-width: 180px;">
                     <template #body="slotProps">
                         <div>
-                            <Button :label="slotProps.data.eventName" link @click="viewEventDetails(slotProps.data.eventId)" class="p-button-link event-name truncate-text" :title="slotProps.data.eventName"/>
+                            <strong class="event-name truncate-text" :title="slotProps.data.eventName">{{ slotProps.data.eventName }}</strong>
                             <div class="event-sub-details">
                                 <span><i class="pi pi-calendar-clock"></i> {{ slotProps.data.eventDate }}</span>
                                 <span><i class="pi pi-map-marker"></i> {{ slotProps.data.eventVenue }}</span>
@@ -257,10 +257,7 @@ const viewBandDetails = (bandId: string) => {
   // router.push(`/browse/bands/${bandId}`);
 };
 
-const viewEventDetails = (eventId: string) => {
-  console.log('View event details for:', eventId);
-  // router.push(`/events/${eventId}`); // Example future route
-};
+
 
 // Computed property for display. 
 // Assumes API will provide most of this data pre-joined or additional fetches are made.

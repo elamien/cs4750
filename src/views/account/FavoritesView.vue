@@ -65,7 +65,6 @@
                         </template>
                         <template #footer>
                             <div class="card-actions">
-                                <Button label="View Event" icon="pi pi-eye" @click="viewEventDetails(event.id)" />
                                 <!-- Request to Play logic would depend on event status and if band slots are defined -->
                                 <!-- <Button 
                                     v-if="event.status === 'open'" // Assuming event has a status from DB
@@ -215,10 +214,7 @@ const viewBandDetails = (bandId: string) => {
     router.push(`/browse/bands/${bandId}`);
 };
 
-const viewEventDetails = (eventId: string) => {
-    console.log('Viewing event details for:', eventId);
-    router.push(`/browse/events/${eventId}`);
-};
+
 
 const removeFavoriteBand = async (bandId: string) => {
     try {
