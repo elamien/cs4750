@@ -44,25 +44,6 @@ cd ..
 npm run dev
 ```
 
-## 📁 Project Structure
-
-```
-cs4750/
-├── src/                    # Vue 3 + TypeScript frontend
-│   ├── views/             # Page components
-│   ├── components/        # Reusable components
-│   ├── router/            # Vue Router setup
-│   └── stores/            # Pinia state management
-├── backend/               # Node.js/Express API
-│   ├── server.js          # Main server (modular, 41 lines)
-│   ├── config/            # Database configuration
-│   ├── middleware/        # Error handling middleware
-│   └── routes/            # API route modules
-└── db/                    # Database files
-    ├── core_db_structure.sql  # Database schema (source of truth)
-    ├── database_commands.sql  # Test data insertion
-    └── *.md               # Database documentation
-```
 
 ## 🗄️ Database Setup
 
@@ -128,7 +109,7 @@ npm start            # Start server on port 3001
 ### Quick Role Switching (3-5 seconds)
 1. Click your **profile avatar** (top right)
 2. Click **"Sign Out"**
-3. Click **"Sign In"** 
+3. Click **"Sign In"**
 4. Enter new **email + `test123`**
 5. **Done!** - Instant role switch
 
