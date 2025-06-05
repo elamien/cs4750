@@ -21,7 +21,7 @@ const showAuthModal = ref(false);
   <div class="home">
     <div class="hero-section">
       <div class="hero-content">
-        <img src="@/assets/hoojams-logo-v2.png" alt="HooJams Logo" class="hero-logo" />
+        <img src="@/assets/landing-page-image.png" alt="Musicians performing together" class="hero-logo" />
         <h1>About HooJams</h1>
         <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
         <div class="hero-actions">
@@ -101,9 +101,12 @@ const showAuthModal = ref(false);
 }
 
 .hero-logo {
-  height: 80px;
+  max-width: 400px;
+  width: 100%;
+  height: auto;
   margin-bottom: 2rem;
-  filter: brightness(0) invert(1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .hero-section h1 {
@@ -193,6 +196,10 @@ const showAuthModal = ref(false);
   .hero-actions {
     flex-direction: column;
     align-items: center;
+  }
+  
+  .hero-logo {
+    max-width: 300px;
   }
   
   .features-section,

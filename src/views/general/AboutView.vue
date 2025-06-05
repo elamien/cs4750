@@ -5,6 +5,11 @@
       <p>Connecting musicians and creating opportunities in the Charlottesville community</p>
     </div>
 
+    <!-- Landing Page Image -->
+    <div class="landing-image-container">
+      <img src="@/assets/landing-page-image.png" alt="Musicians performing together" class="landing-image" />
+    </div>
+
     <div class="content">
       <Card class="about-section">
         <template #title>Our Mission</template>
@@ -105,6 +110,26 @@ import Button from 'primevue/button';
   font-size: 1.2rem;
 }
 
+.landing-image-container {
+  text-align: center;
+  margin: 3rem 0;
+  padding: 1rem;
+}
+
+.landing-image {
+  max-width: 100%;
+  width: 600px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-image:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -171,6 +196,16 @@ import Button from 'primevue/button';
   
   .header h1 {
     font-size: 2rem;
+  }
+
+  .landing-image-container {
+    margin: 2rem 0;
+    padding: 0.5rem;
+  }
+
+  .landing-image {
+    width: 100%;
+    max-width: 400px;
   }
   
   .cta-buttons {

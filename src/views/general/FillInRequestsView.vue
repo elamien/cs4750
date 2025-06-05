@@ -41,7 +41,7 @@
                         </div>
                     </template>
                 </Column>
-
+                
                 <Column field="originalMemberName" header="Original Member" sortable style="width: 12%; min-width: 110px;" />
 
                 <Column header="Desc." style="width: 5%; min-width: 50px; text-align: center;"> 
