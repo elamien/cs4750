@@ -1,0 +1,36 @@
+/* PrimeVue Card custom styling */
+.p-card {
+  padding: 25px;
+  background: var(--theme-card-bg) !important;
+  border: 1px solid var(--theme-card-border);
+  color: var(--theme-card-text);
+  }
+
+/* Explicitly theme PrimeVue card structural elements */
+.p-card .p-card-title {
+  color: var(--theme-main-text) !important;
+  font-weight: 600;
+}
+
+.p-card .p-card-subtitle {
+  color: var(--theme-secondary-text) !important;
+}
+
+.p-card .p-card-content {
+  color: var(--theme-main-text) !important;
+}
+
+/*
+  Ensure common text elements within card content also inherit properly.
+  The 'color: var(--theme-card-text)' on '.p-card' should ideally cover this via inheritance.
+  If specific elements like <p> inside .p-card-content are still not inheriting,
+  more specific rules might be needed, but 'inherit' is the first-pass clean approach.
+*/
+.p-card .p-card-content p,
+.p-card .p-card-content span,
+.p-card .p-card-content div,
+.p-card .p-card-body .p-card-content p,
+.p-card .p-card-body .p-card-content span,
+.p-card .p-card-body .p-card-content div {
+  color: var(--theme-main-text);
+  } 

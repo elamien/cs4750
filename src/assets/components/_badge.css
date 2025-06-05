@@ -1,0 +1,16 @@
+/* Genre Badge Styling (for display purposes, not dropdown) */
+.genre-badge {
+  background: var(--hoojams-orange-light) !important;
+  color: var(--hoojams-orange) !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 1rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.genre-badge i {
+  font-size: 0.8rem !important;
+} 

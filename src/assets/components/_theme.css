@@ -1,0 +1,143 @@
+/* Custom HooJams Theme */
+:root {
+  /* Base color palette */
+  --hoojams-dark-blue: hsl(203.53deg 80.95% 12.35%);
+  --hoojams-orange: hsl(24.17deg 89.57% 45.1%);
+  --hoojams-cream: hsl(37.3deg 92.5% 84.31%);
+  --hoojams-orange-hover: hsl(24.17deg 89.57% 40%);
+  --hoojams-cream-dark: hsl(37.3deg 60% 75%);
+  
+  /* Toast positioning - dynamically set by JavaScript based on navbar height */
+  --navbar-height: 70px;
+}
+
+/* Light Mode (default) - Orange navbar, white background, black text */
+:root {
+  --theme-background: white;
+  --theme-card-bg: white;
+  --theme-card-border: #e5e5e5;
+  --theme-card-text: #1a1a1a;
+  --theme-main-text: #1a1a1a;
+  --theme-secondary-text: #666666;
+  
+  /* Modal colors */
+  --theme-modal-bg: white;
+  --theme-modal-text: #1a1a1a;
+  
+  /* Override PrimeVue design tokens */
+  --p-primary-color: var(--hoojams-orange);
+  --p-primary-contrast-color: white;
+  --p-primary-50: #f9f9f9;
+  --p-primary-100: #f0f0f0;
+  --p-primary-500: var(--hoojams-orange);
+  --p-primary-600: var(--hoojams-orange-hover);
+  --p-primary-700: hsl(24.17deg 89.57% 35%);
+  
+  --p-surface-ground: var(--theme-background);
+  --p-surface-card: var(--theme-card-bg);
+  --p-surface-border: var(--theme-card-border);
+  --p-surface-50: #f9f9f9;
+  --p-surface-100: #f0f0f0;
+  --p-surface-800: var(--theme-card-bg);
+  --p-surface-900: #f0f0f0;
+  
+  --p-text-color: var(--theme-card-text);
+  --p-text-muted-color: var(--theme-secondary-text);
+  --p-text-secondary-color: var(--theme-secondary-text);
+  --p-highlight-bg: #f0f0f0;
+  --p-highlight-text-color: #1a1a1a;
+  --p-highlight-border: #e5e5e5;
+  
+  /* Additional color variables */
+  --p-red-200: #fecaca;
+  --p-red-500: #ef4444;
+  --p-orange-500: var(--hoojams-orange);
+  --p-surface-500: #6b7280;
+  --p-surface-0: var(--theme-background);
+}
+
+/* Dark Mode - Orange navbar, black background, white text */
+[data-theme="dark"] {
+  --theme-background: #1a1a1a;
+  --theme-card-bg: #2a2a2a;
+  --theme-card-border: #404040;
+  --theme-card-text: #f5f5f5;
+  --theme-main-text: #f5f5f5;
+  --theme-secondary-text: #b0b0b0;
+  
+  /* Modal colors */
+  --theme-modal-bg: #2a2a2a;
+  --theme-modal-text: #f5f5f5;
+  
+  --p-surface-ground: var(--theme-background);
+  --p-surface-card: var(--theme-card-bg);
+  --p-surface-border: var(--theme-card-border);
+  --p-surface-50: #3a3a3a;
+  --p-surface-100: #404040;
+  --p-surface-800: var(--theme-card-bg);
+  --p-surface-900: #404040;
+  --p-text-color: var(--theme-card-text);
+  --p-text-muted-color: var(--theme-secondary-text);
+  --p-text-secondary-color: var(--theme-secondary-text);
+  --p-highlight-bg: #404040;
+  --p-highlight-text-color: #f5f5f5;
+  --p-highlight-border: #404040;
+  
+  /* Additional color variables for dark mode */
+  --p-red-200: #7f1d1d;
+  --p-red-500: #ef4444;
+  --p-orange-500: var(--hoojams-orange);
+  --p-surface-500: #6b7280;
+  --p-surface-0: var(--theme-card-bg);
+  --p-surface-hover: #3a3a3a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--theme-background);
+  color: var(--theme-main-text);
+}
+
+#app {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--theme-background);
+}
+
+/* Ensure full width layout */
+.app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--theme-background);
+}
+
+/* Make navbar full width */
+.card {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Content area styling */
+.main-content {
+  flex: 1;
+  width: 100%;
+  background: var(--theme-background);
+}
+
+a {
+  text-decoration: none;
+  transition: 0.3s;
+} 

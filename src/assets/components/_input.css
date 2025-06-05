@@ -1,0 +1,71 @@
+/* Input field styling */
+.p-inputtext,
+.p-password input,
+.p-dropdown,
+.p-multiselect,
+.p-calendar input,
+.p-textarea {
+  background: var(--theme-card-bg) !important;
+  color: var(--theme-main-text) !important;
+  border-color: var(--theme-card-border) !important;
+}
+
+.p-inputtext::placeholder,
+.p-password input::placeholder,
+.p-dropdown .p-dropdown-label,
+.p-multiselect .p-multiselect-label,
+.p-calendar input::placeholder,
+.p-textarea::placeholder {
+  color: var(--theme-secondary-text) !important;
+}
+
+.p-inputtext:enabled:hover,
+.p-password:hover input,
+.p-dropdown:not(.p-disabled):hover,
+.p-multiselect:not(.p-disabled):hover,
+.p-calendar:not(.p-disabled):hover input,
+.p-textarea:enabled:hover {
+  border-color: var(--hoojams-orange) !important;
+}
+
+.p-inputtext:enabled:focus,
+.p-password input:focus,
+.p-dropdown:not(.p-disabled).p-focus,
+.p-multiselect:not(.p-disabled).p-focus,
+.p-calendar:not(.p-disabled).p-focus input,
+.p-textarea:enabled:focus {
+  border-color: var(--hoojams-orange) !important;
+  box-shadow: 0 0 0 0.2rem rgba(234, 114, 34, 0.2) !important;
+}
+
+/* Field labels */
+.field label {
+  color: var(--theme-main-text) !important;
+  font-weight: 600;
+}
+
+/* Error states */
+.p-invalid.p-inputtext,
+.p-invalid.p-password input,
+.p-invalid.p-dropdown,
+.p-invalid.p-multiselect,
+.p-invalid.p-calendar input,
+.p-invalid.p-textarea {
+  border-color: var(--p-red-500) !important;
+}
+
+.p-error {
+  color: var(--p-red-500) !important;
+}
+
+/* Disabled states */
+.p-inputtext:disabled,
+.p-password:disabled input,
+.p-dropdown.p-disabled,
+.p-multiselect.p-disabled,
+.p-calendar.p-disabled input,
+.p-textarea:disabled {
+  opacity: 0.6;
+  background: var(--p-surface-100) !important;
+  color: var(--theme-secondary-text) !important;
+} 

@@ -1,0 +1,16 @@
+/* Toast positioning to appear below navbar */
+.app-toast {
+  /* Dynamically calculated navbar height + gap */
+  margin-top: var(--navbar-height, 70px) !important;
+}
+
+/* Ensure toast container respects navbar positioning */
+.p-toast.p-component {
+  top: var(--navbar-height, 70px) !important;
+}
+
+/* Additional specificity for toast positioning */
+.p-toast-top-right {
+  top: var(--navbar-height, 70px) !important;
+  right: 1rem !important;
+} 

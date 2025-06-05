@@ -1,0 +1,151 @@
+/* Calendar panel styling (kept separate from dropdown styling) */
+.p-datepicker-panel {
+  --p-datepicker-panel-background: var(--theme-card-bg) !important;
+  --p-datepicker-panel-color: var(--theme-main-text) !important;
+  --p-datepicker-panel-border-color: var(--theme-card-border) !important;
+  background: var(--theme-card-bg) !important;
+  border: 1px solid var(--theme-card-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Calendar Header */
+.p-datepicker-header {
+  background: var(--theme-card-bg) !important;
+  color: var(--theme-main-text) !important;
+  border-bottom: 1px solid var(--theme-card-border) !important;
+  padding: 1rem !important;
+}
+
+.p-datepicker-select-month,
+.p-datepicker-select-year {
+  color: var(--theme-main-text) !important;
+  background: transparent !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 0.5rem !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+}
+
+.p-datepicker-select-month:hover,
+.p-datepicker-select-year:hover {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+/* Month and Year Selection Panels */
+.p-datepicker-monthview,
+.p-datepicker-yearview {
+  background: var(--theme-card-bg) !important;
+  color: var(--theme-main-text) !important;
+}
+
+.p-datepicker-month,
+.p-datepicker-year {
+  color: var(--theme-main-text) !important;
+  background: transparent !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+}
+
+.p-datepicker-month:hover,
+.p-datepicker-year:hover {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+.p-datepicker-month.p-highlight,
+.p-datepicker-year.p-highlight {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Navigation Buttons */
+.p-datepicker-prev-button,
+.p-datepicker-next-button {
+  color: var(--theme-secondary-text) !important;
+}
+
+.p-datepicker-prev-button:hover,
+.p-datepicker-next-button:hover {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+/* Calendar Table */
+.p-datepicker-day-view {
+  color: var(--theme-main-text) !important;
+}
+
+/* Weekday Headers */
+.p-datepicker-weekday-cell {
+  background: var(--theme-card-bg) !important;
+}
+
+.p-datepicker-weekday {
+  color: var(--theme-secondary-text) !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+}
+
+/* Day Cells */
+.p-datepicker-day-cell {
+  background: var(--theme-card-bg) !important;
+}
+
+.p-datepicker-day {
+  color: var(--theme-main-text) !important;
+  background: transparent !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+  padding: 0.5rem !important;
+}
+
+.p-datepicker-day:hover:not(.p-disabled) {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+/* Today's Date */
+.p-datepicker-today .p-datepicker-day {
+  background: var(--hoojams-orange-light, rgba(234, 114, 34, 0.1)) !important;
+  color: var(--hoojams-orange) !important;
+  font-weight: 600 !important;
+}
+
+.p-datepicker-today .p-datepicker-day:hover {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+/* Selected Date */
+.p-datepicker-day-cell.p-highlight .p-datepicker-day {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Other Month Days (Disabled) */
+.p-datepicker-other-month .p-datepicker-day {
+  color: var(--theme-secondary-text) !important;
+  opacity: 0.5 !important;
+}
+
+.p-datepicker-other-month .p-datepicker-day.p-disabled {
+  color: var(--theme-secondary-text) !important;
+  opacity: 0.3 !important;
+}
+
+/* Disabled Days */
+.p-datepicker-day.p-disabled {
+  color: var(--theme-secondary-text) !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.p-datepicker-day.p-disabled:hover {
+  background: transparent !important;
+  color: var(--theme-secondary-text) !important;
+} 

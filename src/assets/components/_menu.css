@@ -1,0 +1,98 @@
+/* Profile Dropdown Menu - Override PrimeVue Variables */
+.p-menu.profile-dropdown {
+  --p-menu-color: var(--theme-main-text) !important;
+  --p-menu-item-color: var(--theme-main-text) !important;
+  --p-menu-background: var(--theme-card-bg) !important;
+  --p-menu-border-color: var(--theme-card-border) !important;
+  background: var(--theme-card-bg) !important;
+  border: 1px solid var(--theme-card-border) !important;
+  border-radius: 8px !important;
+  padding: 0.5rem !important;
+  min-width: 200px !important;
+  margin-top: 0.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Override PrimeVue menu item content */
+.p-menu.profile-dropdown .p-menu-item-content {
+  color: var(--theme-main-text) !important;
+}
+
+/* Menu Items Base Styles - More Specific */
+.p-menu.profile-dropdown .p-menu-item-link {
+  color: var(--theme-main-text) !important;
+  background: transparent !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+}
+
+.p-menu.profile-dropdown .p-menu-item-link .p-menu-item-label {
+  color: var(--theme-main-text) !important;
+}
+
+.p-menu.profile-dropdown .p-menu-item-link .p-menu-item-icon {
+  color: var(--theme-secondary-text) !important;
+}
+
+/* Menu Items Hover States - More Specific */
+.p-menu.profile-dropdown .p-menu-item-link:hover {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+.p-menu.profile-dropdown .p-menu-item-link:hover .p-menu-item-label,
+.p-menu.profile-dropdown .p-menu-item-link:hover .p-menu-item-icon {
+  color: white !important;
+}
+
+/* Danger Items - More Specific */
+.p-menu.profile-dropdown .p-menu-item.danger .p-menu-item-link .p-menu-item-label,
+.p-menu.profile-dropdown .p-menu-item.danger .p-menu-item-link .p-menu-item-icon {
+  color: var(--p-red-500) !important;
+}
+
+.p-menu.profile-dropdown .p-menu-item.danger .p-menu-item-link:hover {
+  background: var(--p-red-500) !important;
+  color: white !important;
+}
+
+.p-menu.profile-dropdown .p-menu-item.danger .p-menu-item-link:hover .p-menu-item-label,
+.p-menu.profile-dropdown .p-menu-item.danger .p-menu-item-link:hover .p-menu-item-icon {
+  color: white !important;
+}
+
+/* Profile Section */
+.p-menu.profile-dropdown .profile-info {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--theme-card-border) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.p-menu.profile-dropdown .profile-name {
+  color: var(--theme-main-text) !important;
+  font-weight: 600 !important;
+}
+
+.p-menu.profile-dropdown .profile-email {
+  color: var(--theme-secondary-text) !important;
+  font-size: 0.9rem !important;
+}
+
+/* Menu Separator */
+.p-menu.profile-dropdown .p-menu-separator {
+  border-top: 1px solid var(--theme-card-border) !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* Avatar in profile dropdown */
+.p-menu.profile-dropdown .p-avatar {
+  background: var(--hoojams-orange) !important;
+  color: white !important;
+}
+
+.p-menu.profile-dropdown .p-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+} 
