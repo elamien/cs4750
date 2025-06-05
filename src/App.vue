@@ -248,14 +248,14 @@ const authForm = ref({
 // Menu items for anonymous users (not signed in)
 const anonymousItems: MenuItem[] = [
     {
-        label: 'About',
-        icon: 'pi pi-info-circle',
-        route: '/'
-    },
-    {
         label: 'Browse Events',
         icon: 'pi pi-calendar',
         route: '/browse/events'
+    },
+    {
+        label: 'About',
+        icon: 'pi pi-info-circle',
+        route: '/'
     }
     // No Sign In button here, it's handled separately in the #end template
 ];
