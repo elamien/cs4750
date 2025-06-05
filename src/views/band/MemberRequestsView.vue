@@ -38,10 +38,6 @@
                             <Badge :value="`${pendingRequests.length}`" severity="warning" />
                             <span>Pending Requests</span>
                         </div>
-                        <div class="stat-item">
-                            <Badge :value="`${processedRequests.length}`" severity="info" />
-                            <span>Processed Requests</span>
-                        </div>
                     </div>
                 </template>
             </Card>
@@ -131,37 +127,7 @@
                 </template>
             </Card>
 
-            <!-- Processed Requests History -->
-            <Card v-if="processedRequests.length > 0" class="processed-requests-card">
-                <template #title>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="pi pi-history"></i>
-                        Request History
-                    </div>
-                </template>
-                <template #content>
-                    <div class="history-list">
-                        <div v-for="request in processedRequests" :key="request.id" class="history-item">
-                            <div class="history-info">
-                                <strong>{{ request.firstName }} {{ request.lastName }}</strong>
-                                <span class="history-details">
-                                    {{ request.instrument || 'No instrument specified' }} • 
-                                    Applied {{ formatDate(request.timeCreated) }}
-                                </span>
-                            </div>
-                            <div class="history-status">
-                                <Badge 
-                                    :value="request.status" 
-                                    :severity="request.status === 'approved' ? 'success' : 'danger'"
-                                />
-                                <span v-if="request.timeResponded" class="response-date">
-                                    {{ formatDate(request.timeResponded) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </Card>
+
         </div>
     </div>
 </template>
@@ -214,10 +180,6 @@ const membershipRequests = ref<MembershipRequest[]>([]);
 // Computed properties
 const pendingRequests = computed(() => 
     membershipRequests.value.filter(request => request.status === 'pending')
-);
-
-const processedRequests = computed(() => 
-    membershipRequests.value.filter(request => request.status !== 'pending')
 );
 
 // Get current user ID from localStorage
@@ -574,43 +536,6 @@ onMounted(() => {
     gap: 1rem;
 }
 
-.history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.history-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border: 1px solid var(--p-surface-border);
-    border-radius: 4px;
-    background: var(--p-surface-50);
-}
-
-.history-info strong {
-    color: var(--theme-main-text);
-}
-
-.history-details {
-    font-size: 0.9rem;
-    color: var(--theme-secondary-text);
-}
-
-.history-status {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-}
-
-.response-date {
-    font-size: 0.8rem;
-    color: var(--theme-secondary-text);
-}
-
 @media (max-width: 768px) {
     .member-requests {
         padding: 1rem;
@@ -624,16 +549,6 @@ onMounted(() => {
     
     .request-actions {
         flex-direction: column;
-    }
-    
-    .history-item {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .history-status {
-        align-items: flex-start;
     }
 }
 </style> 
