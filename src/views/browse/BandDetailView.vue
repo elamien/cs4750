@@ -156,27 +156,7 @@
                 </template>
             </Card>
 
-            <!-- Performance History (Enhanced for band members/leaders) -->
-            <Card v-if="canSeePerformanceHistory" class="performance-card">
-                <template #title>Performance History</template>
-                <template #content>
-                    <div v-if="performanceHistory.length > 0" class="performance-list">
-                        <div v-for="event in performanceHistory" :key="event.id" class="performance-item">
-                            <div class="performance-info">
-                                <h4>{{ event.title }}</h4>
-                                <p class="performance-date">{{ formatDate(event.date) }}</p>
-                                <p v-if="event.location" class="performance-location">
-                                    <i class="pi pi-map-marker"></i> {{ event.location }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="no-performance">
-                        <i class="pi pi-calendar" style="font-size: 2rem; color: var(--p-text-muted-color);"></i>
-                        <p>No performance history available yet.</p>
-                    </div>
-                </template>
-            </Card>
+
 
             <!-- Admin Section (WXTJ only) -->
             <Card v-if="isAdmin" class="admin-card">
@@ -238,12 +218,7 @@ interface BandMember {
     role: string;
 }
 
-interface PerformanceEvent {
-    id: string;
-    title: string;
-    date: string;
-    location?: string;
-}
+
 
 interface UserBandRelationship {
     isSignedIn: boolean;
@@ -251,7 +226,6 @@ interface UserBandRelationship {
     relationshipToBand: 'same_band' | 'different_band' | 'no_band' | 'anonymous';
     canSeeMembers: boolean;
     canSeeContact: boolean;
-    canSeePerformanceHistory: boolean;
     canRequestToJoin: boolean;
     canFavorite: boolean;
     isOwnBand: boolean;
@@ -273,31 +247,36 @@ const bandDetails = ref<BandDetails>({
 });
 
 const bandMembers = ref<BandMember[]>([]);
-const performanceHistory = ref<PerformanceEvent[]>([]);
 const userRelationship = ref<UserBandRelationship>({
     isSignedIn: false,
     userRole: 'anonymous',
     relationshipToBand: 'anonymous',
     canSeeMembers: false,
     canSeeContact: false,
-    canSeePerformanceHistory: false,
     canRequestToJoin: false,
     canFavorite: false,
     isOwnBand: false,
     isAdmin: false
 });
 
-// Get current user ID (would come from real authentication)
+// Get current user ID from localStorage
 const getCurrentUserId = () => {
-    // TODO: Replace with real authentication
-    // For now, return null (anonymous user)
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            return String(user.userId);
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            return null;
+        }
+    }
     return null;
 };
 
 // Computed properties for permissions
 const canSeeMembers = computed(() => userRelationship.value.canSeeMembers);
 const canSeeContact = computed(() => userRelationship.value.canSeeContact);
-const canSeePerformanceHistory = computed(() => userRelationship.value.canSeePerformanceHistory);
 const canRequestToJoin = computed(() => userRelationship.value.canRequestToJoin);
 const canFavorite = computed(() => userRelationship.value.canFavorite);
 const isOwnBand = computed(() => userRelationship.value.isOwnBand);
@@ -306,13 +285,14 @@ const isAdmin = computed(() => userRelationship.value.isAdmin);
 // API Functions
 const fetchBandDetails = async () => {
     const bandId = route.params.id as string;
-    // TODO: Get user ID from real authentication later
-    // const currentUserId = getCurrentUserId();
+    const currentUserId = getCurrentUserId();
     
     try {
-        // Build URL - no user context since we removed the security vulnerability  
-        const url = `/api/bands/${bandId}/details`;
-        // TODO: Authentication should be handled via secure session/tokens, not URL params
+        // Build URL with user context for permissions
+        let url = `http://localhost:3001/api/bands/${bandId}/details`;
+        if (currentUserId) {
+            url += `?userId=${currentUserId}`;
+        }
         
         const response = await fetch(url);
         if (!response.ok) {
@@ -326,7 +306,6 @@ const fetchBandDetails = async () => {
         const data = await response.json();
         bandDetails.value = data.band;
         bandMembers.value = data.members || [];
-        performanceHistory.value = data.performanceHistory || [];
         userRelationship.value = data.userRelationship;
     } catch (error) {
         console.error('Error fetching band details:', error);
@@ -423,14 +402,6 @@ const requestToJoin = async () => {
 // Utility functions
 const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-};
-
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
 };
 
 // Lifecycle
@@ -547,33 +518,7 @@ onMounted(async () => {
     gap: 0.25rem;
 }
 
-.performance-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.performance-item {
-    padding: 1rem;
-    background: var(--p-surface-50);
-    border-radius: 8px;
-    border: 1px solid var(--p-surface-border);
-}
-
-.performance-info h4 {
-    margin: 0 0 0.5rem 0;
-    color: var(--p-text-color);
-}
-
-.performance-date, .performance-location {
-    margin: 0.25rem 0;
-    color: var(--p-text-muted-color);
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.no-contact, .no-members, .no-performance {
+.no-contact, .no-members {
     text-align: center;
     padding: 2rem;
     color: var(--p-text-muted-color);

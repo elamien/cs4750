@@ -39,10 +39,10 @@ router.get('/', async (req, res, next) => {
 // GET /api/bands/:id/details - Get role-based band details (MUST come before /:id)
 router.get('/:id/details', async (req, res, next) => {
   const { id: bandId } = req.params;
+  const { userId } = req.query;
   
-  // TODO: Get userId from authenticated session, NOT from query params!
-  // This is a SECURITY VULNERABILITY if userId comes from URL
-  const userId = null; // For now, always anonymous until proper auth is implemented
+  // Convert userId to number if provided (for database queries)
+  const userIdNumber = userId ? parseInt(userId) : null;
   
   try {
     // Get basic band information
@@ -73,7 +73,7 @@ router.get('/:id/details', async (req, res, next) => {
     
     // Initialize user relationship data
     let userRelationship = {
-      isSignedIn: !!userId,
+      isSignedIn: !!userIdNumber,
       userRole: 'anonymous',
       relationshipToBand: 'anonymous',
       canSeeMembers: false,
@@ -86,10 +86,9 @@ router.get('/:id/details', async (req, res, next) => {
     };
     
     let members = [];
-    let performanceHistory = [];
     
     // If user is signed in, determine their relationship and permissions
-    if (userId) {
+    if (userIdNumber) {
       // Get user's role and band status
       const userRoleQuery = `
         SELECT r.role_name 
@@ -97,7 +96,7 @@ router.get('/:id/details', async (req, res, next) => {
         JOIN roles r ON ur.role_id = r.role_id 
         WHERE ur.user_id = ?
       `;
-      const [userRoleRows] = await pool.query(userRoleQuery, [userId]);
+      const [userRoleRows] = await pool.query(userRoleQuery, [userIdNumber]);
       const userRole = userRoleRows.length > 0 ? userRoleRows[0].role_name : 'General User';
       
       // Check if user is in this band
@@ -110,7 +109,7 @@ router.get('/:id/details', async (req, res, next) => {
         JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
         WHERE bl.band_id = ? AND ur.user_id = ?
       `;
-      const [userBandRows] = await pool.query(userBandQuery, [bandId, userId, bandId, userId]);
+      const [userBandRows] = await pool.query(userBandQuery, [bandId, userIdNumber, bandId, userIdNumber]);
       
       const isInThisBand = userBandRows.length > 0;
       const isBandLeader = userBandRows.some(row => row.type === 'leader');
@@ -127,14 +126,14 @@ router.get('/:id/details', async (req, res, next) => {
           WHERE ur.user_id = ?
         ) as user_bands
       `;
-      const [userAnyBandRows] = await pool.query(userAnyBandQuery, [userId, userId]);
+      const [userAnyBandRows] = await pool.query(userAnyBandQuery, [userIdNumber, userIdNumber]);
       const hasAnyBand = userAnyBandRows[0].count > 0;
       
       // Check if band is in user's favorites
       const favoriteQuery = `
         SELECT 1 FROM user_favorites_bands WHERE user_id = ? AND band_id = ?
       `;
-      const [favoriteRows] = await pool.query(favoriteQuery, [userId, bandId]);
+      const [favoriteRows] = await pool.query(favoriteQuery, [userIdNumber, bandId]);
       band.isFavorite = favoriteRows.length > 0;
       
       // Determine relationship and permissions
@@ -144,7 +143,6 @@ router.get('/:id/details', async (req, res, next) => {
         relationshipToBand: isInThisBand ? 'same_band' : (hasAnyBand ? 'different_band' : 'no_band'),
         canSeeMembers: true, // Any signed-in user can see band members
         canSeeContact: isInThisBand || userRole === 'WXTJ Executive',
-        canSeePerformanceHistory: true, // Basic performance history for all signed-in users
         canRequestToJoin: !hasAnyBand && !isInThisBand && userRole !== 'WXTJ Executive',
         canFavorite: userRole !== 'anonymous',
         isOwnBand: isInThisBand,
@@ -186,18 +184,11 @@ router.get('/:id/details', async (req, res, next) => {
           id: String(member.id)
         }));
       }
-      
-      // Fetch performance history (placeholder - would need proper event-band relationship)
-      if (userRelationship.canSeePerformanceHistory) {
-        // For now, return empty array as we don't have band-event relationships set up
-        performanceHistory = [];
-      }
     }
     
     const response = {
       band,
       members,
-      performanceHistory,
       userRelationship
     };
     
