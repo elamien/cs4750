@@ -43,13 +43,13 @@
                 </template>
                 <template #footer>
                     <div class="band-actions">
-                        <Button label="View Details" icon="pi pi-eye" @click="viewBandDetails(band.id)" />
+                        <Button label="View Details" icon="pi pi-eye" @click.stop="viewBandDetails(band.id)" />
                         <Button 
                             v-if="isSignedIn" 
                             :label="band.isFavorite ? 'Unfavorite' : 'Favorite'" 
                             :icon="band.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
                             severity="secondary"
-                            @click="toggleFavorite(band.id)" 
+                            @click.stop="toggleFavorite(band.id)" 
                         />
                     </div>
                 </template>
