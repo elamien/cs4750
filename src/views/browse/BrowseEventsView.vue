@@ -55,6 +55,9 @@
                         <div class="detail-item">
                             <strong>Genre:</strong> {{ event.genre || 'N/A' }}
                         </div>
+                        <div class="detail-item">
+                            <strong>Posted by:</strong> {{ event.creatorName }} ({{ event.creatorRole }})
+                        </div>
                         <div class="detail-item status-row">
                             <div class="status-tag">
                                 <strong>Status:</strong> <Tag :value="event.status.toUpperCase()" :severity="getEventStatusSeverity(event.status)" />
@@ -126,8 +129,9 @@ interface EventListItem {
     genre?: string | null;
     status: 'open' | 'filled' | 'expired';
     description?: string | null;
+    creatorName: string; // Event creator's full name
+    creatorRole: string; // Event creator's role
     // Consider adding slot_one to slot_four if to be displayed directly
-    // creatorName?: string; // If API provides joined user name
     isFavorite: boolean; // Derived by API based on current user
 }
 
@@ -292,6 +296,8 @@ const fetchEvents = async () => {
         eventTitle: string; // Ensure eventTitle is not optional in ApiEvent if it's required by EventListItem
         datetime: string;
         status: string; // API might send status as string
+        creatorName: string; // Event creator's full name from API
+        creatorRole: string; // Event creator's role from API
         isFavorite?: boolean;
     };
 
@@ -305,6 +311,8 @@ const fetchEvents = async () => {
       eventTitle: eventFromApi.eventTitle, // Explicitly map if name differs or for required assertion
       datetime: eventFromApi.datetime, // Assuming API provides it as ISO string
       status: eventFromApi.status as EventListItem['status'], // Cast if API string matches enum
+      creatorName: eventFromApi.creatorName, // Event creator's full name
+      creatorRole: eventFromApi.creatorRole, // Event creator's role
       isFavorite: eventFromApi.isFavorite ?? false,
     }));
     

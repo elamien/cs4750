@@ -8,20 +8,26 @@ router.get('/', async (req, res, next) => {
   try {
     const query = `
       SELECT 
-        event_id AS id,
-        user_id AS userId,
-        event_title AS eventTitle,
-        datetime,
-        location,
-        genre,
-        status,
-        description,
-        slot_one AS slotOne,
-        slot_two AS slotTwo,
-        slot_three AS slotThree,
-        slot_four AS slotFour
-      FROM event
-      ORDER BY datetime DESC;
+        e.event_id AS id,
+        e.user_id AS userId,
+        e.event_title AS eventTitle,
+        e.datetime,
+        e.location,
+        e.genre,
+        e.status,
+        e.description,
+        e.slot_one AS slotOne,
+        e.slot_two AS slotTwo,
+        e.slot_three AS slotThree,
+        e.slot_four AS slotFour,
+        u.first_name AS creatorFirstName,
+        u.last_name AS creatorLastName,
+        r.role_name AS creatorRole
+      FROM event e
+      JOIN user u ON e.user_id = u.user_id
+      JOIN user_roles ur ON u.user_id = ur.user_id
+      JOIN roles r ON ur.role_id = r.role_id
+      ORDER BY e.datetime DESC;
     `;
     const [rows] = await pool.query(query);
 
@@ -30,6 +36,7 @@ router.get('/', async (req, res, next) => {
       id: String(event.id),
       userId: String(event.userId),
       datetime: event.datetime ? new Date(event.datetime).toISOString() : null,
+      creatorName: `${event.creatorFirstName} ${event.creatorLastName}`,
       isFavorite: false // Placeholder
     }));
 
