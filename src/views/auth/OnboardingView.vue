@@ -168,14 +168,18 @@ const instrumentOptions = ref([
 ])
 
 const genreOptions = ref([
-  { name: 'Rock', value: 'rock' },
-  { name: 'Jazz', value: 'jazz' },
-  { name: 'Blues', value: 'blues' },
-  { name: 'Folk', value: 'folk' },
-  { name: 'Electronic', value: 'electronic' },
-  { name: 'Pop', value: 'pop' },
-  { name: 'Classical', value: 'classical' },
-  { name: 'Country', value: 'country' }
+  { name: 'Classic rock', value: 'Classic rock' },
+  { name: 'Country', value: 'Country' },
+  { name: 'Pop', value: 'Pop' },
+  { name: 'R n B', value: 'R n B' },
+  { name: 'Metal', value: 'Metal' },
+  { name: 'Classical', value: 'Classical' },
+  { name: 'Folk', value: 'Folk' },
+  { name: 'Hip hop', value: 'Hip hop' },
+  { name: 'Electronic', value: 'Electronic' },
+  { name: 'Jazz', value: 'Jazz' },
+  { name: 'Indie', value: 'Indie' },
+  { name: 'Alternative', value: 'Alternative' }
 ])
 
 const experienceOptions = ref([

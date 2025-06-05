@@ -117,12 +117,18 @@ const currentUser = computed(() => authState.value.currentUser);
 
 // TODO: Consider fetching genreOptions from config or API
 const genres = ref([
-    { name: 'Rock', value: 'rock' },
-    { name: 'Jazz', value: 'jazz' },
-    { name: 'Blues', value: 'blues' },
-    { name: 'Folk', value: 'folk' },
-    { name: 'Electronic', value: 'electronic' },
-    { name: 'Pop', value: 'pop' }
+    { name: 'Classic rock', value: 'Classic rock' },
+    { name: 'Country', value: 'Country' },
+    { name: 'Pop', value: 'Pop' },
+    { name: 'R n B', value: 'R n B' },
+    { name: 'Metal', value: 'Metal' },
+    { name: 'Classical', value: 'Classical' },
+    { name: 'Folk', value: 'Folk' },
+    { name: 'Hip hop', value: 'Hip hop' },
+    { name: 'Electronic', value: 'Electronic' },
+    { name: 'Jazz', value: 'Jazz' },
+    { name: 'Indie', value: 'Indie' },
+    { name: 'Alternative', value: 'Alternative' }
 ]);
 
 interface EventListItem {

@@ -220,16 +220,18 @@ const searchTerm = ref('');
 const selectedGenre = ref<string | null>(null);
 
 const genres = ref([
-    { name: 'Rock', value: 'Rock' },
-    { name: 'Jazz', value: 'Jazz' },
-    { name: 'Blues', value: 'Blues' },
-    { name: 'Folk', value: 'Folk' },
-    { name: 'Electronic', value: 'Electronic' },
-    { name: 'Pop', value: 'Pop' },
+    { name: 'Classic rock', value: 'Classic rock' },
     { name: 'Country', value: 'Country' },
-    { name: 'Hip Hop', value: 'Hip Hop' },
+    { name: 'Pop', value: 'Pop' },
+    { name: 'R n B', value: 'R n B' },
+    { name: 'Metal', value: 'Metal' },
     { name: 'Classical', value: 'Classical' },
-    { name: 'Other', value: 'Other' }
+    { name: 'Folk', value: 'Folk' },
+    { name: 'Hip hop', value: 'Hip hop' },
+    { name: 'Electronic', value: 'Electronic' },
+    { name: 'Jazz', value: 'Jazz' },
+    { name: 'Indie', value: 'Indie' },
+    { name: 'Alternative', value: 'Alternative' }
 ]);
 
 const instrumentOptions = ref([
