@@ -11,8 +11,8 @@
         </div>
 
         <div v-else-if="!bandInfo.id" class="no-band-state">
-            <Card>
-                <template #content>
+        <Card>
+            <template #content>
                     <div class="empty-state">
                         <i class="pi pi-users" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                         <h3>No Band Found</h3>
@@ -124,8 +124,8 @@
                         <h3>No Pending Requests</h3>
                         <p>There are currently no membership applications for your band.</p>
                     </div>
-                </template>
-            </Card>
+            </template>
+        </Card>
 
 
         </div>

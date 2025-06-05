@@ -184,7 +184,7 @@
                 <Button 
                     label="Leave Band" 
                     severity="danger" 
-                    @click="leaveBand"
+                    @click="leaveBand" 
                     :loading="leavingBand"
                 />
             </template>
@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
@@ -309,15 +309,7 @@ const loadAllData = async () => {
     }
 };
 
-// Function to update current user (called when dev panel changes user)
-const updateCurrentUser = () => {
-    const newUserId = getCurrentUserId();
-    if (currentUserId.value !== newUserId) {
-        currentUserId.value = newUserId;
-        // Reload all data for the new user
-        loadAllData();
-    }
-};
+
 
 // --- API Functions ---
 const fetchBandInfo = async () => {
@@ -571,6 +563,13 @@ const promoteAndLeave = async () => {
             throw new Error(error.message || 'Failed to promote leader');
         }
         
+        const promotionResult = await promoteResponse.json();
+        
+        // Update localStorage for affected users if this is the current user being demoted
+        if (currentUserId.value && promotionResult.updatedUsers?.demoted?.userId === parseInt(currentUserId.value)) {
+            localStorage.setItem('currentUser', JSON.stringify(promotionResult.updatedUsers.demoted));
+        }
+        
         // Then leave the band
         const leaveResponse = await fetch(`/api/bands/${bandId}/leave`, {
             method: 'DELETE',
@@ -642,6 +641,13 @@ const forceLeaveAsLastMember = async () => {
             throw new Error(error.message || 'Failed to leave band');
         }
         
+        const leaveResult = await response.json();
+        
+        // Update localStorage with updated user data
+        if (leaveResult.updatedUser) {
+            localStorage.setItem('currentUser', JSON.stringify(leaveResult.updatedUser));
+        }
+        
         toast.add({
             severity: 'success',
             summary: 'Success',
@@ -711,16 +717,6 @@ const confirmLeaveBand = () => {
 onMounted(async () => {
     // Load initial data
     await loadAllData();
-    
-    // In development mode, poll for user changes from developer panel
-    if (import.meta.env.DEV) {
-        const pollInterval = setInterval(updateCurrentUser, 1000);
-        
-        // Cleanup on unmount
-        onUnmounted(() => {
-            clearInterval(pollInterval);
-        });
-    }
 });
 </script>
 

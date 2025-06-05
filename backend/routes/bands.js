@@ -765,7 +765,52 @@ router.post('/:id/promote-leader', async (req, res, next) => {
       
       await pool.query('COMMIT');
       
-      res.json({ message: 'Leader promoted successfully' });
+      // Get updated user data for both users to return to frontend
+      const [promotedUserData] = await pool.query(
+        `SELECT u.user_id, u.first_name, u.last_name, u.email, r.role_name
+         FROM user u 
+         JOIN user_roles ur ON u.user_id = ur.user_id 
+         JOIN roles r ON ur.role_id = r.role_id 
+         WHERE u.user_id = ?`,
+        [newLeaderId]
+      );
+      
+      const [demotedUserData] = await pool.query(
+        `SELECT u.user_id, u.first_name, u.last_name, u.email, r.role_name
+         FROM user u 
+         JOIN user_roles ur ON u.user_id = ur.user_id 
+         JOIN roles r ON ur.role_id = r.role_id 
+         WHERE u.user_id = ?`,
+        [currentUserId]
+      );
+      
+      // Map database role names to frontend role names
+      const roleMapping = {
+        'Band Leader': 'band_leader',
+        'Band Member': 'band_member', 
+        'General User': 'general',
+        'WXTJ Executive': 'exec'
+      };
+      
+      res.json({ 
+        message: 'Leader promoted successfully',
+        updatedUsers: {
+          promoted: promotedUserData.length > 0 ? {
+            userId: promotedUserData[0].user_id,
+            firstName: promotedUserData[0].first_name,
+            lastName: promotedUserData[0].last_name,
+            email: promotedUserData[0].email,
+            role: roleMapping[promotedUserData[0].role_name] || 'general'
+          } : null,
+          demoted: demotedUserData.length > 0 ? {
+            userId: demotedUserData[0].user_id,
+            firstName: demotedUserData[0].first_name,
+            lastName: demotedUserData[0].last_name,
+            email: demotedUserData[0].email,
+            role: roleMapping[demotedUserData[0].role_name] || 'general'
+          } : null
+        }
+      });
     } catch (error) {
       await pool.query('ROLLBACK');
       throw error;
@@ -864,7 +909,34 @@ router.delete('/:id/leave', async (req, res, next) => {
       
       await pool.query('COMMIT');
       
-      res.json({ message: 'Successfully left the band' });
+      // Get updated user data to return to frontend
+      const [updatedUserData] = await pool.query(
+        `SELECT u.user_id, u.first_name, u.last_name, u.email, r.role_name
+         FROM user u 
+         JOIN user_roles ur ON u.user_id = ur.user_id 
+         JOIN roles r ON ur.role_id = r.role_id 
+         WHERE u.user_id = ?`,
+        [userId]
+      );
+      
+      // Map database role names to frontend role names
+      const roleMapping = {
+        'Band Leader': 'band_leader',
+        'Band Member': 'band_member', 
+        'General User': 'general',
+        'WXTJ Executive': 'exec'
+      };
+      
+      res.json({ 
+        message: 'Successfully left the band',
+        updatedUser: updatedUserData.length > 0 ? {
+          userId: updatedUserData[0].user_id,
+          firstName: updatedUserData[0].first_name,
+          lastName: updatedUserData[0].last_name,
+          email: updatedUserData[0].email,
+          role: roleMapping[updatedUserData[0].role_name] || 'general'
+        } : null
+      });
     } catch (error) {
       await pool.query('ROLLBACK');
       throw error;

@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
@@ -296,14 +296,7 @@ const loadAllData = async () => {
     }
 };
 
-// Function to update current user (called when dev panel changes user)
-const updateCurrentUser = () => {
-    const newUserId = getCurrentUserId();
-    if (currentUserId.value !== newUserId) {
-        currentUserId.value = newUserId;
-        loadAllData();
-    }
-};
+
 
 // API Functions
 const fetchBandInfo = async () => {
@@ -464,15 +457,6 @@ const getInitials = (firstName: string, lastName: string) => {
 // Lifecycle
 onMounted(async () => {
     await loadAllData();
-    
-    // In development mode, poll for user changes from developer panel
-    if (import.meta.env.DEV) {
-        const pollInterval = setInterval(updateCurrentUser, 1000);
-        
-        onUnmounted(() => {
-            clearInterval(pollInterval);
-        });
-    }
 });
 </script>
 
