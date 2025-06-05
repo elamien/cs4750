@@ -88,7 +88,7 @@
                     <i class="pi pi-calendar" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                     <h3>No favorite events yet</h3>
                     <p>Browse events and add them to your favorites</p>
-                    <Button label="Browse Events" icon="pi pi-calendar" @click="router.push('/browse/events')" />
+                    <Button label="Browse Events" icon="pi pi-calendar" @click="router.push('/events')" />
                 </div>
             </TabPanel>
         </TabView>

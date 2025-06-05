@@ -26,7 +26,7 @@ const showAuthModal = ref(false);
           <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
         <div class="hero-actions">
           <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
-          <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/browse/events')" />
+                      <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/events')" />
           </div>
         </div>
       </div>

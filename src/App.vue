@@ -6,6 +6,7 @@
                     <router-link to="/browse/bands" class="navbar-brand">
                         <img src="@/assets/hoojams-logo-v2.png" alt="HooJams Logo" class="navbar-logo" />
                         <span class="navbar-brand-text">HooJams</span>
+                        <span class="building-text">building...</span>
                     </router-link>
                 </template>
                 <template #item="{ item, props, hasSubmenu, root }">
@@ -267,7 +268,7 @@ const anonymousItems: MenuItem[] = [
     {
         label: 'Browse Events',
         icon: 'pi pi-calendar',
-        route: '/browse/events'
+        route: '/events'
     },
     {
         label: 'About',
@@ -281,18 +282,12 @@ const anonymousItems: MenuItem[] = [
 // According to permissions: Edit account, Browse events, Save favorites, Create events, Accept fill-in requests
 const baseSignedInItems: MenuItem[] = [
     {
-        label: 'Browse Events',
+        label: 'Events',
         icon: 'pi pi-calendar',
-        route: '/browse/events'
-    },
-    // Favorites is a dedicated icon button in navbar-end for signed-in users
-    {
-        label: 'My Events',
-        icon: 'pi pi-calendar-edit',
-        route: '/my-events'
+        route: '/events'
     },
     {
-        label: 'Fill-In Opportunities', // Renamed from "Fill-In Requests" for clarity as this is where users find them
+        label: 'Fill In',
         icon: 'pi pi-bell',
         route: '/fill-in-requests',
         // badge: '3' // Mock notification count - can be added if actual notifications are implemented
@@ -303,7 +298,7 @@ const baseSignedInItems: MenuItem[] = [
 // Permissions: Create 1 band OR Request to join 1 band (handled by JoinCreateBandView)
 const generalUserExtraItems: MenuItem[] = [
     {
-        label: 'Join or Create Band',
+        label: 'Bands',
         icon: 'pi pi-plus-circle',
         route: '/join-create-band',
         // This view should handle the logic of "OR" based on user's status (has_created_band, has_pending_band_request)
@@ -367,7 +362,7 @@ const bandLeaderExtraItems: MenuItem[] = [
 // Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
 const wxtjExecExtraItems: MenuItem[] = [
     {
-        label: 'Join or Create Band', // Also allowed for Execs
+        label: 'Bands', // Also allowed for Execs
         icon: 'pi pi-plus-circle',
         route: '/join-create-band',
     },

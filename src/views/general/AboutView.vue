@@ -73,7 +73,7 @@
           </p>
           <div class="cta-buttons">
             <Button label="Browse Bands" icon="pi pi-users" @click="$router.push('/browse/bands')" />
-            <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" @click="$router.push('/browse/events')" />
+            <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" @click="$router.push('/events')" />
           </div>
         </template>
       </Card>
