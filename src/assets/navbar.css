@@ -223,6 +223,26 @@
     font-size: 0.95rem;
 } 
 
+/* Sign In button styling */
+.navbar-end .p-button {
+    background: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    color: white !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.navbar-end .p-button:hover {
+    background: #333 !important;
+    border-color: #555 !important;
+    transform: translateY(-1px);
+}
+
+.navbar-end .p-button:active {
+    background: #000 !important;
+    transform: translateY(0);
+}
+
 /* Override all PrimeVue menubar item styles to prevent flickering */
 
 /* Router Link Active State Styling */
@@ -260,7 +280,7 @@
 .p-menubar .nav-link-active,
 .p-menubar .nav-link.router-link-active,
 .p-menubar .nav-link.router-link-exact-active {
-    background: hsl(24.17deg 89.57% 35%) !important;
+    background: hsl(24.17deg 89.57% 25%) !important;
     color: white !important;
     font-weight: 600;
 }

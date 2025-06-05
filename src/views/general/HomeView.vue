@@ -13,8 +13,6 @@ const getCurrentUser = () => {
 const isSignedIn = computed(() => {
   return getCurrentUser() !== null;
 });
-
-const showAuthModal = ref(false);
 </script>
 
 <template>
@@ -24,10 +22,6 @@ const showAuthModal = ref(false);
         <div class="hero-text-container">
           <h1>About HooJams</h1>
           <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
-        <div class="hero-actions">
-          <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
-                      <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/events')" />
-          </div>
         </div>
       </div>
     </div>
@@ -73,8 +67,7 @@ const showAuthModal = ref(false);
       <div class="container">
         <h2>Join the HooJams Community</h2>
         <p>Whether you're a seasoned musician or just starting out, HooJams helps you connect with the local music scene and find your place in it.</p>
-        <Button v-if="!isSignedIn" label="Sign Up Now" icon="pi pi-user-plus" size="large" @click="showAuthModal = true" />
-        <Button v-else label="Complete Your Profile" icon="pi pi-user" size="large" @click="$router.push('/account')" />
+        <Button v-if="isSignedIn" label="Complete Your Profile" icon="pi pi-user" size="large" @click="$router.push('/account')" />
       </div>
     </div>
   </div>
@@ -112,9 +105,10 @@ const showAuthModal = ref(false);
   padding: 3rem 2rem;
   backdrop-filter: blur(25px);
   border-radius: 15px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(0, 0, 0, 0.8);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 }
 
 .hero-section h1 {
