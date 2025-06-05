@@ -303,13 +303,6 @@ watch(() => eventForm.value.eventDate, (newDate, oldDate) => {
 const handleTimeSlotClick = () => {
     console.log('🔍 DEBUG: handleTimeSlotClick called, eventDate:', eventForm.value.eventDate);
     if (!eventForm.value.eventDate) {
-        toast.add({
-            severity: 'info',
-            summary: 'Select Date First',
-            detail: 'Please select an event date before choosing a time slot',
-            life: 3000
-        });
-        
         // Focus the date picker to help user
         setTimeout(() => {
             if (datePickerRef.value) {
@@ -330,14 +323,7 @@ const handleTimeSlotChange = (event: { value: number | null }) => {
         // Reset the dropdown value since it's not a real selection
         eventForm.value.timeSlot = null;
         
-        // Show toast and focus date picker
-        toast.add({
-            severity: 'info',
-            summary: 'Select Date First',
-            detail: 'Choose an event date and available time slots will appear',
-            life: 3000
-        });
-        
+        // Focus date picker to help user
         setTimeout(() => {
             if (datePickerRef.value) {
                 datePickerRef.value.$el.querySelector('input').focus();
