@@ -389,11 +389,6 @@ const wxtjExecExtraItems: MenuItem[] = [
                 label: 'Manage Events',
                 icon: 'pi pi-calendar',
                 route: '/admin/events'
-            },
-            {
-                label: 'System Reports', // Added based on AdminReportsView
-                icon: 'pi pi-chart-bar',
-                route: '/admin/reports'
             }
         ]
     }

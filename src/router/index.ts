@@ -113,11 +113,7 @@ const router = createRouter({
       name: 'admin-events',
       component: () => import('../views/admin/AdminEventsView.vue'),
     },
-    {
-      path: '/admin/reports',
-      name: 'admin-reports',
-      component: () => import('../views/admin/AdminReportsView.vue'),
-    },
+
   ],
 })
 
