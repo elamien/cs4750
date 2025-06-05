@@ -6,7 +6,50 @@ A Vue 3 + TypeScript frontend with Node.js/Express backend and MySQL database fo
 
 ### Prerequisites
 - Node.js 20.0.0+ (includes npm 10.0.0+)
-- MySQL with configured login path named `local`
+- MySQL 8.0+ or MariaDB 10.5+
+
+### Database Setup
+
+#### 1. Create Database User & Schema
+```sql
+-- Connect to MySQL as root or admin user
+mysql -u root -p
+
+-- Create the database user
+CREATE USER 'adminuser'@'localhost' IDENTIFIED BY 'HooJams2024!';
+
+-- Create the database
+CREATE DATABASE hoojams;
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON hoojams.* TO 'adminuser'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Exit MySQL
+EXIT;
+```
+
+#### 2. Initialize Database Schema & Test Data
+```bash
+# Run the database initialization script
+mysql -u adminuser -p'HooJams2024!' -h localhost hoojams < db/core_db_structure.sql
+```
+
+This will create:
+- **16 tables** with complete schema
+- **4 test users** with different roles
+- **1 test band** (Electric Vibes)
+- **Reference data** (instruments, genres, settings)
+- **Proper indexes** for performance
+
+#### 3. Verify Database Setup
+```bash
+# Check if tables were created successfully
+mysql -u adminuser -p'HooJams2024!' -h localhost hoojams -e "SHOW TABLES;"
+
+# Check test data
+mysql -u adminuser -p'HooJams2024!' -h localhost hoojams -e "SELECT first_name, last_name, email FROM user;"
+```
 
 ### Environment Setup
 Create a `.env` file in the `backend/` directory:
@@ -20,14 +63,16 @@ PORT=3001
 
 ### Installation & Development
 ```bash
-# Install frontend dependencies
+# 1. Setup database (see Database Setup section above)
+
+# 2. Install frontend dependencies
 npm install
 
-# Install backend dependencies
+# 3. Install backend dependencies
 cd backend
 npm install
 
-# Create backend environment file
+# 4. Create backend environment file
 cp .env.example .env
 # OR create .env manually with:
 # DB_HOST=localhost
@@ -36,10 +81,10 @@ cp .env.example .env
 # DB_NAME=hoojams
 # PORT=3001
 
-# Start backend server (port 3001)
+# 5. Start backend server (port 3001)
 npm start
 
-# Start frontend dev server (port 5173)
+# 6. Start frontend dev server (port 5173)
 cd ..
 npm run dev
 ```
@@ -98,4 +143,40 @@ HooJams2024_WXTJ
   - Available for event bookings and testing band functionality
 
 *These 4 users + 1 band are automatically created when initializing the database*
+
+## 🔧 Troubleshooting
+
+### Database Connection Issues
+
+**"Access denied for user 'adminuser'"**
+```bash
+# Reset user password
+mysql -u root -p -e "ALTER USER 'adminuser'@'localhost' IDENTIFIED BY 'HooJams2024!';"
+```
+
+**"Unknown database 'hoojams'"**
+```bash
+# Recreate database
+mysql -u root -p -e "CREATE DATABASE hoojams;"
+```
+
+**"Can't connect to MySQL server"**
+```bash
+# Start MySQL service (varies by OS)
+# macOS (Homebrew):
+brew services start mysql
+
+# Linux (systemd):
+sudo systemctl start mysql
+
+# Windows:
+net start mysql
+```
+
+### Reset Database
+```bash
+# Drop and recreate everything (⚠️ destroys all data)
+mysql -u root -p -e "DROP DATABASE IF EXISTS hoojams; CREATE DATABASE hoojams;"
+mysql -u adminuser -p'HooJams2024!' -h localhost hoojams < db/core_db_structure.sql
+```
 
