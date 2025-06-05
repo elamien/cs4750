@@ -1,10 +1,29 @@
 <template>
     <div class="join-create-band">
         <TabView v-if="!currentUserProfile.hasCreatedBand" v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
-            <TabPanel header="Join a Band" value="join" :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand">
+            <TabPanel header="Join a Band" value="join">
                 <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
-                    You have a pending request to join a band. You cannot send more requests or create a band until it's resolved.
+                    <div class="pending-request-details">
+                        <h4>Pending Band Request</h4>
+                        <template v-if="(currentUserProfile as any).pendingRequests && (currentUserProfile as any).pendingRequests.length > 0">
+                            <div v-for="request in (currentUserProfile as any).pendingRequests" 
+                                 :key="request.id" 
+                                 class="request-card">
+                                <div class="request-info">
+                                    <strong>{{ request.bandName }}</strong>
+                                    <span v-if="request.bandGenre" class="genre-badge">{{ request.bandGenre }}</span>
+                                </div>
+                                <div v-if="request.message" class="request-message">
+                                    <em>"{{ request.message }}"</em>
+                                </div>
+                                <div class="request-date">
+                                    Submitted: {{ new Date(request.timeCreated).toLocaleDateString() }}
+                                </div>
+                            </div>
+                        </template>
+                        <p class="restriction-text">You cannot send more requests or create a band until this is resolved.</p>
+                    </div>
                 </div>
                 <div v-else-if="currentUserProfile.hasCreatedBand" class="notice-message">
                      <i class="pi pi-info-circle"></i>
@@ -60,14 +79,33 @@
                 </div>
             </TabPanel>
 
-            <TabPanel header="Create a Band" value="create" :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingRequest">
+            <TabPanel header="Create a Band" value="create">
                  <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
                      <i class="pi pi-info-circle"></i>
                     You have already created a band. You cannot create another.
                 </div>
                  <div v-else-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
-                    You have a pending request to join a band. You cannot create a band now.
+                    <div class="pending-request-details">
+                        <h4>Pending Band Request</h4>
+                        <template v-if="(currentUserProfile as any).pendingRequests && (currentUserProfile as any).pendingRequests.length > 0">
+                            <div v-for="request in (currentUserProfile as any).pendingRequests" 
+                                 :key="request.id" 
+                                 class="request-card">
+                                <div class="request-info">
+                                    <strong>{{ request.bandName }}</strong>
+                                    <span v-if="request.bandGenre" class="genre-badge">{{ request.bandGenre }}</span>
+                                </div>
+                                <div v-if="request.message" class="request-message">
+                                    <em>"{{ request.message }}"</em>
+                                </div>
+                                <div class="request-date">
+                                    Submitted: {{ new Date(request.timeCreated).toLocaleDateString() }}
+                                </div>
+                            </div>
+                        </template>
+                        <p class="restriction-text">You cannot create a band while you have a pending request.</p>
+                    </div>
                 </div>
                 <Card v-else class="create-band-form">
                     <template #content>
@@ -545,4 +583,61 @@ onMounted(async () => {
     display: block;
     margin-bottom: 1rem;
 }
+
+.pending-request-details {
+    text-align: left;
+}
+
+.pending-request-details h4 {
+    margin: 0 0 1rem 0;
+    color: var(--p-text-color);
+    font-size: 1.2rem;
+}
+
+.request-card {
+    background: var(--p-surface-card);
+    border: 1px solid var(--p-surface-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.request-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.request-info strong {
+    color: var(--hoojams-orange);
+    font-size: 1.1rem;
+}
+
+.genre-badge {
+    background: var(--p-surface-100);
+    color: var(--p-text-muted-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.request-message {
+    margin-bottom: 0.5rem;
+    font-style: italic;
+    color: var(--p-text-muted-color);
+}
+
+.request-date {
+    font-size: 0.9rem;
+    color: var(--p-text-muted-color);
+}
+
+.restriction-text {
+    margin-top: 1rem;
+    font-style: italic;
+    color: var(--p-text-muted-color);
+}
+
+
 </style> 
