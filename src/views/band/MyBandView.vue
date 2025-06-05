@@ -209,10 +209,18 @@ const loading = ref(true);
 // TypeScript interface for dev state
 
 
-// Get current user ID (placeholder - replace with real authentication)
+// Get current user ID from localStorage
 const getCurrentUserId = () => {
-    // TODO: Replace with real authentication
-    // For now, return null (anonymous user)
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            return String(user.userId);
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            return null;
+        }
+    }
     return null;
 };
 
