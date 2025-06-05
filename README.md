@@ -74,13 +74,8 @@ mysql --login-path=local < db/database_commands.sql
 
 ### Frontend (Vue 3 + TypeScript)
 ```bash
-npm run dev          # Development server
-npm run build        # Production build
-npm run type-check   # TypeScript checking
-npm run lint         # ESLint + Oxlint
-npm run format       # Prettier formatting
-npm run test:unit    # Vitest unit tests
-npm run test:e2e     # Playwright E2E tests
+cd cs4570
+npm run dev
 ```
 
 ### Backend (Node.js + Express)
@@ -88,14 +83,6 @@ npm run test:e2e     # Playwright E2E tests
 cd backend
 npm start            # Start server on port 3001
 ```
-
-**Modular Architecture:**
-- `routes/events.js` - Event management
-- `routes/users.js` - User profiles & favorites
-- `routes/bands.js` - Band management
-- `routes/fillInRequests.js` - Fill-in requests
-- `config/database.js` - MySQL connection pool
-- `middleware/errorHandler.js` - Centralized error handling
 
 ## 🎭 Test Users
 
@@ -114,59 +101,4 @@ npm start            # Start server on port 3001
 5. **Done!** - Instant role switch
 
 *These are the only 4 users in the database for clean testing*
-
-## 🔧 Tech Stack
-
-**Frontend:**
-- Vue 3 + TypeScript
-- PrimeVue UI components
-- Vue Router + Pinia
-- Vite build tool
-
-**Backend:**
-- Node.js + Express
-- MySQL2 database driver
-- CORS enabled
-- Environment variables
-
-**Development:**
-- ESLint + Oxlint linting
-- Prettier code formatting
-- Vitest unit testing
-- Playwright E2E testing
-
-## 📋 Available Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start frontend development server |
-| `npm run build` | Build for production |
-| `npm run lint` | Run all linters |
-| `npm test:unit` | Run unit tests |
-| `npm test:e2e` | Run E2E tests |
-| Backend: `npm start` | Start API server |
-
-## 🔗 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/events` | List all events |
-| POST | `/api/events` | Create new event |
-| GET | `/api/bands` | List all bands |
-| POST | `/api/bands` | Create new band |
-| GET | `/api/users/:id` | Get user profile |
-| GET | `/api/fill-in-requests` | List fill-in requests |
-
-*Full API documentation in `backend/routes/` files*
-
-## 📚 Additional Documentation
-
-- `db/SETUP_NOTES.md` - Detailed database setup
-- `db/TEST_DATA_SUMMARY.md` - Complete test data reference
-
----
-
-**IDE Recommendation:** VSCode + Volar extension (disable Vetur)
-
-For issues or questions, refer to the source files or database schema in `db/core_db_structure.sql`.
 
