@@ -231,4 +231,277 @@ router.get('/available-dates', async (req, res, next) => {
 // NOTE: Bands can no longer apply to events. Event organizers invite bands instead.
 // The event_request table is now used for invitations FROM event organizers TO bands.
 
+// PUT /api/events/:id - Update an event (only by creator)
+router.put('/:id', async (req, res, next) => {
+  const { id: eventId } = req.params;
+  const { userId, eventTitle, eventDate, timeSlot, location, genre, description } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  if (!eventTitle || !eventDate || !timeSlot) {
+    return res.status(400).json({ message: 'Event Title, Event Date, and Time Slot are required.' });
+  }
+
+  if (![1, 2, 3, 4].includes(timeSlot)) {
+    return res.status(400).json({ message: 'Time Slot must be 1, 2, 3, or 4.' });
+  }
+
+  try {
+    // First check if the event exists and user is the creator
+    const [eventCheck] = await pool.query(
+      'SELECT user_id, event_date, time_slot FROM event WHERE event_id = ?',
+      [eventId]
+    );
+
+    if (eventCheck.length === 0) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    if (eventCheck[0].user_id !== parseInt(userId)) {
+      return res.status(403).json({ message: 'You can only edit your own events.' });
+    }
+
+    // Check if the new date/time slot combination is available (if changed)
+    const currentEvent = eventCheck[0];
+    const isChangingDateTime = 
+      currentEvent.event_date !== eventDate || 
+      currentEvent.time_slot !== timeSlot;
+
+    if (isChangingDateTime) {
+      const [conflictCheck] = await pool.query(
+        'SELECT event_id FROM event WHERE event_date = ? AND time_slot = ? AND event_id != ?',
+        [eventDate, timeSlot, eventId]
+      );
+
+      if (conflictCheck.length > 0) {
+        return res.status(409).json({ 
+          message: 'This time slot is already taken for the selected date. Please choose a different slot.' 
+        });
+      }
+    }
+
+    // Create datetime for the specific time slot
+    const timeSlotMapping = {
+      1: '08:00:00',
+      2: '09:00:00', 
+      3: '10:00:00',
+      4: '11:00:00'
+    };
+    
+    const datetime = `${eventDate} ${timeSlotMapping[timeSlot]}`;
+
+    // Update the event
+    const query = `
+      UPDATE event 
+      SET event_title = ?, event_date = ?, time_slot = ?, datetime = ?, 
+          location = ?, genre = ?, description = ?
+      WHERE event_id = ?
+    `;
+    
+    await pool.query(query, [
+      eventTitle,
+      eventDate, 
+      timeSlot,
+      datetime,
+      location || null,
+      genre || null,
+      description || null,
+      eventId
+    ]);
+
+    // Return the updated event
+    const [updatedEvent] = await pool.query(
+      `SELECT event_id AS id, user_id AS userId, event_title AS eventTitle, 
+       event_date AS eventDate, time_slot AS timeSlot, datetime, location, 
+       genre, status, description, assigned_band_id AS assignedBandId 
+       FROM event WHERE event_id = ?`,
+      [eventId]
+    );
+
+    const event = {
+      ...updatedEvent[0],
+      id: String(updatedEvent[0].id),
+      userId: String(updatedEvent[0].userId),
+      datetime: updatedEvent[0].datetime ? new Date(updatedEvent[0].datetime).toISOString() : null
+    };
+
+    res.json(event);
+  } catch (error) {
+    console.error('Failed to update event:', error);
+    next(error);
+  }
+});
+
+// DELETE /api/events/:id - Delete an event (only by creator)
+router.delete('/:id', async (req, res, next) => {
+  const { id: eventId } = req.params;
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Check if the event exists and user is the creator
+    const [eventCheck] = await pool.query(
+      'SELECT user_id, event_title FROM event WHERE event_id = ?',
+      [eventId]
+    );
+
+    if (eventCheck.length === 0) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    if (eventCheck[0].user_id !== parseInt(userId)) {
+      return res.status(403).json({ message: 'You can only delete your own events.' });
+    }
+
+    // Delete the event (CASCADE will handle related records)
+    await pool.query('DELETE FROM event WHERE event_id = ?', [eventId]);
+
+    res.json({ 
+      message: 'Event deleted successfully.',
+      deletedEventId: eventId,
+      eventTitle: eventCheck[0].event_title
+    });
+  } catch (error) {
+    console.error('Failed to delete event:', error);
+    next(error);
+  }
+});
+
+// GET /api/events/:id/available-bands - Get available bands for an event
+router.get('/:id/available-bands', async (req, res, next) => {
+  const { id: eventId } = req.params;
+  
+  try {
+    // First verify the event exists
+    const [eventCheck] = await pool.query(
+      'SELECT event_date, time_slot FROM event WHERE event_id = ?',
+      [eventId]
+    );
+
+    if (eventCheck.length === 0) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    const { event_date, time_slot } = eventCheck[0];
+
+    // Get all bands that are NOT already assigned to an event on the same date/time
+    const query = `
+      SELECT 
+        b.band_id AS id,
+        b.name,
+        b.genre,
+        b.description,
+        b.total_events_played,
+        COUNT(bm.user_role_id) + COUNT(bl.user_role_id) AS memberCount
+      FROM band b
+      LEFT JOIN band_member bm ON b.band_id = bm.band_id
+      LEFT JOIN band_leader bl ON b.band_id = bl.band_id
+      WHERE b.band_id NOT IN (
+        SELECT DISTINCT assigned_band_id 
+        FROM event 
+        WHERE event_date = ? AND assigned_band_id IS NOT NULL
+      )
+      AND b.band_id NOT IN (
+        SELECT DISTINCT er.band_id
+        FROM event_request er
+        JOIN event e ON er.event_id = e.event_id
+        WHERE e.event_date = ? AND er.status = 'pending'
+      )
+      GROUP BY b.band_id, b.name, b.genre, b.description, b.total_events_played
+      ORDER BY b.name ASC
+    `;
+
+    const [rows] = await pool.query(query, [event_date, event_date]);
+    
+    const availableBands = rows.map(band => ({
+      ...band,
+      id: String(band.id),
+      memberCount: parseInt(band.memberCount) || 0
+    }));
+
+    res.json(availableBands);
+  } catch (error) {
+    console.error('Failed to fetch available bands:', error);
+    next(error);
+  }
+});
+
+// POST /api/events/:id/invite-band - Invite a band to play at an event
+router.post('/:id/invite-band', async (req, res, next) => {
+  const { id: eventId } = req.params;
+  const { userId, bandId, message } = req.body;
+
+  if (!userId || !bandId) {
+    return res.status(400).json({ message: 'User ID and Band ID are required.' });
+  }
+
+  try {
+    // Verify the event exists and user is the creator
+    const [eventCheck] = await pool.query(
+      'SELECT user_id, event_title, status FROM event WHERE event_id = ?',
+      [eventId]
+    );
+
+    if (eventCheck.length === 0) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    if (eventCheck[0].user_id !== parseInt(userId)) {
+      return res.status(403).json({ message: 'You can only invite bands to your own events.' });
+    }
+
+    if (eventCheck[0].status === 'filled') {
+      return res.status(400).json({ message: 'This event already has a band assigned.' });
+    }
+
+    // Verify the band exists
+    const [bandCheck] = await pool.query(
+      'SELECT name FROM band WHERE band_id = ?',
+      [bandId]
+    );
+
+    if (bandCheck.length === 0) {
+      return res.status(404).json({ message: 'Band not found.' });
+    }
+
+    // Check if there's already a pending invitation for this band/event
+    const [existingInvitation] = await pool.query(
+      'SELECT status FROM event_request WHERE event_id = ? AND band_id = ?',
+      [eventId, bandId]
+    );
+
+    if (existingInvitation.length > 0) {
+      const status = existingInvitation[0].status;
+      if (status === 'pending') {
+        return res.status(409).json({ message: 'An invitation to this band is already pending.' });
+      } else if (status === 'approved') {
+        return res.status(409).json({ message: 'This band has already accepted an invitation to this event.' });
+      }
+      // If previously rejected, we can send a new invitation
+    }
+
+    // Create the invitation
+    const inviteQuery = `
+      INSERT INTO event_request (event_id, band_id, status, message, time_created)
+      VALUES (?, ?, 'pending', ?, NOW())
+    `;
+    
+    await pool.query(inviteQuery, [eventId, bandId, message || null]);
+
+    res.status(201).json({ 
+      message: `Invitation sent to ${bandCheck[0].name}`,
+      eventTitle: eventCheck[0].event_title,
+      bandName: bandCheck[0].name
+    });
+  } catch (error) {
+    console.error('Failed to invite band:', error);
+    next(error);
+  }
+});
+
 export default router; 
