@@ -306,19 +306,39 @@ router.get('/:id/band-status', async (req, res, next) => {
     // Combine member and leader bands
     const allUserBands = [...memberBands, ...leaderBands];
     
-    // Check if user has pending join requests (this table might not exist yet)
+    // Check if user has pending join requests and get details
     let hasPendingRequest = false;
+    let pendingRequests = [];
     try {
-      const [pendingRequests] = await pool.query(
-        `SELECT COUNT(*) as count FROM membership_request 
-         WHERE user_id = ? AND status = 'pending'`,
+      const [requestRows] = await pool.query(
+        `SELECT 
+          mr.membership_request_id as id,
+          mr.band_id as bandId,
+          mr.message,
+          mr.time_created as timeCreated,
+          b.name as bandName,
+          b.genre as bandGenre
+         FROM membership_request mr
+         JOIN band b ON mr.band_id = b.band_id
+         WHERE mr.user_id = ? AND mr.status = 'pending'`,
         [userId]
       );
-      hasPendingRequest = pendingRequests[0].count > 0;
+      hasPendingRequest = requestRows.length > 0;
+      pendingRequests = requestRows.map(req => ({
+        id: String(req.id),
+        bandId: String(req.bandId),
+        bandName: req.bandName,
+        bandGenre: req.bandGenre,
+        message: req.message,
+        timeCreated: req.timeCreated ? new Date(req.timeCreated).toISOString() : null
+      }));
     } catch (error) {
       // Table might not exist, ignore error
-      console.log('membership_request table not found, assuming no pending requests');
+      console.log('membership_request table error:', error.message);
     }
+    
+    console.log('Debug - hasPendingRequest:', hasPendingRequest);
+    console.log('Debug - pendingRequests:', pendingRequests);
     
     // Check if user created any band (is a leader) - using band_leader table
     const [createdBands] = await pool.query(
@@ -332,6 +352,7 @@ router.get('/:id/band-status', async (req, res, next) => {
       isMemberOfBand: allUserBands.length > 0,
       hasPendingRequest: hasPendingRequest,
       hasCreatedBand: createdBands[0].count > 0,
+      pendingRequests: pendingRequests,
       memberBands: allUserBands.map(band => ({
         id: String(band.band_id),
         name: band.band_name,
