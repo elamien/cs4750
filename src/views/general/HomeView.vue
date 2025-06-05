@@ -21,12 +21,13 @@ const showAuthModal = ref(false);
   <div class="home">
     <div class="hero-section">
       <div class="hero-content">
-        <img src="@/assets/landing-page-image.png" alt="Musicians performing together" class="hero-logo" />
-        <h1>About HooJams</h1>
-        <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
-        <div class="hero-actions">
-          <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
-          <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/browse/events')" />
+        <div class="hero-text-container">
+          <h1>About HooJams</h1>
+          <p class="hero-subtitle">Your premier platform for connecting musicians, discovering opportunities, and building the local music community</p>
+          <div class="hero-actions">
+            <Button v-if="!isSignedIn" label="Get Started" icon="pi pi-sign-in" size="large" @click="showAuthModal = true" />
+            <Button label="Browse Events" icon="pi pi-calendar" severity="secondary" outlined @click="$router.push('/browse/events')" />
+          </div>
         </div>
       </div>
     </div>
@@ -85,7 +86,10 @@ const showAuthModal = ref(false);
 }
 
 .hero-section {
-  background: linear-gradient(135deg, var(--hoojams-orange) 0%, var(--hoojams-orange-hover) 100%);
+  background-image: url('@/assets/landing-page-v2.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: white;
   padding: 4rem 2rem;
   text-align: center;
@@ -93,6 +97,10 @@ const showAuthModal = ref(false);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 2rem;
 }
 
 .hero-content {
@@ -100,13 +108,13 @@ const showAuthModal = ref(false);
   margin: 0 auto;
 }
 
-.hero-logo {
-  max-width: 400px;
-  width: 100%;
-  height: auto;
-  margin-bottom: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+.hero-text-container {
+  padding: 3rem 2rem;
+  backdrop-filter: blur(25px);
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .hero-section h1 {
@@ -119,7 +127,6 @@ const showAuthModal = ref(false);
 .hero-subtitle {
   font-size: 1.25rem;
   margin-bottom: 2rem;
-  opacity: 0.9;
   color: white;
 }
 
@@ -128,6 +135,11 @@ const showAuthModal = ref(false);
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.hero-actions .p-button-secondary.p-button-outlined {
+  color: white !important;
+  border-color: #cccccc !important;
 }
 
 .features-section {
@@ -198,8 +210,8 @@ const showAuthModal = ref(false);
     align-items: center;
   }
   
-  .hero-logo {
-    max-width: 300px;
+  .hero-text-container {
+    padding: 2rem 1.5rem;
   }
   
   .features-section,
