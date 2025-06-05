@@ -91,9 +91,9 @@ const createMusicNote = () => {
   const note = {
     id: noteId++,
     symbol: noteSymbols[Math.floor(Math.random() * noteSymbols.length)],
-    x: Math.random() * 150 + 25, // Random x position starting from the player area
+    x: Math.random() * 40 + 10, // Small range right above play button
     delay: 0,
-    size: 18 + Math.random() * 10 // Random size between 18-28px
+    size: 12 + Math.random() * 6 // Random size between 12-18px
   }
   
   musicNotes.value.push(note)
@@ -112,7 +112,7 @@ const startMusicNotes = () => {
   
   noteInterval = window.setInterval(() => {
     createMusicNote()
-  }, 800) // Create a note every 800ms
+  }, 1500) // Create a note every 1.5 seconds
 }
 
 const stopMusicNotes = () => {
@@ -245,7 +245,7 @@ onMounted(() => {
 
 .play-button.playing {
   background: var(--hoojams-orange-hover);
-  animation: playing-pulse 2s infinite;
+  animation: playing-pulse 1.48s infinite;
 }
 
 .play-icon, .pause-icon {
@@ -359,15 +359,15 @@ onMounted(() => {
     opacity: 1;
   }
   25% {
-    transform: translateY(-30px) translateX(-10px) scale(1.2);
-    opacity: 0.9;
+    transform: translateY(-15px) translateX(-5px) scale(1.1);
+    opacity: 0.8;
   }
   50% {
-    transform: translateY(-80px) translateX(10px) scale(1.1);
-    opacity: 0.7;
+    transform: translateY(-25px) translateX(5px) scale(1.0);
+    opacity: 0.5;
   }
   100% {
-    transform: translateY(-150px) translateX(-5px) scale(0.8);
+    transform: translateY(-35px) translateX(-2px) scale(0.9);
     opacity: 0;
   }
 }
@@ -378,8 +378,8 @@ onMounted(() => {
 }
 
 @keyframes playing-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+  100% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
 }
 
 @keyframes wave-expand {
