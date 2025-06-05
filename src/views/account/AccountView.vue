@@ -127,7 +127,7 @@
                                 <Dropdown 
                                     id="instrument"
                                     v-model="editForm.instrument"
-                                    :options="instrumentOptions"
+                                    :options="instruments"
                                     optionLabel="name"
                                     optionValue="value"
                                     placeholder="Select your primary instrument"
@@ -140,7 +140,7 @@
                                 <Dropdown 
                                     id="genre"
                                     v-model="editForm.genre"
-                                    :options="genreOptions"
+                                    :options="genres"
                                     optionLabel="name"
                                     optionValue="value"
                                     placeholder="Select your primary genre"
@@ -215,6 +215,7 @@ import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
+import { useReferenceData } from '@/composables/useReferenceData';
 
 // Aligned with `user` table from core_db_structure.sql
 interface UserProfile {
@@ -244,6 +245,9 @@ const getCurrentUserId = () => {
 };
 
 const currentUserId = ref(getCurrentUserId());
+
+// Reference data (fetched from API)
+const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData();
 
 // State management
 const loading = ref(true);
@@ -281,31 +285,8 @@ const originalProfile = ref<UserProfile>({
     genre: null
 });
 
-// Options
-const instrumentOptions = ref([
-    { name: 'Guitar', value: 'Guitar' },
-    { name: 'Bass', value: 'Bass' },
-    { name: 'Drums', value: 'Drums' },
-    { name: 'Piano', value: 'Piano' },
-    { name: 'Vocals', value: 'Vocals' },
-    { name: 'Saxophone', value: 'Saxophone' },
-    { name: 'Trumpet', value: 'Trumpet' },
-    { name: 'Violin', value: 'Violin' },
-    { name: 'Other', value: 'Other' }
-]);
-
-const genreOptions = ref([
-    { name: 'Rock', value: 'Rock' },
-    { name: 'Jazz', value: 'Jazz' },
-    { name: 'Blues', value: 'Blues' },
-    { name: 'Folk', value: 'Folk' },
-    { name: 'Electronic', value: 'Electronic' },
-    { name: 'Pop', value: 'Pop' },
-    { name: 'Classical', value: 'Classical' },
-    { name: 'Country', value: 'Country' },
-    { name: 'Hip Hop', value: 'Hip Hop' },
-    { name: 'Other', value: 'Other' }
-]);
+// Options (fetched from API via useReferenceData composable)
+// genreOptions and instrumentOptions are now available as 'genres' and 'instruments' from the composable
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
@@ -458,7 +439,13 @@ const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     }
 };
 
-onMounted(() => {
+onMounted(async () => {
+    // Initialize reference data
+    await Promise.all([
+        initializeGenres(),
+        initializeInstruments()
+    ]);
+    
     fetchProfile();
     window.addEventListener('beforeunload', handleBeforeUnload);
 });

@@ -23,7 +23,7 @@
                         <Dropdown 
                             id="genre" 
                             v-model="eventForm.genre" 
-                            :options="genreOptions" 
+                            :options="genres" 
                             optionLabel="name" 
                             optionValue="value"
                             placeholder="Select event genre"
@@ -56,17 +56,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
+import { useReferenceData } from '@/composables/useReferenceData';
 
 // Mock current user ID - in a real app, this would come from auth state
 const mockCurrentUserId = ref(1); // Example user_id
 // TODO: Replace mockCurrentUserId with actual user ID from an authentication store/service
+
+// Reference data (fetched from API)
+const { genres, initializeGenres } = useReferenceData();
 
 interface EventForm {
     eventTitle: string;
@@ -90,19 +94,7 @@ const eventForm = ref<EventForm>({
     // They are nullable and may be handled in a different view/process (e.g., event update by owner/admin).
 });
 
-const genreOptions = ref([
-    { name: 'Rock', value: 'Rock' },
-    { name: 'Jazz', value: 'Jazz' },
-    { name: 'Blues', value: 'Blues' },
-    { name: 'Folk', value: 'Folk' },
-    { name: 'Electronic', value: 'Electronic' },
-    { name: 'Pop', value: 'Pop' },
-    { name: 'Country', value: 'Country' },
-    { name: 'Hip Hop', value: 'Hip Hop' },
-    { name: 'Classical', value: 'Classical' },
-    { name: 'Other', value: 'Other' }
-]);
-// TODO: Consider fetching genreOptions from config or API endpoint for maintainability.
+// Genre options now fetched from API via useReferenceData composable
 
 const createEvent = async () => {
     // Ensure user_id is set (should be from logged-in user)
@@ -166,6 +158,11 @@ const resetForm = () => {
         user_id: mockCurrentUserId.value // Reset with current user ID
     };
 };
+
+// Initialize reference data on component mount
+onMounted(async () => {
+    await initializeGenres();
+});
 </script>
 
 <style scoped>
