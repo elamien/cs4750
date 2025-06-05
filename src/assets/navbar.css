@@ -30,6 +30,14 @@
     color: white;
 }
 
+.building-text {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    margin-left: 0.5rem;
+}
+
 /* Navbar logo styling */
 .navbar-logo {
     height: 40px;

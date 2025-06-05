@@ -1,11 +1,6 @@
 <template>
     <div class="join-create-band">
-        <div class="header">
-            <h1>Join or Create a Band</h1>
-            <p>Find your musical community</p>
-        </div>
-
-        <TabView v-if="!currentUserProfile.hasCreatedBand">
+        <TabView v-if="!currentUserProfile.hasCreatedBand" v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
             <TabPanel header="Join a Band" value="join" :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand">
                 <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
@@ -137,6 +132,10 @@
                     </template>
                 </Card>
             </TabPanel>
+
+            <TabPanel header="Browse Bands" value="browse">
+                <BrowseBandsComponent />
+            </TabPanel>
         </TabView>
         <div v-else class="notice-message already-created-band-message">
             <i class="pi pi-check-circle"></i>
@@ -148,7 +147,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import TabView from 'primevue/tabview';
@@ -159,10 +158,15 @@ import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useReferenceData } from '@/composables/useReferenceData';
+import BrowseBandsComponent from '@/components/events/BrowseBandsComponent.vue';
 
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
+
+// Active tab index (0 = Join, 1 = Create, 2 = Browse)
+const activeTab = ref(0);
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface BandListItem {
@@ -396,9 +400,25 @@ const goToMyBand = () => {
     router.push('/my-band');
 };
 
+// Update URL when tab changes
+const updateRoute = (index: number) => {
+    const tabName = index === 2 ? 'browse' : index === 1 ? 'create' : 'join';
+    router.replace({ query: { ...route.query, tab: tabName } });
+};
+
 // --- Lifecycle ---
 onMounted(async () => {
     await initializeGenres();
+    
+    // Set initial tab based on route query
+    const tab = route.query.tab as string;
+    if (tab === 'browse') {
+        activeTab.value = 2;
+    } else if (tab === 'create') {
+        activeTab.value = 1;
+    } else {
+        activeTab.value = 0; // default to join
+    }
     
     try {
         loading.value = true;
@@ -428,11 +448,6 @@ onMounted(async () => {
     max-width: 1000px;
     margin: 0 auto;
     padding: 2rem;
-}
-
-.header {
-    text-align: center;
-    margin-bottom: 2rem;
 }
 
 .search-section {

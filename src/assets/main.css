@@ -58,6 +58,7 @@
   --p-red-500: #ef4444;
   --p-orange-500: var(--hoojams-orange);
   --p-surface-500: #6b7280;
+  --p-surface-0: var(--theme-background);
 }
 
 /* Dark Mode - Orange navbar, black background, white text */

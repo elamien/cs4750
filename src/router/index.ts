@@ -22,11 +22,11 @@ const router = createRouter({
       name: 'onboarding',
       component: () => import('../views/auth/OnboardingView.vue'),
     },
-    // Browse routes (available to all users)
+    // Browse routes (available to all users) - redirect to unified bands view
     {
       path: '/browse/bands',
       name: 'browse-bands',
-      component: () => import('../views/browse/BrowseBandsView.vue'),
+      redirect: '/join-create-band?tab=browse'
     },
     {
       path: '/browse/bands/:id',
@@ -34,9 +34,9 @@ const router = createRouter({
       component: () => import('../views/browse/BandDetailView.vue'),
     },
     {
-      path: '/browse/events',
-      name: 'browse-events',
-      component: () => import('../views/browse/BrowseEventsView.vue'),
+      path: '/events',
+      name: 'events',
+      component: () => import('../views/general/EventsView.vue'),
     },
     // User account and preferences (signed-in users)
     {
@@ -49,11 +49,7 @@ const router = createRouter({
       name: 'favorites',
       component: () => import('../views/account/FavoritesView.vue'),
     },
-    {
-      path: '/my-events',
-      name: 'my-events',
-      component: () => import('../views/general/MyEventsView.vue'),
-    },
+
     {
       path: '/fill-in-requests',
       name: 'fill-in-requests',
