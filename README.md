@@ -69,10 +69,10 @@ npm start            # Start server on port 3001
 ### Existing Test Users
 | Role | Email | Password | Name | Permissions |
 |------|-------|----------|------|-------------|
-| **Band Leader** | `bandleader@test.com` | `test123` | Sarah Leader | Create/manage bands, handle requests |
-| **Band Member** | `bandmember@test.com` | `test123` | Mike Member | View band events, mark availability |
-| **General User** | `general@test.com` | `test123` | Gary General | Join or create one band |
-| **WXTJ Executive** | `wxtj.exec@virginia.edu` | `test123` | Wesley Executive | Full admin privileges |
+| **WXTJ Executive** | `wxtjexec@example.com` | `wxtjexec` | wxtj exec | Full admin privileges |
+| **General User** | `test.user@example.com` | `test123` | Test User | Join or create one band |
+| **Band Leader** | `alex.band@test.com` | `test123` | Alex Rockstar | Create/manage bands, handle requests |
+| **Band Member** | `jamie.drums@test.com` | `test123` | Jamie Beats | View band events, mark availability |
 
 ### Creating New Users
 - **General Users**: Simply register with name, email, and password
@@ -88,8 +88,14 @@ HooJams2024_WXTJ
 1. Click your **profile avatar** (top right)
 2. Click **"Sign Out"**
 3. Click **"Sign In"**
-4. Enter new **email + `test123`**
+4. Enter credentials from table above
 5. **Done!** - Instant role switch
 
-*These are the only 4 users in the database for clean testing*
+### Test Band Setup
+- **Electric Vibes** (Alternative rock band)
+  - **Leader**: Alex Rockstar
+  - **Member**: Jamie Beats
+  - Available for event bookings and testing band functionality
+
+*These 4 users + 1 band are automatically created when initializing the database*
 

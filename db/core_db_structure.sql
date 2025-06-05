@@ -333,3 +333,41 @@ CREATE INDEX idx_app_settings_name ON app_settings(setting_name);
 -- Note: idx_user_favorites_bands_user, idx_user_favorites_events_user, idx_band_member_availability, 
 -- idx_band_membership_history_user, and idx_band_membership_history_band are automatically created 
 -- by MySQL as part of the table definitions above
+
+-- ===============================================
+-- TEST DATA - Default Users for Development
+-- ===============================================
+
+-- Insert test users with all required fields
+INSERT INTO user (first_name, last_name, bio, email, phone_number, genre, instrument, password) VALUES
+    ('wxtj', 'exec', 'WXTJ station executive with full administrative privileges.', 'wxtjexec@example.com', '434-555-WXTJ', 'Pop', 'Clarinet', 'wxtjexec'),
+    ('Test', 'User', 'General user for testing basic functionality.', 'test.user@example.com', '434-555-0001', 'Indie', 'Guitar', 'test123'),
+    ('Alex', 'Rockstar', 'Passionate guitarist with 10 years experience in rock and indie music.', 'alex.band@test.com', '434-555-0101', 'Alternative', 'Guitar', 'test123'),
+    ('Jamie', 'Beats', 'Professional drummer specializing in rock, jazz, and fusion styles.', 'jamie.drums@test.com', '434-555-0202', 'Jazz', 'Drums', 'test123');
+
+-- Create user roles for test users
+INSERT INTO user_roles (user_id, role_id) VALUES
+    (2, 4),  -- wxtj exec -> WXTJ Executive
+    (5, 3),  -- Test User -> General User  
+    (6, 1),  -- Alex Rockstar -> Band Leader
+    (7, 2);  -- Jamie Beats -> Band Member
+
+-- Create a test band for the band leader
+INSERT INTO band (name, email, phone_number, genre, total_events_played, events_played_ytd, description) VALUES
+    ('Electric Vibes', 'electricvibes@test.com', '434-555-BAND', 'Alternative', 0, 0, 'An energetic alternative rock band blending guitar-driven melodies with dynamic rhythms.');
+
+-- Create band leadership relationship
+INSERT INTO band_leader (user_role_id, band_id) VALUES
+    (6, 1);  -- Alex (user_role_id 6) leads Electric Vibes (band_id 1)
+
+-- Create band membership relationship  
+INSERT INTO band_member (user_role_id, band_id) VALUES
+    (7, 1);  -- Jamie (user_role_id 7) is member of Electric Vibes (band_id 1)
+
+-- Create WXTJ executive record
+INSERT INTO wxtj_exec (user_role_id, exec_title) VALUES
+    (4, 'Executive');  -- wxtj exec with title
+
+-- Create general user record
+INSERT INTO general_user (user_role_id, looking_for_a_band, has_created_band, has_pending_band_request) VALUES
+    (5, 0, 0, 0);  -- Test User - general user status
