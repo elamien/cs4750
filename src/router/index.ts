@@ -22,6 +22,11 @@ const router = createRouter({
       name: 'onboarding',
       component: () => import('../views/auth/OnboardingView.vue'),
     },
+    {
+      path: '/home-dashboard',
+      name: 'home-dashboard',
+      component: () => import('../views/dashboard/HomeDashboardView.vue'),
+    },
     // Browse routes (available to all users) - redirect to unified bands view
     {
       path: '/browse/bands',

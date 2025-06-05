@@ -3,10 +3,9 @@
         <div class="card">
             <Menubar :model="menuItems">
                 <template #start>
-                    <router-link to="/browse/bands" class="navbar-brand">
+                    <router-link to="/home-dashboard" class="navbar-brand">
                         <img src="@/assets/hoojams-logo-v2.png" alt="HooJams Logo" class="navbar-logo" />
                         <span class="navbar-brand-text">HooJams</span>
-                        <span class="building-text">building...</span>
                     </router-link>
                 </template>
                 <template #item="{ item, props, hasSubmenu, root }">
