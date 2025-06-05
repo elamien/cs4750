@@ -106,8 +106,22 @@ import Button from 'primevue/button';
 
 const router = useRouter();
 
-// TODO: Replace with actual logged-in user ID from auth store
-const currentUserId = ref('2'); // Real user ID - Charles Mingus
+// Get current authenticated user ID from localStorage
+const getCurrentUserId = () => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            return String(user.userId);
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            return null;
+        }
+    }
+    return null;
+};
+
+const currentUserId = ref(getCurrentUserId())
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface FavoriteBandItem { // Based on `band` table + favorites

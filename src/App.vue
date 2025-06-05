@@ -483,11 +483,11 @@ const handleSignIn = async () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                email: authForm.value.email,
+        email: authForm.value.email,
                 password: authForm.value.password
             })
-        });
-
+    });
+    
         const data = await response.json();
 
         if (!response.ok) {
@@ -497,7 +497,7 @@ const handleSignIn = async () => {
         }
 
         // Successful login
-        isSignedIn.value = true;
+    isSignedIn.value = true;
         userRole.value = data.user.role; // Use real role from database
         mockUserProfile.value.userId = data.user.userId;
         mockUserProfile.value.firstName = data.user.firstName;
@@ -507,11 +507,11 @@ const handleSignIn = async () => {
         // Store user data in localStorage for persistence
         localStorage.setItem('currentUser', JSON.stringify(data.user));
         
-        showAuthModal.value = false;
+    showAuthModal.value = false;
         resetAuthForm();
         
         console.log('Login successful:', data.user);
-        
+    
     } catch (error) {
         console.error('Login error:', error);
     }
