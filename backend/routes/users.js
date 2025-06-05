@@ -344,6 +344,58 @@ router.get('/:id/band-status', async (req, res, next) => {
   }
 });
 
+// GET /api/users/:id/events - Get events created by a specific user
+router.get('/:id/events', async (req, res, next) => {
+  const { id: userId } = req.params;
+  
+  try {
+    const query = `
+      SELECT 
+        e.event_id AS id,
+        e.user_id AS userId,
+        e.event_title AS eventTitle,
+        DATE(e.event_date) AS eventDate,
+        e.time_slot AS timeSlot,
+        e.datetime,
+        e.location,
+        e.genre,
+        e.status,
+        e.description,
+        e.assigned_band_id AS assignedBandId,
+        b.name AS bandName,
+        COUNT(er.event_request_id) AS pendingInvitations
+      FROM event e
+      LEFT JOIN band b ON e.assigned_band_id = b.band_id
+      LEFT JOIN event_request er ON e.event_id = er.event_id AND er.status = 'pending'
+      WHERE e.user_id = ?
+      GROUP BY e.event_id
+      ORDER BY e.event_date DESC, e.time_slot ASC
+    `;
+    const [rows] = await pool.query(query, [userId]);
+
+    const events = rows.map(event => ({
+      id: String(event.id),
+      userId: String(event.userId),
+      eventTitle: event.eventTitle,
+      eventDate: event.eventDate,
+      timeSlot: event.timeSlot,
+      datetime: event.datetime ? new Date(event.datetime).toISOString() : null,
+      location: event.location,
+      genre: event.genre,
+      status: event.status,
+      description: event.description,
+      assignedBandId: event.assignedBandId ? String(event.assignedBandId) : null,
+      bandName: event.bandName,
+      pendingInvitations: parseInt(event.pendingInvitations) || 0
+    }));
+
+    res.json(events);
+  } catch (error) {
+    console.error('Failed to fetch user events:', error);
+    next(error);
+  }
+});
+
 // DELETE /api/users/:id - Delete a user (admin only)
 router.delete('/:id', async (req, res, next) => {
   const { id: userId } = req.params;
