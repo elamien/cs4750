@@ -37,8 +37,11 @@
           <source src="/Hasley-badAtLove-Instrumental.mp3" type="audio/mpeg">
         </audio>
         
-        <!-- Subtle pulse animation to draw attention -->
-        <div class="attention-pulse" v-if="!hasInteracted"></div>
+        <!-- Audio wave animation -->
+        <div v-if="!hasInteracted" class="audio-wave-indicator">
+          <div class="wave-ring"></div>
+          <div class="wave-ring wave-ring-delayed"></div>
+        </div>
       </div>
       
       <!-- Floating music notes - positioned outside player for free movement -->
@@ -68,6 +71,7 @@ const isPlaying = ref(false)
 const isVisible = ref(true)
 const showPlayer = ref(false)
 const hasInteracted = ref(false)
+const isDismissedThisSession = ref(false)
 
 // Music notes animation
 const musicNotes = ref<Array<{
@@ -158,11 +162,12 @@ const hidePlayer = () => {
     isPlaying.value = false
     stopMusicNotes()
   }
+  isDismissedThisSession.value = true
   isVisible.value = false
   setTimeout(() => {
     showPlayer.value = false
-    // Mark as permanently dismissed so it doesn't show again
-    localStorage.setItem('musicPlayerDismissed', 'true')
+    // Mark as dismissed for this session only - will show again on reload
+    sessionStorage.setItem('musicPlayerDismissed', 'true')
   }, 300)
 }
 
@@ -175,14 +180,16 @@ const onCanPlay = () => {
 }
 
 onMounted(() => {
-  // Show on every page load/reload, but check if user has permanently dismissed it
-  const isPermanentlyDismissed = localStorage.getItem('musicPlayerDismissed')
+  // Clear any previous session dismissal on page load/reload
+  sessionStorage.removeItem('musicPlayerDismissed')
+  isDismissedThisSession.value = false
   
-  if (!isPermanentlyDismissed) {
-    setTimeout(() => {
+  // Always show on page load/reload
+  setTimeout(() => {
+    if (!isDismissedThisSession.value) {
       showPlayer.value = true
-    }, 1500) // Show after 1.5s for better UX
-  }
+    }
+  }, 1500) // Show after 1.5s for better UX
 })
 </script>
 
@@ -294,15 +301,33 @@ onMounted(() => {
   color: white;
 }
 
-.attention-pulse {
+/* Audio Wave Indicator */
+.audio-wave-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  overflow: visible;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.wave-ring {
   position: absolute;
   inset: -2px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
   border-radius: 14px;
-  background: var(--hoojams-orange-hover);
-  opacity: 0.6;
-  animation: attention-pulse 3s infinite;
-  z-index: -1;
+  animation: wave-expand 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  will-change: inset, opacity;
 }
+
+.wave-ring-delayed {
+  animation-delay: 2s;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+
 
 /* Music Notes Animation */
 .music-notes-container {
@@ -357,16 +382,22 @@ onMounted(() => {
   50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
 }
 
-@keyframes attention-pulse {
-  0%, 100% { 
-    transform: scale(1);
-    opacity: 0.5;
+@keyframes wave-expand {
+  0% {
+    inset: -2px;
+    opacity: 0.6;
   }
-  50% { 
-    transform: scale(1.05);
-    opacity: 0.8;
+  25% {
+    inset: -12px;
+    opacity: 0;
+  }
+  100% {
+    inset: -20px;
+    opacity: 0;
   }
 }
+
+
 
 /* Transition animations */
 .music-player-enter-active,
