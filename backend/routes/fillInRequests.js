@@ -15,6 +15,7 @@ router.get('/', async (req, res, next) => {
         e.event_title AS eventName,
         e.datetime AS eventDate,
         e.location AS eventVenue,
+        fir.slot_number AS slotNumber,
         fir.fill_in_description AS fillInDescription,
         fir.fill_in_member_id AS fillInMemberId,
         CONCAT(om.first_name, ' ', om.last_name) AS originalMemberName,
@@ -94,6 +95,7 @@ router.post('/:id/accept', async (req, res, next) => {
           e.event_title AS eventName,
           e.datetime AS eventDate,
           e.location AS eventVenue,
+          fir.slot_number AS slotNumber,
           fir.fill_in_description AS fillInDescription,
           fir.fill_in_member_id AS fillInMemberId,
           CONCAT(om.first_name, ' ', om.last_name) AS originalMemberName,
@@ -131,6 +133,106 @@ router.post('/:id/accept', async (req, res, next) => {
     }
   } catch (error) {
     console.error('Failed to accept fill-in request:', error);
+    next(error);
+  }
+});
+
+// POST /api/fill-in-requests - Create a new fill-in request
+router.post('/', async (req, res, next) => {
+  const { bandId, eventId, slotNumber, fillInMemberId, fillInDescription } = req.body;
+
+  if (!bandId || !eventId || !slotNumber || !fillInMemberId || !fillInDescription) {
+    return res.status(400).json({ 
+      message: 'Band ID, Event ID, Slot Number, Fill-in Member ID, and Description are required.' 
+    });
+  }
+
+  // Validate slot number
+  if (![1, 2, 3, 4].includes(parseInt(slotNumber))) {
+    return res.status(400).json({ 
+      message: 'Slot number must be 1, 2, 3, or 4.' 
+    });
+  }
+
+  try {
+    // Check if the event and band exist
+    const [eventCheck] = await pool.query('SELECT * FROM event WHERE event_id = ?', [eventId]);
+    const [bandCheck] = await pool.query('SELECT * FROM band WHERE band_id = ?', [bandId]);
+    const [memberCheck] = await pool.query('SELECT * FROM user WHERE user_id = ?', [fillInMemberId]);
+
+    if (eventCheck.length === 0) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+    if (bandCheck.length === 0) {
+      return res.status(404).json({ message: 'Band not found.' });
+    }
+    if (memberCheck.length === 0) {
+      return res.status(404).json({ message: 'Member not found.' });
+    }
+
+    // Insert the new fill-in request
+    const query = `
+      INSERT INTO fill_in_request 
+      (band_id, event_id, slot_number, fill_in_member_id, fill_in_description, status, time_created) 
+      VALUES (?, ?, ?, ?, ?, 'pending', NOW())
+    `;
+    
+    const [result] = await pool.query(query, [
+      bandId, 
+      eventId, 
+      slotNumber, 
+      fillInMemberId, 
+      fillInDescription
+    ]);
+
+    if (result.affectedRows > 0) {
+      // Return the created request details
+      const [newRequest] = await pool.query(`
+        SELECT 
+          fir.fill_in_request_id AS id,
+          fir.band_id AS bandId,
+          b.name AS bandName,
+          fir.event_id AS eventId,
+          e.event_title AS eventName,
+          e.datetime AS eventDate,
+          e.location AS eventVenue,
+          fir.slot_number AS slotNumber,
+          fir.fill_in_description AS fillInDescription,
+          fir.fill_in_member_id AS fillInMemberId,
+          CONCAT(om.first_name, ' ', om.last_name) AS originalMemberName,
+          fir.status,
+          fir.time_created AS timeCreated
+        FROM fill_in_request fir
+        JOIN band b ON fir.band_id = b.band_id
+        JOIN event e ON fir.event_id = e.event_id
+        JOIN user om ON fir.fill_in_member_id = om.user_id
+        WHERE fir.fill_in_request_id = ?;
+      `, [result.insertId]);
+      
+      if (newRequest.length > 0) {
+        const createdRequest = {
+          ...newRequest[0],
+          eventDate: newRequest[0].eventDate ? new Date(newRequest[0].eventDate).toISOString() : null,
+          timeCreated: newRequest[0].timeCreated ? new Date(newRequest[0].timeCreated).toISOString() : null,
+          id: String(newRequest[0].id),
+          bandId: String(newRequest[0].bandId),
+          eventId: String(newRequest[0].eventId),
+          fillInMemberId: String(newRequest[0].fillInMemberId),
+          slotNumber: Number(newRequest[0].slotNumber)
+        };
+        
+        res.status(201).json({ 
+          message: 'Fill-in request created successfully.', 
+          request: createdRequest 
+        });
+      } else {
+        res.status(500).json({ message: 'Failed to retrieve created request details.' });
+      }
+    } else {
+      res.status(500).json({ message: 'Failed to create fill-in request.' });
+    }
+  } catch (error) {
+    console.error('Failed to create fill-in request:', error);
     next(error);
   }
 });

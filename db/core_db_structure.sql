@@ -140,6 +140,8 @@ CREATE TABLE fill_in_request (
     fill_in_request_id INT PRIMARY KEY AUTO_INCREMENT,
     band_id INT NOT NULL,
     event_id INT NOT NULL,
+    -- NEW: Track which specific time slot needs coverage (1=8-9am, 2=9-10am, 3=10-11am, 4=11am-12pm)
+    slot_number INT NOT NULL CHECK (slot_number IN (1, 2, 3, 4)),
     fill_in_description TEXT,
     fill_in_member_id INT,
     -- NEW: Track status and who accepted the fill-in request
@@ -255,6 +257,7 @@ CREATE INDEX idx_user_roles_user ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role ON user_roles(role_id);
 -- NEW: Indexes for new tables
 CREATE INDEX idx_fill_in_request_status ON fill_in_request(status);
+CREATE INDEX idx_fill_in_request_slot ON fill_in_request(slot_number);
 CREATE INDEX idx_user_favorites_bands_user ON user_favorites_bands(user_id);
 CREATE INDEX idx_user_favorites_events_user ON user_favorites_events(user_id);
 CREATE INDEX idx_band_member_availability ON band_member_event_availability(user_id, band_id, event_id);
