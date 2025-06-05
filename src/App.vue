@@ -65,6 +65,9 @@
             <RouterView />
         </main>
         
+        <!-- Background Music Player -->
+        <BackgroundMusicPlayer />
+        
         <!-- Authentication Modal -->
         <Dialog v-model:visible="showAuthModal" modal header="Welcome" :style="{ width: '25rem' }" :closable="true">
             <div class="auth-container">
@@ -220,7 +223,7 @@ import Password from 'primevue/password';
 import Checkbox from 'primevue/checkbox';
 import Menu from 'primevue/menu';
 import Toast from 'primevue/toast';
-
+import BackgroundMusicPlayer from './components/ui/BackgroundMusicPlayer.vue';
 
 // Router instance
 const router = useRouter();
