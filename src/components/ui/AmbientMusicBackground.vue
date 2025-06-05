@@ -28,12 +28,13 @@ const { isGlobalMusicPlaying } = useMusicState()
   pointer-events: none;
   z-index: 1;
   opacity: 0;
-  transition: opacity 2s ease-in-out;
+  transition: opacity 1.35s ease-in-out;
   overflow: hidden;
 }
 
 .ambient-music-background.music-active {
   opacity: 1;
+  transition: opacity 2.7s ease-in-out;
 }
 
 /* Blob container - handles positioning and animation */
