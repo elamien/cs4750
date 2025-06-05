@@ -473,6 +473,7 @@ onBeforeUnmount(() => {
     max-width: 800px;
     margin: 0 auto;
     padding: 2rem;
+    color: var(--theme-main-text);
 }
 
 .header {
@@ -481,12 +482,12 @@ onBeforeUnmount(() => {
 }
 
 .header h1 {
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
     margin-bottom: 0.5rem;
 }
 
 .header p {
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     font-size: 1.1rem;
 }
 
@@ -508,7 +509,7 @@ onBeforeUnmount(() => {
 }
 
 .loading-content p {
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .section-header {
@@ -542,14 +543,14 @@ onBeforeUnmount(() => {
 
 .view-field label {
     font-weight: 600;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .view-field p {
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
     font-size: 1rem;
     margin: 0;
     padding: 0.75rem 0;
@@ -583,7 +584,7 @@ onBeforeUnmount(() => {
 
 .field label {
     font-weight: 600;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .field-modified {
@@ -619,7 +620,7 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--p-highlight-text-color);
+    color: var(--theme-main-text);
 }
 
 .changes-indicator i {
@@ -640,7 +641,7 @@ onBeforeUnmount(() => {
 
 .confirmation-text p {
     margin: 0 0 0.5rem 0;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .confirmation-text p:last-child {

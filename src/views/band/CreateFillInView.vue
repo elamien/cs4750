@@ -15,10 +15,10 @@
                 </template>
             </Card>
         </div>
-
+        
         <div v-else-if="!userBand.id" class="no-band-state">
-            <Card>
-                <template #content>
+        <Card>
+            <template #content>
                     <div class="empty-content">
                         <i class="pi pi-exclamation-triangle"></i>
                         <h3>No Band Found</h3>
@@ -171,8 +171,8 @@
                             <p class="description-preview">{{ form.description }}</p>
                         </div>
                     </div>
-                </template>
-            </Card>
+            </template>
+        </Card>
         </div>
     </div>
 </template>
@@ -500,12 +500,12 @@ onMounted(async () => {
 }
 
 .header h1 {
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
     margin-bottom: 0.5rem;
 }
 
 .header p {
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     font-size: 1.1rem;
 }
 
@@ -528,12 +528,12 @@ onMounted(async () => {
 
 .empty-content i {
     font-size: 2rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .empty-content h3 {
     margin: 0;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .fill-in-form-container {
@@ -566,7 +566,7 @@ onMounted(async () => {
 
 .field label {
     font-weight: 600;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .form-actions {
@@ -586,7 +586,7 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .request-preview {
@@ -602,7 +602,7 @@ onMounted(async () => {
 }
 
 .preview-item strong {
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
     font-weight: 600;
 }
 
@@ -611,7 +611,7 @@ onMounted(async () => {
     gap: 1rem;
     margin-top: 0.25rem;
     font-size: 0.9rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .event-details span {

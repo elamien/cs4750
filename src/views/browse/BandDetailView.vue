@@ -87,10 +87,7 @@
                             <label><i class="pi pi-map-marker"></i> Location:</label>
                             <p>{{ bandDetails.location || 'Not specified' }}</p>
                         </div>
-                        <div class="info-item">
-                            <label><i class="pi pi-calendar"></i> Events Played:</label>
-                            <p>{{ bandDetails.totalEventsPlayed || 0 }}</p>
-                        </div>
+
                         <div class="info-item full-width">
                             <label><i class="pi pi-file-text"></i> Description:</label>
                             <p>{{ bandDetails.description || 'No description provided.' }}</p>
@@ -204,7 +201,6 @@ interface BandDetails {
     location?: string | null;
     email?: string | null;
     phoneNumber?: string | null;
-    totalEventsPlayed?: number;
     isFavorite: boolean;
     dateCreated?: string;
     status?: string;
@@ -242,7 +238,6 @@ const bandDetails = ref<BandDetails>({
     location: null,
     email: null,
     phoneNumber: null,
-    totalEventsPlayed: 0,
     isFavorite: false
 });
 

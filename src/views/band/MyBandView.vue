@@ -487,6 +487,7 @@ onMounted(async () => {
     max-width: 1000px;
     margin: 0 auto;
     padding: 2rem;
+    color: var(--theme-main-text);
 }
 
 .header {
@@ -495,12 +496,12 @@ onMounted(async () => {
 }
 
 .header h1 {
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
     margin-bottom: 0.5rem;
 }
 
 .header p {
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     font-size: 1.1rem;
 }
 
@@ -525,14 +526,14 @@ onMounted(async () => {
 
 .event-info h4 {
     margin: 0 0 0.5rem;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .event-meta {
     display: flex;
     gap: 1rem;
     font-size: 0.9rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     margin-bottom: 0.5rem;
 }
 
@@ -557,18 +558,20 @@ onMounted(async () => {
 .no-events {
     text-align: center;
     padding: 2rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .band-details {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    color: var(--theme-main-text);
 }
 
 .detail-item p {
     margin: 0.5rem 0 0;
     line-height: 1.5;
+    color: var(--theme-secondary-text);
 }
 
 .members-list {

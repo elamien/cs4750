@@ -41,9 +41,6 @@
 
         <div class="events-grid">
             <Card v-for="event in filteredEvents" :key="event.id" class="event-card">
-                <template #header>
-                    <img src="https://via.placeholder.com/400x200/cccccc/969696?text=Event+Image" :alt="event.eventTitle" class="event-image" />
-                </template>
                 <template #title>{{ event.eventTitle }}</template>
                 <template #subtitle>
                     <div class="event-meta">
@@ -58,14 +55,16 @@
                         <div class="detail-item">
                             <strong>Genre:</strong> {{ event.genre || 'N/A' }}
                         </div>
-                        <div class="detail-item">
-                            <strong>Status:</strong> <Tag :value="event.status.toUpperCase()" :severity="getEventStatusSeverity(event.status)" />
+                        <div class="detail-item status-row">
+                            <div class="status-tag">
+                                <strong>Status:</strong> <Tag :value="event.status.toUpperCase()" :severity="getEventStatusSeverity(event.status)" />
+                        </div>
+                            <Button label="View Details" icon="pi pi-eye" @click="viewEventDetails(event.id)" />
                         </div>
                     </div>
                 </template>
                 <template #footer>
                     <div class="event-actions">
-                        <Button label="View Details" icon="pi pi-eye" @click="viewEventDetails(event.id)" />
                         <Button 
                             v-if="isSignedIn && event.status === 'open'"
                             label="Request to Play" 
@@ -333,6 +332,7 @@ onMounted(() => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    color: var(--theme-main-text);
 }
 
 .header {
@@ -341,12 +341,13 @@ onMounted(() => {
 }
 
 .header h1 {
-    color: var(--p-text-color);
+    color: var(--theme-main-text) !important;
     margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
 .header p {
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     font-size: 1.1rem;
 }
 
@@ -372,7 +373,7 @@ onMounted(() => {
 
 .field label {
     font-weight: 600;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .events-grid {
@@ -385,10 +386,13 @@ onMounted(() => {
     height: fit-content;
 }
 
-.event-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
+.event-card .p-card-title {
+    color: var(--theme-main-text) !important;
+    font-weight: 600;
+}
+
+.event-card .p-card-content {
+    color: var(--theme-main-text);
 }
 
 .event-meta {
@@ -396,7 +400,7 @@ onMounted(() => {
     flex-direction: column;
     gap: 0.25rem;
     font-size: 0.9rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .event-meta span {
@@ -406,14 +410,45 @@ onMounted(() => {
 }
 
 .event-details {
-    margin: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    margin: 16px 0 0 0;
 }
 
 .detail-item {
     font-size: 0.9rem;
+}
+
+.detail-item.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.detail-item .status-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-item strong {
+    color: var(--theme-main-text);
+    font-weight: 600;
+}
+
+.detail-item p {
+    color: var(--theme-main-text);
+    margin: 0.25rem 0;
+}
+
+/* Ensure status text is visible */
+.p-tag {
+    color: white !important; /* Keep tag text white for contrast on colored backgrounds */
+}
+
+.event-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
 }
 
 .event-tags {
@@ -432,10 +467,19 @@ onMounted(() => {
 .no-results {
     text-align: center;
     padding: 3rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .no-results h3 {
     margin: 1rem 0 0.5rem;
+    color: var(--theme-main-text);
+}
+
+.no-results p {
+    color: var(--theme-secondary-text);
+}
+
+.event-card :deep(.p-card-body) {
+    padding: 0;
 }
 </style> 

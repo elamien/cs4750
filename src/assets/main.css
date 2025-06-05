@@ -47,9 +47,17 @@
   --p-surface-900: #f0f0f0;
   
   --p-text-color: var(--theme-card-text);
+  --p-text-muted-color: var(--theme-secondary-text);
   --p-text-secondary-color: var(--theme-secondary-text);
   --p-highlight-bg: #f0f0f0;
   --p-highlight-text-color: #1a1a1a;
+  --p-highlight-border: #e5e5e5;
+  
+  /* Additional color variables */
+  --p-red-200: #fecaca;
+  --p-red-500: #ef4444;
+  --p-orange-500: var(--hoojams-orange);
+  --p-surface-500: #6b7280;
 }
 
 /* Dark Mode - Orange navbar, black background, white text */
@@ -73,9 +81,19 @@
   --p-surface-800: var(--theme-card-bg);
   --p-surface-900: #404040;
   --p-text-color: var(--theme-card-text);
+  --p-text-muted-color: var(--theme-secondary-text);
   --p-text-secondary-color: var(--theme-secondary-text);
   --p-highlight-bg: #404040;
   --p-highlight-text-color: #f5f5f5;
+  --p-highlight-border: #404040;
+  
+  /* Additional color variables for dark mode */
+  --p-red-200: #7f1d1d;
+  --p-red-500: #ef4444;
+  --p-orange-500: var(--hoojams-orange);
+  --p-surface-500: #6b7280;
+  --p-surface-0: var(--theme-card-bg);
+  --p-surface-hover: #3a3a3a;
 }
 
 * {
@@ -129,7 +147,36 @@ html, body {
   background: var(--theme-card-bg) !important;
   border: 1px solid var(--theme-card-border);
   color: var(--theme-card-text);
-  }
+}
+
+/* Explicitly theme PrimeVue card structural elements */
+.p-card .p-card-title {
+  color: var(--theme-main-text) !important;
+  font-weight: 600;
+}
+
+.p-card .p-card-subtitle {
+  color: var(--theme-secondary-text) !important;
+}
+
+.p-card .p-card-content {
+  color: var(--theme-main-text) !important;
+}
+
+/*
+  Ensure common text elements within card content also inherit properly.
+  The 'color: var(--theme-card-text)' on '.p-card' should ideally cover this via inheritance.
+  If specific elements like <p> inside .p-card-content are still not inheriting,
+  more specific rules might be needed, but 'inherit' is the first-pass clean approach.
+*/
+.p-card .p-card-content p,
+.p-card .p-card-content span,
+.p-card .p-card-content div,
+.p-card .p-card-body .p-card-content p,
+.p-card .p-card-body .p-card-content span,
+.p-card .p-card-body .p-card-content div {
+  color: var(--theme-main-text);
+}
 
 /* PrimeVue Menubar styling */
 .p-menubar {

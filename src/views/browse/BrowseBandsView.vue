@@ -44,7 +44,7 @@
                     <div class="band-details">
                         <span v-if="band.email"><i class="pi pi-envelope"></i> {{ band.email }}</span>
                         <span v-if="band.phoneNumber"><i class="pi pi-phone"></i> {{ band.phoneNumber }}</span>
-                        <span><i class="pi pi-calendar-check"></i> Events Played: {{ band.totalEventsPlayed ?? 0 }}</span>
+
                     </div>
                 </template>
                 <template #footer>
@@ -101,8 +101,6 @@ interface BandListItem { // Aligned with `band` table + `isFavorite` from user c
     description?: string | null;
     email?: string | null;
     phoneNumber?: string | null; // Corresponds to phone_number
-    totalEventsPlayed?: number;
-    // events_played_ytd?: number; // Available in DB, can be added if needed
     isFavorite: boolean; // Derived by API based on current user
 }
 
@@ -231,6 +229,7 @@ onMounted(() => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    color: var(--theme-main-text);
 }
 
 .header {
@@ -238,13 +237,15 @@ onMounted(() => {
     margin-bottom: 2rem;
 }
 
-.header h1 {
-    color: var(--p-text-color);
+/* Ensure proper color inheritance in both light and dark modes */
+.browse-bands .header h1 {
+    color: var(--theme-main-text) !important;
     margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
 .header p {
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     font-size: 1.1rem;
 }
 
@@ -270,7 +271,7 @@ onMounted(() => {
 
 .field label {
     font-weight: 600;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
 }
 
 .bands-grid {
@@ -291,6 +292,15 @@ onMounted(() => {
     flex-direction: column;
 }
 
+/* Ensure card title and subtitle use theme colors */
+.band-card .p-card-title {
+    color: var(--theme-main-text);
+}
+
+.band-card .p-card-subtitle {
+    color: var(--theme-secondary-text);
+}
+
 .band-image {
     width: 100%;
     height: 180px;
@@ -300,13 +310,13 @@ onMounted(() => {
 .band-description {
     margin-bottom: 1rem;
     font-size: 0.9rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
     flex-grow: 1;
 }
 
 .band-details {
     font-size: 0.85rem;
-    color: var(--p-text-color);
+    color: var(--theme-main-text);
     margin-bottom: 1rem;
 }
 
@@ -330,11 +340,16 @@ onMounted(() => {
 .no-results {
     text-align: center;
     padding: 3rem;
-    color: var(--p-text-muted-color);
+    color: var(--theme-secondary-text);
 }
 
 .no-results h3 {
     margin: 1rem 0 0.5rem;
+    color: var(--theme-main-text);
+}
+
+.no-results p {
+    color: var(--theme-secondary-text);
 }
 
 @media (max-width: 600px) {

@@ -86,6 +86,7 @@ import Button from 'primevue/button';
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+  color: var(--theme-main-text);
 }
 
 .header {
@@ -94,13 +95,13 @@ import Button from 'primevue/button';
 }
 
 .header h1 {
-  color: var(--p-text-color);
+  color: var(--theme-main-text);
   margin-bottom: 1rem;
   font-size: 2.5rem;
 }
 
 .header p {
-  color: var(--p-text-muted-color);
+  color: var(--theme-secondary-text);
   font-size: 1.2rem;
 }
 
@@ -113,6 +114,7 @@ import Button from 'primevue/button';
 .about-section ul {
   line-height: 1.8;
   padding-left: 1rem;
+  color: var(--theme-main-text);
 }
 
 .about-section li {
@@ -146,12 +148,12 @@ import Button from 'primevue/button';
 
 .step-content h4 {
   margin: 0 0 0.5rem;
-  color: var(--p-text-color);
+  color: var(--theme-main-text);
 }
 
 .step-content p {
   margin: 0;
-  color: var(--p-text-muted-color);
+  color: var(--theme-secondary-text);
   line-height: 1.6;
 }
 

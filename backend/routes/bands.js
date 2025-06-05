@@ -54,7 +54,6 @@ router.get('/:id/details', async (req, res, next) => {
         description,
         email,
         phone_number AS phoneNumber,
-        total_events_played AS totalEventsPlayed,
         NULL AS location
       FROM band
       WHERE band_id = ?;

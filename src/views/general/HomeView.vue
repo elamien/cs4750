@@ -103,12 +103,14 @@ const showAuthModal = ref(false);
   font-size: 3rem;
   margin-bottom: 1rem;
   font-weight: 700;
+  color: white;
 }
 
 .hero-subtitle {
   font-size: 1.25rem;
   margin-bottom: 2rem;
   opacity: 0.9;
+  color: white;
 }
 
 .hero-actions {
@@ -132,7 +134,7 @@ const showAuthModal = ref(false);
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 3rem;
-  color: var(--p-text-color);
+  color: var(--theme-main-text);
 }
 
 .features-grid {
@@ -143,6 +145,7 @@ const showAuthModal = ref(false);
 
 .feature-card {
   text-align: center;
+  color: var(--theme-main-text);
 }
 
 .feature-icon {
@@ -160,12 +163,12 @@ const showAuthModal = ref(false);
 .cta-section h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
-  color: var(--p-text-color);
+  color: var(--theme-main-text);
 }
 
 .cta-section p {
   font-size: 1.1rem;
-  color: var(--p-text-muted-color);
+  color: var(--theme-secondary-text);
   margin-bottom: 2rem;
 }
 
@@ -177,6 +180,7 @@ const showAuthModal = ref(false);
   
   .hero-section h1 {
     font-size: 2rem;
+    color: white;
   }
   
   .hero-actions {
@@ -192,6 +196,7 @@ const showAuthModal = ref(false);
   .features-section h2,
   .cta-section h2 {
     font-size: 2rem;
+    color: var(--theme-main-text);
   }
 }
 </style>
