@@ -119,6 +119,96 @@
         
         <!-- Confirmation Dialog -->
         <ConfirmDialog />
+        
+        <!-- User Details Modal -->
+        <Dialog 
+            v-model:visible="showUserDetailsModal" 
+            modal 
+            header="User Details" 
+            :style="{ width: '50rem' }"
+            :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+        >
+            <div v-if="selectedUser" class="user-details">
+                <!-- Header Section -->
+                <div class="user-header">
+                    <div class="user-avatar">
+                        <i class="pi pi-user" style="font-size: 3rem; color: var(--p-primary-color)"></i>
+                    </div>
+                    <div class="user-info">
+                        <h3>{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h3>
+                        <p class="user-email">{{ selectedUser.email }}</p>
+                        <Tag 
+                            :severity="getRoleSeverity(selectedUser.roleName)" 
+                            :icon="getRoleIcon(selectedUser.roleName)"
+                            class="role-tag"
+                        >
+                            {{ selectedUser.roleName }}
+                        </Tag>
+                    </div>
+                </div>
+                
+                <!-- Details Grid -->
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>User ID</label>
+                        <span>{{ selectedUser.id }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <label>Email Address</label>
+                        <span>{{ selectedUser.email }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <label>Phone Number</label>
+                        <span>{{ selectedUser.phoneNumber || 'Not provided' }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <label>Role Status</label>
+                        <span>{{ selectedUser.roleDetails }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <label>Musical Genre</label>
+                        <span>
+                            <Tag v-if="selectedUser.genre" severity="info">{{ selectedUser.genre }}</Tag>
+                            <span v-else class="text-500">Not specified</span>
+                        </span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <label>Primary Instrument</label>
+                        <span>
+                            <Tag v-if="selectedUser.instrument" severity="success">{{ selectedUser.instrument }}</Tag>
+                            <span v-else class="text-500">Not specified</span>
+                        </span>
+                    </div>
+                    
+                    <div class="detail-item span-2" v-if="selectedUser.bio">
+                        <label>Bio</label>
+                        <p class="bio-text">{{ selectedUser.bio }}</p>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="modal-actions">
+                    <Button 
+                        label="Edit User" 
+                        icon="pi pi-pencil" 
+                        severity="warning"
+                        @click="editUserFromModal"
+                    />
+                    <Button 
+                        label="Delete User" 
+                        icon="pi pi-trash" 
+                        severity="danger"
+                        outlined
+                        @click="deleteUserFromModal"
+                    />
+                </div>
+            </div>
+        </Dialog>
     </div>
 </template>
 
@@ -132,6 +222,7 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import ConfirmDialog from 'primevue/confirmdialog'
+import Dialog from 'primevue/dialog'
 
 interface User {
     id: string
@@ -150,6 +241,8 @@ const users = ref<User[]>([])
 const loading = ref(true)
 const confirm = useConfirm()
 const toast = useToast()
+const showUserDetailsModal = ref(false)
+const selectedUser = ref<User | null>(null)
 
 const fetchUsers = async () => {
     loading.value = true
@@ -188,8 +281,22 @@ const getRoleIcon = (roleName: string) => {
 }
 
 const viewUser = (user: User) => {
-    // TODO: Implement user details modal
-    console.log('View user:', user)
+    selectedUser.value = user
+    showUserDetailsModal.value = true
+}
+
+const editUserFromModal = () => {
+    if (selectedUser.value) {
+        editUser(selectedUser.value)
+        showUserDetailsModal.value = false
+    }
+}
+
+const deleteUserFromModal = () => {
+    if (selectedUser.value) {
+        deleteUser(selectedUser.value)
+        showUserDetailsModal.value = false
+    }
 }
 
 const editUser = (user: User) => {
@@ -310,6 +417,93 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+}
+
+/* User Details Modal Styling */
+.user-details {
+    padding: 1rem 0;
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--p-surface-border);
+}
+
+.user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--p-surface-100);
+}
+
+.user-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--p-text-color);
+    font-size: 1.5rem;
+}
+
+.user-email {
+    margin: 0 0 1rem 0;
+    color: var(--p-text-muted-color);
+    font-size: 0.95rem;
+}
+
+.role-tag {
+    margin-top: 0.5rem;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-item.span-2 {
+    grid-column: 1 / -1;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: var(--p-text-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: var(--p-text-muted-color);
+}
+
+.bio-text {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--p-text-color);
+    background: var(--p-surface-50);
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid var(--p-primary-color);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--p-surface-border);
 }
 
 /* Responsive adjustments */
