@@ -281,6 +281,27 @@ onMounted(() => {
   position: relative;
 }
 
+.title-container::before,
+.title-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.title-container::before {
+  left: 0;
+  background: linear-gradient(to right, var(--hoojams-orange), transparent);
+}
+
+.title-container::after {
+  right: 0;
+  background: linear-gradient(to left, var(--hoojams-orange), transparent);
+}
+
 .scrolling-title {
   font-size: 13px;
   font-weight: 500;
@@ -381,7 +402,7 @@ onMounted(() => {
 
 @keyframes scroll-text {
   0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  100% { transform: translateX(-115%); }
 }
 
 @keyframes playing-pulse {
