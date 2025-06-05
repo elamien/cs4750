@@ -9,6 +9,7 @@ import usersRoutes from './routes/users.js';
 import bandsRoutes from './routes/bands.js';
 import fillInRequestsRoutes from './routes/fillInRequests.js';
 import authRoutes from './routes/auth.js';
+import referenceDataRoutes from './routes/referenceData.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,6 +32,7 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/bands', bandsRoutes);
 app.use('/api/fill-in-requests', fillInRequestsRoutes);
+app.use('/api/reference', referenceDataRoutes);
 
 // Keep the legacy event-requests endpoint for compatibility
 app.use('/api/event-requests', eventsRoutes);
