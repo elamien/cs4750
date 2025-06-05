@@ -93,7 +93,7 @@
                                 <Dropdown 
                                     id="instrument"
                                     v-model="form.instrumentNeeded"
-                                    :options="instrumentOptions"
+                                    :options="instruments"
                                     optionLabel="name"
                                     optionValue="value"
                                     placeholder="What instrument is needed?"
@@ -184,8 +184,10 @@ import Card from 'primevue/card';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
+import { useReferenceData } from '@/composables/useReferenceData';
 
 const router = useRouter();
+const { instruments, initializeInstruments } = useReferenceData();
 
 // Interfaces
 interface BandInfo {
@@ -264,20 +266,6 @@ const form = ref<FillInForm>({
 });
 
 // Options
-const instrumentOptions = ref([
-    { name: 'Guitar', value: 'Guitar' },
-    { name: 'Bass', value: 'Bass' },
-    { name: 'Drums', value: 'Drums' },
-    { name: 'Piano/Keyboard', value: 'Piano' },
-    { name: 'Vocals', value: 'Vocals' },
-    { name: 'Saxophone', value: 'Saxophone' },
-    { name: 'Trumpet', value: 'Trumpet' },
-    { name: 'Violin', value: 'Violin' },
-    { name: 'Lead Guitar', value: 'Lead Guitar' },
-    { name: 'Rhythm Guitar', value: 'Rhythm Guitar' },
-    { name: 'Other', value: 'Other' }
-]);
-
 const slotOptions = ref([
     { name: 'Slot 1 (8:00 AM - 9:00 AM)', value: 1, timeRange: '8:00 AM - 9:00 AM' },
     { name: 'Slot 2 (9:00 AM - 10:00 AM)', value: 2, timeRange: '9:00 AM - 10:00 AM' },
@@ -479,8 +467,13 @@ watch(() => form.value.eventId, () => {
 
 onMounted(async () => {
     loading.value = true;
+    
     try {
+        await initializeInstruments();
         await fetchUserBandInfo();
+    } catch (error) {
+        console.error('Error during component initialization:', error);
+        alert('Failed to initialize component');
     } finally {
         loading.value = false;
     }

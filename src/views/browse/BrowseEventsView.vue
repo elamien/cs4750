@@ -96,10 +96,13 @@
 import { ref, computed, onMounted } from 'vue';
 import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
 import Calendar from 'primevue/calendar';
+import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
+import { useReferenceData } from '@/composables/useReferenceData';
+
+const { genres, initializeGenres } = useReferenceData();
 
 // TypeScript interface for dev state
 
@@ -114,22 +117,6 @@ const authState = ref<{
 });
 const isSignedIn = computed(() => authState.value.isSignedIn);
 const currentUser = computed(() => authState.value.currentUser);
-
-// TODO: Consider fetching genreOptions from config or API
-const genres = ref([
-    { name: 'Classic rock', value: 'Classic rock' },
-    { name: 'Country', value: 'Country' },
-    { name: 'Pop', value: 'Pop' },
-    { name: 'R n B', value: 'R n B' },
-    { name: 'Metal', value: 'Metal' },
-    { name: 'Classical', value: 'Classical' },
-    { name: 'Folk', value: 'Folk' },
-    { name: 'Hip hop', value: 'Hip hop' },
-    { name: 'Electronic', value: 'Electronic' },
-    { name: 'Jazz', value: 'Jazz' },
-    { name: 'Indie', value: 'Indie' },
-    { name: 'Alternative', value: 'Alternative' }
-]);
 
 interface EventListItem {
     id: string; // event_id (INT in DB, string from API)
@@ -328,7 +315,8 @@ const fetchEvents = async () => {
     }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await initializeGenres();
   fetchEvents();
 });
 </script>

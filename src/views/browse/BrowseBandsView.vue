@@ -12,7 +12,7 @@
                     <Dropdown 
                         id="genre"
                         v-model="selectedGenre" 
-                        :options="genreOptions" 
+                        :options="genres" 
                         optionLabel="name" 
                         optionValue="value"
                         placeholder="All Genres"
@@ -77,8 +77,10 @@ import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
+import { useReferenceData } from '@/composables/useReferenceData';
 
 const router = useRouter();
+const { genres, initializeGenres } = useReferenceData();
 
 // TypeScript interface for dev state
 
@@ -103,22 +105,6 @@ interface BandListItem { // Aligned with `band` table + `isFavorite` from user c
     phoneNumber?: string | null; // Corresponds to phone_number
     isFavorite: boolean; // Derived by API based on current user
 }
-
-const genreOptions = ref([
-    { name: 'Classic rock', value: 'Classic rock' },
-    { name: 'Country', value: 'Country' },
-    { name: 'Pop', value: 'Pop' },
-    { name: 'R n B', value: 'R n B' },
-    { name: 'Metal', value: 'Metal' },
-    { name: 'Classical', value: 'Classical' },
-    { name: 'Folk', value: 'Folk' },
-    { name: 'Hip hop', value: 'Hip hop' },
-    { name: 'Electronic', value: 'Electronic' },
-    { name: 'Jazz', value: 'Jazz' },
-    { name: 'Indie', value: 'Indie' },
-    { name: 'Alternative', value: 'Alternative' }
-]);
-// TODO: Consider fetching genreOptions from config or API
 
 const bands = ref<BandListItem[]>([]); // Will be populated by API call
 
@@ -223,7 +209,8 @@ const fetchBands = async () => {
     }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await initializeGenres();
   fetchBands();
 });
 </script>

@@ -42,7 +42,7 @@
               <MultiSelect 
                 id="instruments"
                 v-model="profile.instruments" 
-                :options="instrumentOptions"
+                :options="instruments"
                 optionLabel="name"
                 placeholder="Select your instruments"
               />
@@ -52,46 +52,10 @@
               <MultiSelect 
                 id="genres"
                 v-model="profile.genres" 
-                :options="genreOptions"
+                :options="genres"
                 optionLabel="name"
                 placeholder="Select your genres"
               />
-            </div>
-            <div class="field">
-              <label for="experience">Experience Level</label>
-              <Dropdown 
-                id="experience"
-                v-model="profile.experience" 
-                :options="experienceOptions"
-                optionLabel="label"
-                placeholder="Select your experience level"
-              />
-            </div>
-            <div class="field">
-              <label for="availability">Availability</label>
-              <MultiSelect 
-                id="availability"
-                v-model="profile.availability" 
-                :options="availabilityOptions"
-                optionLabel="label"
-                placeholder="When are you available?"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3: Goals -->
-        <div v-if="currentStep === 2" class="step-content">
-          <h3>What are you looking for?</h3>
-          <div class="goals-section">
-            <div class="goal-option" v-for="goal in goalOptions" :key="goal.value">
-              <div class="goal-card" 
-                   :class="{ active: profile.goals.includes(goal.value) }"
-                   @click="toggleGoal(goal.value)">
-                <i :class="goal.icon"></i>
-                <h4>{{ goal.label }}</h4>
-                <p>{{ goal.description }}</p>
-              </div>
             </div>
           </div>
         </div>
@@ -125,105 +89,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
 import Steps from 'primevue/steps'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import MultiSelect from 'primevue/multiselect'
-import Dropdown from 'primevue/dropdown'
 import Button from 'primevue/button'
+import { useReferenceData } from '@/composables/useReferenceData'
 
 const router = useRouter()
+const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData()
 
 const currentStep = ref(0)
 
 const steps = ref([
   { label: 'Basic Info' },
-  { label: 'Musical Background' },
-  { label: 'Goals' }
+  { label: 'Musical Background' }
 ])
 
-const profile = ref({
+const profile = ref<{
+  firstName: string;
+  lastName: string;
+  bio: string;
+  instruments: string[];
+  genres: string[];
+}>({
   firstName: '',
   lastName: '',
   bio: '',
   instruments: [],
-  genres: [],
-  experience: null,
-  availability: [],
-  goals: []
+  genres: []
 })
 
-const instrumentOptions = ref([
-  { name: 'Guitar', value: 'guitar' },
-  { name: 'Bass', value: 'bass' },
-  { name: 'Drums', value: 'drums' },
-  { name: 'Piano', value: 'piano' },
-  { name: 'Vocals', value: 'vocals' },
-  { name: 'Saxophone', value: 'saxophone' },
-  { name: 'Trumpet', value: 'trumpet' },
-  { name: 'Violin', value: 'violin' }
-])
-
-const genreOptions = ref([
-  { name: 'Classic rock', value: 'Classic rock' },
-  { name: 'Country', value: 'Country' },
-  { name: 'Pop', value: 'Pop' },
-  { name: 'R n B', value: 'R n B' },
-  { name: 'Metal', value: 'Metal' },
-  { name: 'Classical', value: 'Classical' },
-  { name: 'Folk', value: 'Folk' },
-  { name: 'Hip hop', value: 'Hip hop' },
-  { name: 'Electronic', value: 'Electronic' },
-  { name: 'Jazz', value: 'Jazz' },
-  { name: 'Indie', value: 'Indie' },
-  { name: 'Alternative', value: 'Alternative' }
-])
-
-const experienceOptions = ref([
-  { label: 'Beginner (0-2 years)', value: '0-2' },
-  { label: 'Intermediate (3-5 years)', value: '3-5' },
-  { label: 'Advanced (5-10 years)', value: '5-10' },
-  { label: 'Professional (10+ years)', value: '10+' }
-])
-
-const availabilityOptions = ref([
-  { label: 'Weekdays', value: 'weekdays' },
-  { label: 'Weekends', value: 'weekends' },
-  { label: 'Mornings', value: 'mornings' },
-  { label: 'Afternoons', value: 'afternoons' },
-  { label: 'Evenings', value: 'evenings' },
-  { label: 'Nights', value: 'nights' }
-])
-
-const goalOptions = ref([
-  {
-    value: 'join_band',
-    label: 'Join a Band',
-    description: 'Find an existing band to join',
-    icon: 'pi pi-users'
-  },
-  {
-    value: 'create_band',
-    label: 'Start a Band',
-    description: 'Create your own band and recruit members',
-    icon: 'pi pi-plus-circle'
-  },
-  {
-    value: 'find_gigs',
-    label: 'Find Gigs',
-    description: 'Look for performance opportunities',
-    icon: 'pi pi-calendar'
-  },
-  {
-    value: 'fill_in',
-    label: 'Fill-In Work',
-    description: 'Provide substitute musician services',
-    icon: 'pi pi-refresh'
-  }
-])
+// Initialize reference data on component mount
+onMounted(async () => {
+  await Promise.all([
+    initializeGenres(),
+    initializeInstruments()
+  ])
+})
 
 const canProceed = computed(() => {
   switch (currentStep.value) {
@@ -231,8 +137,6 @@ const canProceed = computed(() => {
       return profile.value.firstName && profile.value.lastName
     case 1:
       return profile.value.instruments.length > 0 && profile.value.genres.length > 0
-    case 2:
-      return profile.value.goals.length > 0
     default:
       return false
   }
@@ -247,15 +151,6 @@ const nextStep = () => {
 const previousStep = () => {
   if (currentStep.value > 0) {
     currentStep.value--
-  }
-}
-
-const toggleGoal = (goalValue: string) => {
-  const index = profile.value.goals.indexOf(goalValue)
-  if (index > -1) {
-    profile.value.goals.splice(index, 1)
-  } else {
-    profile.value.goals.push(goalValue)
   }
 }
 
@@ -324,49 +219,6 @@ const completeOnboarding = () => {
   color: var(--p-text-color);
 }
 
-.goals-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.goal-card {
-  padding: 1.5rem;
-  border: 2px solid var(--p-surface-border);
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: var(--p-surface-card);
-}
-
-.goal-card:hover {
-  border-color: var(--hoojams-orange);
-  background: var(--p-surface-hover);
-}
-
-.goal-card.active {
-  border-color: var(--hoojams-orange);
-  background: var(--hoojams-orange-light);
-}
-
-.goal-card i {
-  font-size: 2rem;
-  color: var(--hoojams-orange);
-  margin-bottom: 1rem;
-}
-
-.goal-card h4 {
-  margin: 0 0 0.5rem;
-  color: var(--p-text-color);
-}
-
-.goal-card p {
-  margin: 0;
-  color: var(--p-text-muted-color);
-  font-size: 0.9rem;
-}
-
 .step-navigation {
   display: flex;
   align-items: center;
@@ -386,10 +238,6 @@ const completeOnboarding = () => {
   }
   
   .form-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .goals-section {
     grid-template-columns: 1fr;
   }
 }

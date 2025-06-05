@@ -122,7 +122,7 @@
                                 <MultiSelect 
                                     id="lookingFor"
                                     v-model="bandForm.lookingForInstruments" 
-                                    :options="instrumentOptions"
+                                    :options="instruments"
                                     optionLabel="name"
                                     optionValue="value"
                                     display="chip"
@@ -171,9 +171,11 @@ import Dropdown from 'primevue/dropdown';
 import MultiSelect from 'primevue/multiselect';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
+import { useReferenceData } from '@/composables/useReferenceData';
 
 const router = useRouter();
 const toast = useToast();
+const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData();
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface BandListItem {
@@ -218,33 +220,6 @@ const bands = ref<BandListItem[]>([]);
 const loading = ref(true);
 const searchTerm = ref('');
 const selectedGenre = ref<string | null>(null);
-
-const genres = ref([
-    { name: 'Classic rock', value: 'Classic rock' },
-    { name: 'Country', value: 'Country' },
-    { name: 'Pop', value: 'Pop' },
-    { name: 'R n B', value: 'R n B' },
-    { name: 'Metal', value: 'Metal' },
-    { name: 'Classical', value: 'Classical' },
-    { name: 'Folk', value: 'Folk' },
-    { name: 'Hip hop', value: 'Hip hop' },
-    { name: 'Electronic', value: 'Electronic' },
-    { name: 'Jazz', value: 'Jazz' },
-    { name: 'Indie', value: 'Indie' },
-    { name: 'Alternative', value: 'Alternative' }
-]);
-
-const instrumentOptions = ref([
-    { name: 'Guitar', value: 'guitar' },
-    { name: 'Bass', value: 'bass' },
-    { name: 'Drums', value: 'drums' },
-    { name: 'Piano', value: 'piano' },
-    { name: 'Vocals', value: 'vocals' },
-    { name: 'Saxophone', value: 'saxophone' },
-    { name: 'Trumpet', value: 'trumpet' },
-    { name: 'Violin', value: 'violin' },
-    { name: 'Other', value: 'other' }
-]);
 
 const bandForm = ref<BandForm>({
     name: '',
@@ -427,12 +402,28 @@ const goToMyBand = () => {
 
 // --- Lifecycle ---
 onMounted(async () => {
-    loading.value = true;
+    await Promise.all([
+        initializeGenres(),
+        initializeInstruments()
+    ]);
+    
     try {
+        loading.value = true;
+        
+        // Fetch data
         await Promise.all([
             fetchUserBandStatus(),
             fetchBands()
         ]);
+        
+    } catch (error) {
+        console.error('Error during component initialization:', error);
+        toast.add({
+            severity: 'error', 
+            summary: 'Initialization Error',
+            detail: 'Failed to load component data',
+            life: 3000
+        });
     } finally {
         loading.value = false;
     }
