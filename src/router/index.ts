@@ -50,9 +50,9 @@ const router = createRouter({
       component: () => import('../views/account/FavoritesView.vue'),
     },
     {
-      path: '/create-event',
-      name: 'create-event',
-      component: () => import('../views/general/CreateEventView.vue'),
+      path: '/my-events',
+      name: 'my-events',
+      component: () => import('../views/general/MyEventsView.vue'),
     },
     {
       path: '/fill-in-requests',
