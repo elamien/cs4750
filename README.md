@@ -7,7 +7,9 @@ Vue 3 + TypeScript frontend with Node.js/Express backend and MySQL database.
 **Prerequisites:** Node.js 20+ and MySQL 8+
 
 ### 1. Database Setup
-To create MySQL user and database, in your terminal, enter:
+*Reminder, one possible set up is "mysql --login-path=local", if that doesn't apply to how you have things set up (type in password to access mysql in terminal) then you may safely ignore this note.
+
+Let's Start! To create MySQL user and database, in your terminal, enter:
 ```cd```
 to make sure your at your home directory.
 
