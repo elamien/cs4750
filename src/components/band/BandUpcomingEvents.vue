@@ -50,6 +50,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file
+import '@/assets/components/band-upcoming-events.css';
+
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
@@ -97,75 +100,4 @@ const getAvailabilitySeverity = (availability: boolean | null) => {
 };
 </script>
 
-<style scoped>
-.events-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.event-item {
-    padding: 1rem;
-    border: 1px solid var(--p-surface-border);
-    border-radius: 6px;
-    background: var(--p-surface-0);
-}
-
-.event-info h4 {
-    margin: 0 0 0.5rem;
-    color: var(--theme-main-text);
-}
-
-.event-meta {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.9rem;
-    color: var(--theme-secondary-text);
-    margin-bottom: 0.5rem;
-}
-
-.event-meta span {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.availability-section {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.availability-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.no-events {
-    text-align: center;
-    padding: 2rem;
-    color: var(--theme-secondary-text);
-}
-
-@media (max-width: 768px) {
-    .event-meta {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .availability-section {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .availability-actions {
-        width: 100%;
-    }
-    
-    .availability-actions .p-button {
-        flex: 1;
-    }
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-upcoming-events.css --> 

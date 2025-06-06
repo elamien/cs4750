@@ -59,6 +59,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file
+import '@/assets/components/band-dialogs.css';
+
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Avatar from 'primevue/avatar';
@@ -92,81 +95,4 @@ const getInitials = (firstName: string, lastName: string): string => {
 };
 </script>
 
-<style scoped>
-.promote-leader-content {
-    padding: 1rem 0;
-}
-
-.promote-leader-content p {
-    margin-bottom: 1rem;
-    color: var(--theme-main-text);
-}
-
-.no-members {
-    text-align: center;
-    padding: 1rem;
-    color: var(--theme-secondary-text);
-}
-
-.leader-candidates {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.candidate-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border: 1px solid var(--p-surface-border);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--p-surface-0);
-}
-
-.candidate-item:hover {
-    background: var(--p-surface-50);
-    border-color: var(--hoojams-orange);
-}
-
-.candidate-item.selected {
-    background: var(--p-primary-50);
-    border-color: var(--p-primary-500);
-}
-
-.candidate-info {
-    flex: 1;
-}
-
-.candidate-info strong {
-    display: block;
-    color: var(--theme-main-text);
-    margin-bottom: 0.25rem;
-}
-
-.candidate-details {
-    font-size: 0.9rem;
-    color: var(--theme-secondary-text);
-}
-
-.selected-icon {
-    color: var(--p-primary-500);
-    font-size: 1.2rem;
-}
-
-@media (max-width: 768px) {
-    .candidate-item {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
-    }
-    
-    .selected-icon {
-        margin-top: 0.5rem;
-    }
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-dialogs.css --> 

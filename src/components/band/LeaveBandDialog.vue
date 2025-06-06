@@ -24,6 +24,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file (shared with LeaderPromotionDialog)
+import '@/assets/components/band-dialogs.css';
+
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 

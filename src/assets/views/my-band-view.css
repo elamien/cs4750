@@ -1,0 +1,48 @@
+/* MyBandView Styles */
+.my-band-view {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.band-content {
+    width: 100%;
+}
+
+.band-sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .band-sections {
+        grid-template-columns: 2fr 1fr;
+        grid-template-areas: 
+            "events info"
+            "events members"
+            "actions actions";
+    }
+    
+    .band-sections .events-section {
+        grid-area: events;
+    }
+    
+    .band-sections .band-info-section {
+        grid-area: info;
+    }
+    
+    .band-sections .members-section {
+        grid-area: members;
+    }
+    
+    .band-sections .actions-section {
+        grid-area: actions;
+    }
+}
+
+@media (max-width: 767px) {
+    .my-band-view {
+        padding: 1rem;
+    }
+} 

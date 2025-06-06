@@ -16,6 +16,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file
+import '@/assets/components/band-actions.css';
+
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 
@@ -24,9 +27,4 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
-.band-actions {
-    display: flex;
-    justify-content: center;
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-actions.css --> 

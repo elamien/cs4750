@@ -19,6 +19,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file
+import '@/assets/components/band-information.css';
+
 import Card from 'primevue/card';
 
 interface BandInfo {
@@ -35,17 +38,4 @@ defineProps<{
 }>();
 </script>
 
-<style scoped>
-.band-details {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    color: var(--theme-main-text);
-}
-
-.detail-item p {
-    margin: 0.5rem 0 0;
-    line-height: 1.5;
-    color: var(--theme-secondary-text);
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-information.css --> 

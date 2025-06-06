@@ -1,0 +1,13 @@
+/* BandInformation Component Styles */
+.band-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--theme-main-text);
+}
+
+.detail-item p {
+    margin: 0.5rem 0 0;
+    line-height: 1.5;
+    color: var(--theme-secondary-text);
+} 

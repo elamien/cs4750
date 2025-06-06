@@ -47,6 +47,9 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 
+// Import dedicated CSS file
+import '@/assets/views/my-band-view.css';
+
 // Import decomposed components
 import BandHeader from '@/components/band/BandHeader.vue';
 import BandUpcomingEvents from '@/components/band/BandUpcomingEvents.vue';
@@ -340,52 +343,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.my-band-view {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.band-content {
-    width: 100%;
-}
-
-.band-sections {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-}
-
-@media (min-width: 768px) {
-    .band-sections {
-        grid-template-columns: 2fr 1fr;
-        grid-template-areas: 
-            "events info"
-            "events members"
-            "actions actions";
-    }
-    
-    .band-sections :deep(.events-section) {
-        grid-area: events;
-    }
-    
-    .band-sections :deep(.band-info-section) {
-        grid-area: info;
-    }
-    
-    .band-sections :deep(.members-section) {
-        grid-area: members;
-    }
-    
-    .band-sections :deep(.actions-section) {
-        grid-area: actions;
-    }
-}
-
-@media (max-width: 767px) {
-    .my-band-view {
-        padding: 1rem;
-    }
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/views/my-band-view.css --> 

@@ -1,0 +1,5 @@
+/* BandActions Component Styles */
+.band-actions {
+    display: flex;
+    justify-content: center;
+} 

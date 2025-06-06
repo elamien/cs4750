@@ -19,6 +19,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file
+import '@/assets/components/band-members.css';
+
 import Card from 'primevue/card';
 import Avatar from 'primevue/avatar';
 import Tag from 'primevue/tag';
@@ -36,33 +39,4 @@ defineProps<{
 }>();
 </script>
 
-<style scoped>
-.members-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.member-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    border: 1px solid var(--p-surface-border);
-    border-radius: 6px;
-    background: var(--p-surface-0);
-}
-
-.member-info {
-    flex: 1;
-}
-
-.member-role {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--p-text-muted-color);
-    margin-top: 0.25rem;
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-members.css --> 

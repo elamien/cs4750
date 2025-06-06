@@ -6,6 +6,9 @@
 </template>
 
 <script setup lang="ts">
+// Import dedicated CSS file
+import '@/assets/components/band-header.css';
+
 interface BandUser {
     id: string;
     firstName: string;
@@ -28,19 +31,4 @@ defineProps<{
 }>();
 </script>
 
-<style scoped>
-.band-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.band-header h1 {
-    color: var(--theme-main-text);
-    margin-bottom: 0.5rem;
-}
-
-.band-header p {
-    color: var(--theme-secondary-text);
-    font-size: 1.1rem;
-}
-</style> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-header.css --> 
