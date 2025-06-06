@@ -4,9 +4,10 @@
     - [ ] Something 1
     - [ ] Something 2
 
-    Events related:
+  Events related:
     - []
-    Admin related:
+  Admin related:
     - []
+
 - [IP] Verify all user stories work
 
