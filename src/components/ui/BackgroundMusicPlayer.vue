@@ -209,10 +209,17 @@ onMounted(() => {
 }
 
 .music-player {
-  background: var(--hoojams-orange);
+  background: rgba(200, 90, 20, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: none !important;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--hoojams-orange-hover);
+  box-shadow: 
+    0 24px 120px rgba(0, 0, 0, 0.35),
+    0 12px 60px rgba(0, 0, 0, 0.35),
+    0 6px 30px rgba(0, 0, 0, 0.35),
+    0 3px 15px rgba(0, 0, 0, 0.35),
+    0 1px 5px rgba(0, 0, 0, 0.35) !important;
   overflow: hidden;
   max-width: 300px;
   transition: all 0.3s ease;
@@ -279,28 +286,11 @@ onMounted(() => {
   width: 180px;
   overflow: hidden;
   position: relative;
+  mask: linear-gradient(to right, transparent 0px, white 15px, white calc(100% - 15px), transparent 100%);
+  -webkit-mask: linear-gradient(to right, transparent 0px, white 15px, white calc(100% - 15px), transparent 100%);
 }
 
-.title-container::before,
-.title-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 20px;
-  pointer-events: none;
-  z-index: 2;
-}
 
-.title-container::before {
-  left: 0;
-  background: linear-gradient(to right, var(--hoojams-orange), transparent);
-}
-
-.title-container::after {
-  right: 0;
-  background: linear-gradient(to left, var(--hoojams-orange), transparent);
-}
 
 .scrolling-title {
   font-size: 13px;
