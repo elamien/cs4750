@@ -1,12 +1,6 @@
 <template>
     <div class="my-events-content">
-        <div class="header-actions">
-            <Button 
-                label="Create New Event" 
-                icon="pi pi-plus" 
-                @click="openCreateEventDialog"
-            />
-        </div>
+
         
         <div v-if="loading" class="loading-state">
             <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>

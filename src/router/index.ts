@@ -27,14 +27,14 @@ const router = createRouter({
       name: 'home-dashboard',
       component: () => import('../views/dashboard/HomeDashboardView.vue'),
     },
-    // Browse routes (available to all users) - redirect to unified bands view
+    // Bands view (available to all users)
     {
-      path: '/browse/bands',
-      name: 'browse-bands',
-      redirect: '/join-create-band?tab=browse'
+      path: '/bands',
+      name: 'bands',
+      component: () => import('../views/general/BandsView.vue'),
     },
     {
-      path: '/browse/bands/:id',
+      path: '/bands/:id',
       name: 'band-detail',
       component: () => import('../views/browse/BandDetailView.vue'),
     },
@@ -78,17 +78,17 @@ const router = createRouter({
       name: 'band-info',
       component: () => import('../views/band/BandInfoView.vue'),
     },
-    {
-      path: '/my-band/members',
-      name: 'band-members',
-      component: () => import('../views/band/BandMembersView.vue'),
-    },
-    {
-      path: '/my-band/event-requests',
-      name: 'event-requests',
-      component: () => import('../views/band/EventRequestsView.vue'),
-    },
-    {
+          {
+        path: '/my-band/members',
+        name: 'band-members',
+        component: () => import('../views/band/BandMembersView.vue'),
+      },
+      {
+        path: '/my-band/event-requests',
+        name: 'event-requests',
+        component: () => import('../views/band/EventRequestsView.vue'),
+      },
+      {
       path: '/my-band/member-requests',
       name: 'member-requests',
       component: () => import('../views/band/MemberRequestsView.vue'),

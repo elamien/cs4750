@@ -275,6 +275,11 @@ const authForm = ref({
 // Menu items for anonymous users (not signed in)
 const anonymousItems: MenuItem[] = [
     {
+        label: 'Bands',
+        icon: 'pi pi-users',
+        route: '/bands'
+    },
+    {
         label: 'Events',
         icon: 'pi pi-calendar',
         route: '/events'
@@ -290,6 +295,11 @@ const anonymousItems: MenuItem[] = [
 // Base menu items for all signed-in users (except anon)
 // According to permissions: Edit account, Browse events, Save favorites, Create events, Accept fill-in requests
 const baseSignedInItems: MenuItem[] = [
+    {
+        label: 'Bands',
+        icon: 'pi pi-users',
+        route: '/bands'
+    },
     {
         label: 'Events',
         icon: 'pi pi-calendar',
@@ -321,6 +331,20 @@ const bandMemberExtraItems: MenuItem[] = [
         label: 'My Band Dashboard', // For viewing events, setting availability, leaving band
         icon: 'pi pi-users',
         route: '/my-band' // MyBandView.vue
+    },
+    {
+        label: 'Notifications',
+        icon: 'pi pi-bell',
+        items: [
+            {
+                label: 'Band Updates', // General band announcements, schedule changes, etc.
+                icon: 'pi pi-info-circle',
+                route: '/notifications/band-updates',
+                // badge: '1'
+            }
+            // Future: Other notification types for band members
+            // Event invitations might be visible to all band members too
+        ]
     }
 ];
 
@@ -346,12 +370,7 @@ const bandLeaderExtraItems: MenuItem[] = [
                 icon: 'pi pi-users',
                 route: '/my-band/members'
             },
-            {
-                label: 'Event Invitations', // Event organizers invite bands to play
-                icon: 'pi pi-calendar-plus',
-                route: '/my-band/event-requests',
-                // badge: '2'
-            },
+
             {
                 label: 'Membership Requests',
                 icon: 'pi pi-user-plus',
@@ -363,6 +382,24 @@ const bandLeaderExtraItems: MenuItem[] = [
                 icon: 'pi pi-send',
                 route: '/my-band/create-fill-in'
             }
+        ]
+    },
+    {
+        label: 'Notifications',
+        icon: 'pi pi-bell',
+        items: [
+            {
+                label: 'Event Invitations', // Event organizers invite bands to play
+                icon: 'pi pi-calendar-plus',
+                route: '/my-band/event-requests',
+                // badge: '2'
+            }
+            // Future: Other notification types can be added here
+            // {
+            //     label: 'System Updates',
+            //     icon: 'pi pi-info-circle',
+            //     route: '/notifications/system'
+            // }
         ]
     }
 ];

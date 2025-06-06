@@ -39,7 +39,7 @@
                     <i class="pi pi-heart" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                     <h3>No favorite bands yet</h3>
                     <p>Browse bands and add them to your favorites</p>
-                    <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/browse/bands')" />
+                    <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/bands')" />
                 </div>
             </TabPanel>
 
@@ -211,7 +211,7 @@ const formatDate = (dateString: string) => {
 // Actions
 const viewBandDetails = (bandId: string) => {
     console.log('Viewing band details for:', bandId);
-    router.push(`/browse/bands/${bandId}`);
+            router.push(`/bands/${bandId}`);
 };
 
 

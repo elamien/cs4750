@@ -93,7 +93,7 @@
                 <i class="pi pi-megaphone" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                 <h3>No Fill-In Requests Available</h3>
                 <p>It seems there are no open fill-in requests at the moment. Check back soon!</p>
-                <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/browse/bands')" severity="secondary"/>
+                <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/bands')" severity="secondary"/>
             </div>
         </div>
     </div>
@@ -254,7 +254,7 @@ const handleOfferToFillIn = async (request: FillInRequest) => {
 
 const viewBandDetails = (bandId: string) => {
   console.log('View band details for:', bandId);
-  // router.push(`/browse/bands/${bandId}`);
+          // router.push(`/bands/${bandId}`);
 };
 
 

@@ -186,7 +186,7 @@ const viewBandDetails = async (bandName: string) => {
             const bands: { id: string; name: string }[] = await response.json();
             const band = bands.find(b => b.name === bandName);
             if (band) {
-                router.push(`/browse/bands/${band.id}`);
+                router.push(`/bands/${band.id}`);
             }
         }
     } catch (error) {

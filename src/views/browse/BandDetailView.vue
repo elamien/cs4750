@@ -21,7 +21,7 @@
                         <Button 
                             label="Back to Browse Bands" 
                             icon="pi pi-arrow-left" 
-                            @click="router.push('/browse/bands')"
+                            @click="router.push('/bands')"
                             style="margin-top: 1rem;"
                         />
                     </div>
@@ -37,7 +37,7 @@
                     label="Back to Browse" 
                     severity="secondary" 
                     outlined 
-                    @click="router.push('/browse/bands')"
+                    @click="router.push('/bands')"
                     class="back-button"
                 />
                 
