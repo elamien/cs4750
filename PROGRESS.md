@@ -23,6 +23,6 @@
     - []
 
   Admin related:
-    - [ ] Bc of scope, best i can think of is Only just have ban for now instead of delete, and just make it update status of anywhere the user that shows for other ppl that this person was banned, maybe like a badge or something.
+    ~~- [ ] Bc of scope, best i can think of is Only just have ban for now instead of delete, and just make it update status of anywhere the user that shows for other ppl that this person was banned, maybe like a badge or something.~~ For now, we will just implement dictionary covering most common explicit words, the rest (for now) since its not most ppl and due to limited time/scope of project, developers/maintainers can directly delete from DB if it gets that bad.
 
 
