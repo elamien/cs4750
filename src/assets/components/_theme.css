@@ -20,6 +20,9 @@
   --theme-main-text: #1a1a1a;
   --theme-secondary-text: #666666;
   
+  /* Light mode specific orange backgrounds */
+  --navbar-bg-orange: rgba(220, 95, 15, 0.8);
+  
   /* Modal colors */
   --theme-modal-bg: white;
   --theme-modal-text: #1a1a1a;
@@ -64,6 +67,9 @@
   --theme-card-text: #f5f5f5;
   --theme-main-text: #f5f5f5;
   --theme-secondary-text: #b0b0b0;
+  
+  /* Dark mode keeps original orange backgrounds */
+  --navbar-bg-orange: rgba(200, 90, 20, 0.7);
   
   /* Modal colors */
   --theme-modal-bg: #2a2a2a;

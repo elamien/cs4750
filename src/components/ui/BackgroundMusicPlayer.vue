@@ -209,17 +209,17 @@ onMounted(() => {
 }
 
 .music-player {
-  background: rgba(200, 90, 20, 0.7) !important;
+  background: var(--navbar-bg-orange, rgba(200, 90, 20, 0.7)) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
   border: none !important;
   border-radius: 12px;
   box-shadow: 
-    0 24px 120px rgba(0, 0, 0, 0.35),
-    0 12px 60px rgba(0, 0, 0, 0.35),
-    0 6px 30px rgba(0, 0, 0, 0.35),
-    0 3px 15px rgba(0, 0, 0, 0.35),
-    0 1px 5px rgba(0, 0, 0, 0.35) !important;
+    0 16px 80px rgba(0, 0, 0, 0.233),
+    0 8px 40px rgba(0, 0, 0, 0.233),
+    0 4px 20px rgba(0, 0, 0, 0.233),
+    0 2px 10px rgba(0, 0, 0, 0.233),
+    0 0.67px 3.33px rgba(0, 0, 0, 0.233) !important;
   overflow: hidden;
   max-width: 300px;
   transition: all 0.3s ease;
