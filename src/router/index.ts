@@ -78,17 +78,12 @@ const router = createRouter({
       name: 'band-info',
       component: () => import('../views/band/BandInfoView.vue'),
     },
-          {
-        path: '/my-band/members',
-        name: 'band-members',
-        component: () => import('../views/band/BandMembersView.vue'),
-      },
-      {
-        path: '/my-band/event-requests',
-        name: 'event-requests',
-        component: () => import('../views/band/EventRequestsView.vue'),
-      },
-      {
+    {
+      path: '/my-band/members',
+      name: 'band-members',
+      component: () => import('../views/band/BandMembersView.vue'),
+    },
+    {
       path: '/my-band/member-requests',
       name: 'member-requests',
       component: () => import('../views/band/MemberRequestsView.vue'),

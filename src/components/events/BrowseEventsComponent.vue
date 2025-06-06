@@ -32,6 +32,15 @@
                     />
                 </div>
             </div>
+            <div class="filter-row-toggle">
+                <ToggleButton 
+                    v-model="showOpenGigsOnly" 
+                    onLabel="Show All Events" 
+                    offLabel="Show Open Gigs Only"
+                    onIcon="pi pi-globe"
+                    offIcon="pi pi-briefcase"
+                />
+            </div>
         </div>
 
         <div class="events-grid">
@@ -78,6 +87,13 @@
                             severity="secondary"
                             @click="toggleFavorite(event.id)" 
                         />
+                        <Button 
+                            v-if="isSignedIn && currentUser?.role === 'band_leader' && event.status === 'open'"
+                            label="Accept Gig" 
+                            icon="pi pi-check-circle" 
+                            severity="success"
+                            @click="acceptGig(event.id)" 
+                        />
                     </div>
                 </template>
             </Card>
@@ -88,6 +104,49 @@
             <h3>No events found</h3>
             <p>Try adjusting your filters or search terms</p>
         </div>
+
+        <!-- Accept Gig Confirmation Dialog -->
+        <Dialog 
+            v-model:visible="showAcceptDialog" 
+            header="Confirm Gig Acceptance"
+            :style="{ width: '500px' }"
+            :modal="true"
+        >
+            <div v-if="selectedEventForAcceptance" class="accept-dialog-content">
+                <p>You are about to accept the following gig for your band:</p>
+                
+                <Card class="gig-details-card">
+                    <template #title>{{ selectedEventForAcceptance.eventTitle }}</template>
+                    <template #content>
+                        <div class="gig-details">
+                           <span><i class="pi pi-calendar"></i> {{ formatDate(selectedEventForAcceptance.eventDate) }}</span>
+                           <span><i class="pi pi-clock"></i> {{ getTimeSlotText(selectedEventForAcceptance.timeSlot) }}</span>
+                           <span><i class="pi pi-map-marker"></i> {{ selectedEventForAcceptance.location || 'Venue TBD' }}</span>
+                        </div>
+                        <p class="confirmation-text">
+                           Are you sure you want to commit your band to this event? 
+                           This action cannot be undone.
+                        </p>
+                    </template>
+                </Card>
+            </div>
+            
+            <template #footer>
+                <Button 
+                    label="Cancel" 
+                    icon="pi pi-times" 
+                    @click="showAcceptDialog = false" 
+                    severity="secondary"
+                />
+                <Button 
+                    label="Confirm & Accept Gig" 
+                    icon="pi pi-check" 
+                    @click="confirmAcceptGig"
+                    severity="success"
+                    :loading="isAccepting"
+                />
+            </template>
+        </Dialog>
     </div>
 </template>
 
@@ -101,6 +160,8 @@ import Calendar from 'primevue/calendar';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
+import ToggleButton from 'primevue/togglebutton';
+import Dialog from 'primevue/dialog';
 import { useReferenceData } from '@/composables/useReferenceData';
 
 const router = useRouter();
@@ -141,6 +202,10 @@ const events = ref<EventListItem[]>([]);
 const selectedGenre = ref<{name: string, value: string} | null>(null);
 const selectedDate = ref(null);
 const searchTerm = ref('');
+const showOpenGigsOnly = ref(false);
+const showAcceptDialog = ref(false);
+const isAccepting = ref(false);
+const selectedEventForAcceptance = ref<EventListItem | null>(null);
 
 const filteredEvents = computed(() => {
     return events.value.filter(event => {
@@ -152,7 +217,9 @@ const filteredEvents = computed(() => {
             event.description?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
             event.location?.toLowerCase().includes(searchTerm.value.toLowerCase());
         
-        return matchesGenre && matchesDate && matchesSearch;
+        const matchesOpenGigs = !showOpenGigsOnly.value || event.status === 'open';
+
+        return matchesGenre && matchesDate && matchesSearch && matchesOpenGigs;
     });
 });
 
@@ -197,6 +264,56 @@ const viewBandDetails = async (bandName: string) => {
             detail: 'Could not find band details',
             life: 3000
         });
+    }
+};
+
+const acceptGig = async (eventId: string) => {
+    selectedEventForAcceptance.value = events.value.find(e => e.id === eventId) || null;
+    if (selectedEventForAcceptance.value) {
+        showAcceptDialog.value = true;
+    }
+};
+
+const confirmAcceptGig = async () => {
+    if (!selectedEventForAcceptance.value) return;
+    
+    isAccepting.value = true;
+    try {
+        const response = await fetch(`${API_BASE_URL}/events/${selectedEventForAcceptance.value.id}/accept-gig`, {
+            method: 'POST',
+            headers: {
+                // Assuming authentication token is sent via cookies or a dedicated header
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: currentUser.value?.id }) // Send current user ID to identify the band
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to accept gig. It might have been taken.');
+        }
+
+        toast.add({
+            severity: 'success',
+            summary: 'Gig Accepted!',
+            detail: `Your band is now scheduled to play at "${selectedEventForAcceptance.value.eventTitle}".`,
+            life: 5000
+        });
+        
+        // Refresh events to show updated status
+        await fetchEvents();
+        
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'Could Not Accept Gig',
+            detail: error instanceof Error ? error.message : 'An unexpected error occurred.',
+            life: 5000
+        });
+    } finally {
+        isAccepting.value = false;
+        showAcceptDialog.value = false;
+        selectedEventForAcceptance.value = null;
     }
 };
 
@@ -312,6 +429,12 @@ onMounted(async () => {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
+}
+
+.filter-row-toggle {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .field {
@@ -445,5 +568,31 @@ onMounted(async () => {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     border: 1px dashed var(--p-surface-300);
+}
+
+.accept-dialog-content .gig-details-card {
+    margin-top: 1rem;
+    background: var(--p-surface-50);
+    border: 1px solid var(--p-surface-border);
+}
+
+.accept-dialog-content .gig-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.accept-dialog-content .gig-details span {
+     display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--theme-secondary-text);
+}
+
+.accept-dialog-content .confirmation-text {
+    font-weight: 600;
+    color: var(--p-primary-color);
+    margin-top: 1rem;
 }
 </style> 

@@ -75,13 +75,6 @@
                             @click="editEvent(event)"
                         />
                         <Button 
-                            v-if="event.status === 'open'" 
-                            label="Invite Band" 
-                            icon="pi pi-send" 
-                            severity="success"
-                            @click="openInviteBandDialog(event)"
-                        />
-                        <Button 
                             label="Delete" 
                             icon="pi pi-trash" 
                             severity="danger"
@@ -93,7 +86,7 @@
             </Card>
         </div>
 
-        <!-- All dialogs (create, edit, invite, delete) -->
+        <!-- All dialogs (create, edit, delete) -->
         <!-- Create Event Dialog -->
         <Dialog 
             v-model:visible="createDialog" 
@@ -164,6 +157,10 @@
                         rows="4" 
                         placeholder="Describe your event..."
                     />
+                </div>
+                <div class="field-checkbox">
+                    <InputSwitch id="create-isOpenCall" v-model="createForm.isOpenCall" />
+                    <label for="create-isOpenCall">Make this an Open Call for bands?</label>
                 </div>
             </div>
             
@@ -255,6 +252,10 @@
                         placeholder="Describe your event..."
                     />
                 </div>
+                <div class="field-checkbox">
+                    <InputSwitch id="edit-isOpenCall" v-model="editForm.isOpenCall" />
+                    <label for="edit-isOpenCall">Make this an Open Call for bands?</label>
+                </div>
             </div>
             
             <template #footer>
@@ -269,80 +270,6 @@
                     icon="pi pi-check" 
                     @click="saveEvent"
                     :loading="saving"
-                />
-            </template>
-        </Dialog>
-
-        <!-- Invite Band Dialog -->
-        <Dialog 
-            v-model:visible="inviteBandDialog" 
-            header="Invite Band to Event"
-            :style="{ width: '600px' }"
-            :modal="true"
-        >
-            <div v-if="selectedEvent" class="invite-content">
-                <h4>{{ selectedEvent.eventTitle }}</h4>
-                <p>{{ formatDate(selectedEvent.eventDate) }} • {{ getTimeSlotText(selectedEvent.timeSlot) }}</p>
-                
-                <div v-if="loadingBands" class="loading-bands">
-                    <i class="pi pi-spin pi-spinner"></i>
-                    <span>Loading available bands...</span>
-                </div>
-                
-                <div v-else-if="availableBands.length === 0" class="no-bands">
-                    <p>No bands are available for this date/time slot.</p>
-                </div>
-                
-                <div v-else class="bands-selection">
-                    <div class="field">
-                        <label for="select-band">Select Band</label>
-                        <Dropdown 
-                            id="select-band" 
-                            v-model="selectedBand" 
-                            :options="availableBands" 
-                            optionLabel="name" 
-                            optionValue="id"
-                            placeholder="Choose a band to invite"
-                        />
-                    </div>
-                    
-                    <div v-if="selectedBand" class="band-details">
-                        <h5>Band Details:</h5>
-                        <div class="band-info">
-                            <p><strong>Genre:</strong> {{ selectedBandDetails?.genre || 'N/A' }}</p>
-                            <p><strong>Members:</strong> {{ selectedBandDetails?.memberCount || 0 }}</p>
-                            <p><strong>Events Played:</strong> {{ selectedBandDetails?.total_events_played || 0 }}</p>
-                            <p v-if="selectedBandDetails?.description">
-                                <strong>Description:</strong> {{ selectedBandDetails.description }}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="field">
-                        <label for="invite-message">Message (Optional)</label>
-                        <Textarea 
-                            id="invite-message" 
-                            v-model="inviteMessage" 
-                            rows="3" 
-                            placeholder="Add a message for the band..."
-                        />
-                    </div>
-                </div>
-            </div>
-            
-            <template #footer>
-                <Button 
-                    label="Cancel" 
-                    icon="pi pi-times" 
-                    @click="inviteBandDialog = false" 
-                    severity="secondary"
-                />
-                <Button 
-                    label="Send Invitation" 
-                    icon="pi pi-send" 
-                    @click="sendInvitation"
-                    :disabled="!selectedBand"
-                    :loading="sending"
                 />
             </template>
         </Dialog>
@@ -393,6 +320,7 @@ import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
 import Badge from 'primevue/badge';
+import InputSwitch from 'primevue/inputswitch';
 import { useReferenceData } from '@/composables/useReferenceData';
 
 const toast = useToast();
@@ -413,18 +341,9 @@ interface MyEvent {
     genre?: string;
     status: 'open' | 'filled' | 'expired';
     description?: string;
-    assignedBandId?: string;
+    assignedBandId?: string | null;
     bandName?: string;
     pendingInvitations: number;
-}
-
-interface AvailableBand {
-    id: string;
-    name: string;
-    genre?: string;
-    memberCount?: number;
-    description?: string;
-    total_events_played?: number;
 }
 
 // State
@@ -434,15 +353,12 @@ const events = ref<MyEvent[]>([]);
 // Dialog states
 const createDialog = ref(false);
 const editDialog = ref(false);
-const inviteBandDialog = ref(false);
 const deleteDialog = ref(false);
 
 // Loading states
 const creating = ref(false);
 const saving = ref(false);
-const sending = ref(false);
 const deleting = ref(false);
-const loadingBands = ref(false);
 
 // Form data
 const createForm = ref({
@@ -451,7 +367,8 @@ const createForm = ref({
     timeSlot: null as number | null,
     location: '',
     genre: '',
-    description: ''
+    description: '',
+    isOpenCall: true
 });
 
 const editForm = ref({
@@ -460,18 +377,13 @@ const editForm = ref({
     timeSlot: null as number | null,
     location: '',
     genre: '',
-    description: ''
+    description: '',
+    isOpenCall: false
 });
 
-// Edit/Invite data
+// Edit/Delete data
 const editingEvent = ref<MyEvent | null>(null);
-const selectedEvent = ref<MyEvent | null>(null);
 const eventToDelete = ref<MyEvent | null>(null);
-
-// Band invitation data
-const availableBands = ref<AvailableBand[]>([]);
-const selectedBand = ref<string | null>(null);
-const inviteMessage = ref('');
 
 // Time slot options
 const allTimeSlots = [
@@ -492,10 +404,6 @@ const createTimeSlotOptions = computed(() =>
 
 const editTimeSlotOptions = computed(() => 
     allTimeSlots.filter(slot => editAvailableSlots.value.includes(slot.value))
-);
-
-const selectedBandDetails = computed(() => 
-    availableBands.value.find(band => band.id === selectedBand.value)
 );
 
 const isCreateFormValid = computed(() => 
@@ -544,8 +452,8 @@ const fetchMyEvents = async () => {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/events`);
         if (!response.ok) throw new Error('Failed to fetch events');
         
-        const data = await response.json();
-        events.value = data.map((event: any) => ({
+        const data: MyEvent[] = await response.json();
+        events.value = data.map((event: MyEvent) => ({
             ...event,
             id: String(event.id),
             userId: String(event.userId),
@@ -572,7 +480,8 @@ const openCreateEventDialog = () => {
         timeSlot: null,
         location: '',
         genre: '',
-        description: ''
+        description: '',
+        isOpenCall: true
     };
     createAvailableSlots.value = [];
     createDialog.value = true;
@@ -586,7 +495,8 @@ const editEvent = (event: MyEvent) => {
         timeSlot: event.timeSlot,
         location: event.location || '',
         genre: event.genre || '',
-        description: event.description || ''
+        description: event.description || '',
+        isOpenCall: event.status === 'open'
     };
     editAvailableSlots.value = [];
     editDialog.value = true;
@@ -600,16 +510,6 @@ const editEvent = (event: MyEvent) => {
 const confirmDelete = (event: MyEvent) => {
     eventToDelete.value = event;
     deleteDialog.value = true;
-};
-
-const openInviteBandDialog = async (event: MyEvent) => {
-    selectedEvent.value = event;
-    selectedBand.value = null;
-    inviteMessage.value = '';
-    inviteBandDialog.value = true;
-    
-    // Load available bands
-    await loadAvailableBands(event.id);
 };
 
 // Date selection handlers
@@ -661,26 +561,6 @@ const loadAvailableSlots = async (dateStr: string, type: 'create' | 'edit', excl
     }
 };
 
-const loadAvailableBands = async (eventId: string) => {
-    loadingBands.value = true;
-    try {
-        const response = await fetch(`${API_BASE_URL}/events/${eventId}/available-bands`);
-        if (!response.ok) throw new Error('Failed to fetch available bands');
-        
-        availableBands.value = await response.json();
-    } catch (error) {
-        console.error('Failed to load available bands:', error);
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to load available bands',
-            life: 3000
-        });
-    } finally {
-        loadingBands.value = false;
-    }
-};
-
 // CRUD operations
 const createEvent = async () => {
     if (!isCreateFormValid.value) return;
@@ -693,7 +573,8 @@ const createEvent = async () => {
             timeSlot: createForm.value.timeSlot,
             location: createForm.value.location || null,
             genre: createForm.value.genre || null,
-            description: createForm.value.description || null
+            description: createForm.value.description || null,
+            isOpenCall: createForm.value.isOpenCall
         };
         
         const response = await fetch(`${API_BASE_URL}/events`, {
@@ -740,7 +621,8 @@ const saveEvent = async () => {
             timeSlot: editForm.value.timeSlot,
             location: editForm.value.location || null,
             genre: editForm.value.genre || null,
-            description: editForm.value.description || null
+            description: editForm.value.description || null,
+            isOpenCall: editForm.value.isOpenCall
         };
         
         const response = await fetch(`${API_BASE_URL}/events/${editingEvent.value.id}`, {
@@ -809,47 +691,6 @@ const deleteEvent = async () => {
         });
     } finally {
         deleting.value = false;
-    }
-};
-
-const sendInvitation = async () => {
-    if (!selectedEvent.value || !selectedBand.value) return;
-    
-    sending.value = true;
-    try {
-        const response = await fetch(`${API_BASE_URL}/events/${selectedEvent.value.id}/invite-band`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                bandId: selectedBand.value,
-                message: inviteMessage.value || null
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to send invitation');
-        }
-        
-        toast.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Invitation sent successfully',
-            life: 3000
-        });
-        
-        inviteBandDialog.value = false;
-        await fetchMyEvents();
-    } catch (error) {
-        console.error('Failed to send invitation:', error);
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: error instanceof Error ? error.message : 'Failed to send invitation',
-            life: 3000
-        });
-    } finally {
-        sending.value = false;
     }
 };
 
@@ -941,6 +782,13 @@ onMounted(async () => {
     margin-bottom: 1rem;
 }
 
+.field-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
 .field label {
     font-weight: 600;
     color: var(--theme-main-text);
@@ -956,42 +804,6 @@ onMounted(async () => {
     color: var(--p-orange-500);
     font-size: 0.9rem;
     margin-top: 0.5rem;
-}
-
-.invite-content h4 {
-    margin: 0 0 0.5rem 0;
-    color: var(--p-primary-color);
-}
-
-.band-details {
-    background: var(--p-surface-100);
-    padding: 1rem;
-    border-radius: 8px;
-    margin: 1rem 0;
-}
-
-.band-details h5 {
-    margin: 0 0 0.5rem 0;
-    color: var(--p-text-color);
-}
-
-.band-info p {
-    margin: 0.25rem 0;
-    font-size: 0.9rem;
-}
-
-.loading-bands {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    text-align: center;
-}
-
-.no-bands {
-    padding: 1rem;
-    text-align: center;
-    color: var(--p-text-muted-color);
 }
 
 @media (max-width: 768px) {

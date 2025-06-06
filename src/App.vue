@@ -389,10 +389,9 @@ const bandLeaderExtraItems: MenuItem[] = [
         icon: 'pi pi-bell',
         items: [
             {
-                label: 'Event Invitations', // Event organizers invite bands to play
-                icon: 'pi pi-calendar-plus',
-                route: '/my-band/event-requests',
-                // badge: '2'
+                label: 'Find Gigs', // Link to the new "Gig Board"
+                icon: 'pi pi-briefcase',
+                route: '/events?filter=open'
             }
             // Future: Other notification types can be added here
             // {
