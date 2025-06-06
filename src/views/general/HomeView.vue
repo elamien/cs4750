@@ -52,7 +52,7 @@ const isSignedIn = computed(() => {
           
           <Card class="feature-card">
             <template #header>
-              <i class="pi pi-network feature-icon"></i>
+              <i class="pi pi-heart feature-icon"></i>
             </template>
             <template #title>Music Community</template>
             <template #content>

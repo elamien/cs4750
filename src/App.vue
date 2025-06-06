@@ -16,11 +16,13 @@
                         class="flex items-center nav-link" 
                         active-class="nav-link-active"
                         v-bind="props.action">
+                        <i v-if="item.icon" :class="item.icon" style="margin-right: 0.5rem;"></i>
                         <span>{{ item.label }}</span>
                         <Badge v-if="item.badge" :class="{ 'ml-auto': !root, 'ml-2': root }" :value="item.badge" />
                         <span v-if="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
                     </router-link>
                     <a v-else v-ripple class="flex items-center" v-bind="props.action">
+                        <i v-if="item.icon" :class="item.icon" style="margin-right: 0.5rem;"></i>
                         <span>{{ item.label }}</span>
                         <Badge v-if="item.badge" :class="{ 'ml-auto': !root, 'ml-2': root }" :value="item.badge" />
                         <span v-if="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
@@ -273,7 +275,7 @@ const authForm = ref({
 // Menu items for anonymous users (not signed in)
 const anonymousItems: MenuItem[] = [
     {
-        label: 'Browse Events',
+        label: 'Events',
         icon: 'pi pi-calendar',
         route: '/events'
     },
