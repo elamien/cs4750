@@ -10,8 +10,9 @@
     - [ ] Leader leaves band (cant until they promote unless only 1 person left, also leave should show if multiple, if only 1, it should say leave and delete band)
 
   Events related:
-    - [X] User creates events that is visible to others
+    - [ ] User creates events that is visible to others
     - [NOT HOW IT WORKS RN, FIX] Event owner requests band (hey we are open if you wanna play, first come first serve)
+
   Admin related:
     - [ ]
 
