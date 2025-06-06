@@ -1,7 +1,14 @@
 <template>
     <div class="my-events-content">
+        <div class="my-events-header">
+            <h3>My Events</h3>
+            <Button 
+                label="Create New Event" 
+                icon="pi pi-plus" 
+                @click="openCreateEventDialog" 
+            />
+        </div>
 
-        
         <div v-if="loading" class="loading-state">
             <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
             <p>Loading your events...</p>
@@ -158,10 +165,6 @@
                         placeholder="Describe your event..."
                     />
                 </div>
-                <div class="field-checkbox">
-                    <InputSwitch id="create-isOpenCall" v-model="createForm.isOpenCall" />
-                    <label for="create-isOpenCall">Make this an Open Call for bands?</label>
-                </div>
             </div>
             
             <template #footer>
@@ -252,10 +255,6 @@
                         placeholder="Describe your event..."
                     />
                 </div>
-                <div class="field-checkbox">
-                    <InputSwitch id="edit-isOpenCall" v-model="editForm.isOpenCall" />
-                    <label for="edit-isOpenCall">Make this an Open Call for bands?</label>
-                </div>
             </div>
             
             <template #footer>
@@ -320,14 +319,12 @@ import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
 import Badge from 'primevue/badge';
-import InputSwitch from 'primevue/inputswitch';
 import { useReferenceData } from '@/composables/useReferenceData';
+import { useAuth } from '@/composables/useAuth';
 
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
-
-// Current user (placeholder)
-const currentUserId = ref('2');
+const { currentUser } = useAuth();
 
 // Data interfaces
 interface MyEvent {
@@ -367,8 +364,7 @@ const createForm = ref({
     timeSlot: null as number | null,
     location: '',
     genre: '',
-    description: '',
-    isOpenCall: true
+    description: ''
 });
 
 const editForm = ref({
@@ -377,34 +373,21 @@ const editForm = ref({
     timeSlot: null as number | null,
     location: '',
     genre: '',
-    description: '',
-    isOpenCall: false
+    description: ''
 });
 
 // Edit/Delete data
 const editingEvent = ref<MyEvent | null>(null);
 const eventToDelete = ref<MyEvent | null>(null);
 
-// Time slot options
-const allTimeSlots = [
-    { label: '8:00 AM - 9:00 AM', value: 1 },
-    { label: '9:00 AM - 10:00 AM', value: 2 },
-    { label: '10:00 AM - 11:00 AM', value: 3 },
-    { label: '11:00 AM - 12:00 PM', value: 4 }
-];
-
 // Available slots for create/edit
-const createAvailableSlots = ref<number[]>([]);
-const editAvailableSlots = ref<number[]>([]);
+const createAvailableSlots = ref<{ label: string; value: number }[]>([]);
+const editAvailableSlots = ref<{ label: string; value: number }[]>([]);
 
 // Computed properties
-const createTimeSlotOptions = computed(() => 
-    allTimeSlots.filter(slot => createAvailableSlots.value.includes(slot.value))
-);
+const createTimeSlotOptions = computed(() => createAvailableSlots.value);
 
-const editTimeSlotOptions = computed(() => 
-    allTimeSlots.filter(slot => editAvailableSlots.value.includes(slot.value))
-);
+const editTimeSlotOptions = computed(() => editAvailableSlots.value);
 
 const isCreateFormValid = computed(() => 
     createForm.value.eventTitle && 
@@ -449,7 +432,9 @@ const API_BASE_URL = 'http://localhost:3001/api';
 const fetchMyEvents = async () => {
     loading.value = true;
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/events`);
+        const response = await fetch(`${API_BASE_URL}/users/${currentUser.value?.userId}/events`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch events');
         
         const data: MyEvent[] = await response.json();
@@ -481,7 +466,6 @@ const openCreateEventDialog = () => {
         location: '',
         genre: '',
         description: '',
-        isOpenCall: true
     };
     createAvailableSlots.value = [];
     createDialog.value = true;
@@ -496,7 +480,6 @@ const editEvent = (event: MyEvent) => {
         location: event.location || '',
         genre: event.genre || '',
         description: event.description || '',
-        isOpenCall: event.status === 'open'
     };
     editAvailableSlots.value = [];
     editDialog.value = true;
@@ -529,24 +512,32 @@ const onEditDateSelect = async () => {
 
 const loadAvailableSlots = async (dateStr: string, type: 'create' | 'edit', excludeEventId?: string) => {
     try {
-        const params = new URLSearchParams({ date: dateStr });
+        let url = `${API_BASE_URL}/events/available-slots/${dateStr}`;
         if (excludeEventId) {
-            params.append('excludeEventId', excludeEventId);
+            // The backend doesn't currently support excluding an event ID on this endpoint,
+            // but if it did, the query param would be added here.
+            // For now, this part of the logic might not have an effect.
+            url += `?excludeEventId=${excludeEventId}`;
         }
         
-        const response = await fetch(`${API_BASE_URL}/events/available-slots?${params}`);
+        const response = await fetch(url, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch available slots');
         
-        const { availableSlots } = await response.json();
+        const data = await response.json();
+        const availableSlots = data.availableSlots || [];
         
         if (type === 'create') {
             createAvailableSlots.value = availableSlots;
-            if (!availableSlots.includes(createForm.value.timeSlot)) {
+            const isCurrentSlotValid = availableSlots.some((slot: { value: number }) => slot.value === createForm.value.timeSlot);
+            if (!isCurrentSlotValid) {
                 createForm.value.timeSlot = null;
             }
         } else {
             editAvailableSlots.value = availableSlots;
-            if (!availableSlots.includes(editForm.value.timeSlot)) {
+            const isCurrentSlotValid = availableSlots.some((slot: { value: number }) => slot.value === editForm.value.timeSlot);
+            if (!isCurrentSlotValid) {
                 editForm.value.timeSlot = null;
             }
         }
@@ -568,18 +559,20 @@ const createEvent = async () => {
     creating.value = true;
     try {
         const eventData = {
+            userId: currentUser.value?.userId,
             eventTitle: createForm.value.eventTitle,
             eventDate: createForm.value.eventDate?.toISOString().split('T')[0],
             timeSlot: createForm.value.timeSlot,
             location: createForm.value.location || null,
             genre: createForm.value.genre || null,
             description: createForm.value.description || null,
-            isOpenCall: createForm.value.isOpenCall
+            isOpenCall: true // Always an open call
         };
         
         const response = await fetch(`${API_BASE_URL}/events`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(eventData)
         });
         
@@ -616,18 +609,20 @@ const saveEvent = async () => {
     saving.value = true;
     try {
         const eventData = {
+            userId: currentUser.value?.userId,
             eventTitle: editForm.value.eventTitle,
             eventDate: editForm.value.eventDate?.toISOString().split('T')[0],
             timeSlot: editForm.value.timeSlot,
             location: editForm.value.location || null,
             genre: editForm.value.genre || null,
             description: editForm.value.description || null,
-            isOpenCall: editForm.value.isOpenCall
+            isOpenCall: true // Always an open call
         };
         
         const response = await fetch(`${API_BASE_URL}/events/${editingEvent.value.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(eventData)
         });
         
@@ -663,8 +658,9 @@ const deleteEvent = async () => {
     
     deleting.value = true;
     try {
-        const response = await fetch(`${API_BASE_URL}/events/${eventToDelete.value.id}`, {
-            method: 'DELETE'
+        const response = await fetch(`${API_BASE_URL}/events/${eventToDelete.value.id}?userId=${currentUser.value?.userId}`, {
+            method: 'DELETE',
+            credentials: 'include'
         });
         
         if (!response.ok) {
@@ -707,10 +703,24 @@ onMounted(async () => {
     color: var(--theme-main-text);
 }
 
+.my-events-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--p-surface-border);
+}
+
+.my-events-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--theme-main-text);
+}
+
 .header-actions {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 1.5rem;
 }
 
 .loading-state, .empty-state {
@@ -779,13 +789,6 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.field-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
     margin-bottom: 1rem;
 }
 

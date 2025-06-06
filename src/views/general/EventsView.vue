@@ -1,6 +1,7 @@
 <template>
     <div class="events">
-        <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
+        <!-- Show tabs only for signed-in users -->
+        <TabView v-if="isSignedIn" v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
             <TabPanel header="Browse Events" value="browse">
                 <BrowseEventsComponent />
             </TabPanel>
@@ -9,6 +10,9 @@
                 <MyEventsComponent />
             </TabPanel>
         </TabView>
+
+        <!-- Show only the browser for anonymous users -->
+        <BrowseEventsComponent v-else />
     </div>
 </template>
 
@@ -19,27 +23,33 @@ import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import BrowseEventsComponent from '@/components/events/BrowseEventsComponent.vue';
 import MyEventsComponent from '@/components/events/MyEventsComponent.vue';
+import { useAuth } from '@/composables/useAuth';
 
 const route = useRoute();
 const router = useRouter();
+const { isSignedIn } = useAuth();
 
 // Active tab index (0 = Browse, 1 = My Events)
 const activeTab = ref(0);
 
 // Set initial tab based on route query or hash
 onMounted(() => {
-    const tab = route.query.tab as string;
-    if (tab === 'my-events') {
-        activeTab.value = 1;
-    } else if (tab === 'browse') {
-        activeTab.value = 0;
+    if (isSignedIn.value) {
+        const tab = route.query.tab as string;
+        if (tab === 'my-events') {
+            activeTab.value = 1;
+        } else if (tab === 'browse') {
+            activeTab.value = 0;
+        }
     }
 });
 
 // Update URL when tab changes (optional, for bookmarkable URLs)
 const updateRoute = (index: number) => {
-    const tabName = index === 1 ? 'my-events' : 'browse';
-    router.replace({ query: { ...route.query, tab: tabName } });
+    if (isSignedIn.value) {
+        const tabName = index === 1 ? 'my-events' : 'browse';
+        router.replace({ query: { ...route.query, tab: tabName } });
+    }
 };
 </script>
 

@@ -231,24 +231,13 @@ import Toast from 'primevue/toast';
 import BackgroundMusicPlayer from './components/ui/BackgroundMusicPlayer.vue';
 import AmbientMusicBackground from './components/ui/AmbientMusicBackground.vue';
 import styles from './styles/App.module.css';
+import { useAuth } from '@/composables/useAuth';
 
 // Router instance
 const router = useRouter();
 
-// User state - this would typically come from a store/auth service
-const isSignedIn = ref(false);
-const userRole = ref<'anonymous' | 'general' | 'band_member' | 'band_leader' | 'exec'>('anonymous');
-
-// NEW: Mock user profile details that might influence UI, based on SQL schema
-const mockUserProfile = ref({
-    userId: null as number | null,
-    firstName: '' as string,
-    lastName: '' as string,
-    email: '' as string,
-    hasCreatedBand: false, // Relevant for 'general' role, from general_user table
-    hasPendingBandRequest: false, // Relevant for 'general' role, from general_user table
-    bandId: null as number | null, // If they are a member or leader of a band
-});
+// Authentication state from composable
+const { isSignedIn, userRole, login, logout, checkAuthState } = useAuth();
 
 // Theme state
 const isDarkMode = ref(false);
@@ -517,10 +506,6 @@ const toggleProfileMenu = (event: Event) => {
     profileMenuRef.value.toggle(event);
 };
 
-
-
-
-
 // Real authentication functions
 const handleSignIn = async () => {
     try {
@@ -544,17 +529,9 @@ const handleSignIn = async () => {
         }
 
         // Successful login
-    isSignedIn.value = true;
-        userRole.value = data.user.role; // Use real role from database
-        mockUserProfile.value.userId = data.user.userId;
-        mockUserProfile.value.firstName = data.user.firstName;
-        mockUserProfile.value.lastName = data.user.lastName;
-        mockUserProfile.value.email = data.user.email;
+        login(data.user); // Use the composable's login function
         
-        // Store user data in localStorage for persistence
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        
-    showAuthModal.value = false;
+        showAuthModal.value = false;
         resetAuthForm();
         
         console.log('Login successful:', data.user);
@@ -590,20 +567,10 @@ const handleSignUp = async () => {
         }
 
         // Successful registration
-    isSignedIn.value = true;
-        userRole.value = data.user.role;
-        mockUserProfile.value.userId = data.user.userId;
-        mockUserProfile.value.firstName = data.user.firstName;
-        mockUserProfile.value.lastName = data.user.lastName;
-        mockUserProfile.value.email = data.user.email;
-        mockUserProfile.value.hasCreatedBand = false;
-        mockUserProfile.value.hasPendingBandRequest = false;
+        login(data.user); // Use the composable's login function
         
-        // Store user data in localStorage for persistence
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        
-    showAuthModal.value = false;
-    resetAuthForm();
+        showAuthModal.value = false;
+        resetAuthForm();
         
         console.log('Registration successful:', data.user);
     
@@ -631,18 +598,7 @@ const resetAuthForm = () => {
 };
 
 const handleLogout = () => {
-    isSignedIn.value = false;
-    userRole.value = 'anonymous';
-    mockUserProfile.value = {
-        userId: null,
-        firstName: '',
-        lastName: '',
-        email: '',
-        hasCreatedBand: false,
-        hasPendingBandRequest: false,
-        bandId: null
-    };
-    localStorage.removeItem('currentUser');
+    logout(); // Use the composable's logout function
     router.push('/');
 };
 
@@ -655,37 +611,20 @@ onMounted(() => {
         document.documentElement.setAttribute('data-theme', 'dark');
     }
     
-    // Initialize authentication state
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            const user = JSON.parse(savedUser);
-            isSignedIn.value = true;
-            userRole.value = user.role;
-            mockUserProfile.value.userId = user.userId;
-            mockUserProfile.value.firstName = user.firstName;
-            mockUserProfile.value.lastName = user.lastName;
-            mockUserProfile.value.email = user.email;
-        } catch (error) {
-            console.error('Error parsing saved user:', error);
-            localStorage.removeItem('currentUser');
-        }
-    }
+    // Initialize authentication state via composable
+    checkAuthState();
     
     // Dynamically calculate navbar height for toast positioning
-    setTimeout(() => {
-        const navbar = document.querySelector('.p-menubar');
-        if (navbar) {
-            const navbarHeight = navbar.getBoundingClientRect().height;
-            const toastTopOffset = navbarHeight + 10; // 10px gap below navbar
-            
-            // Update CSS custom property for toast positioning
-            document.documentElement.style.setProperty('--navbar-height', `${toastTopOffset}px`);
-            
-            console.log(`Navbar height detected: ${navbarHeight}px, toast offset: ${toastTopOffset}px`);
-        }
-    }, 100); // Small delay to ensure navbar is rendered
+    const navbarElement = document.querySelector('.navbar');
+    if (navbarElement) {
+        const navbarHeight = navbarElement.getBoundingClientRect().height;
+        const toastTopOffset = navbarHeight + 10; // 10px gap below navbar
+        
+        // Update CSS custom property for toast positioning
+        document.documentElement.style.setProperty('--navbar-height', `${toastTopOffset}px`);
+        
+        console.log(`Navbar height detected: ${navbarHeight}px, toast offset: ${toastTopOffset}px`);
+    }
 });
-
 
 </script>

@@ -14,8 +14,14 @@ import referenceDataRoutes from './routes/referenceData.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// CORS configuration
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5174'], // Allow both common Vite ports
+  credentials: true, // Allow cookies to be sent
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Test database connection on startup
