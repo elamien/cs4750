@@ -344,8 +344,7 @@ router.get('/:id/band-status', async (req, res, next) => {
       console.log('membership_request table error:', error.message);
     }
     
-    console.log('Debug - hasPendingRequest:', hasPendingRequest);
-    console.log('Debug - pendingRequests:', pendingRequests);
+
     
     // Check if user created any band (is a leader) - using band_leader table
     const [createdBands] = await pool.query(
