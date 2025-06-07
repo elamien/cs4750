@@ -34,16 +34,21 @@ cd backend && npm install && cd ..
 # Mac: brew services start mysql
 # Windows: Start MySQL service from Services
 
-# Create database (use --login-path=local if you have it configured)
-# Version of command below but for ^ method:
-# mysql --login-path=local -e "CREATE DATABASE hoojams;"
-# if not using method above, it probably means you just a password set up,
-# so just go ahead and use command below. It should ask you for your password
+# Create database - Choose one method based on your MySQL setup:
 
-# Type your MySQL password when prompted
-mysql -u root -p -e "CREATE DATABASE hoojams;"
+# METHOD A: If you have local login path configured (no password prompt)
+# Drop and recreate database for fresh/clean development start
+mysql --login-path=local -e "DROP DATABASE IF EXISTS hoojams; CREATE DATABASE hoojams;"
 
-# Import schema
+# METHOD B: If using root user with password (will prompt for password)
+# Drop and recreate database for fresh/clean development start
+mysql -u root -p -e "DROP DATABASE IF EXISTS hoojams; CREATE DATABASE hoojams;"
+
+# Import schema (use same method as above)
+# With local login path:
+mysql --login-path=local hoojams < core_db_structure.sql
+
+# With password prompt:
 mysql -u root -p hoojams < core_db_structure.sql
 ```
 
