@@ -22,6 +22,16 @@
                                 <div class="request-date">
                                     Submitted: {{ new Date(request.timeCreated).toLocaleDateString() }}
                                 </div>
+                                <div class="request-actions">
+                                    <Button 
+                                        label="Cancel Request" 
+                                        icon="pi pi-times" 
+                                        severity="secondary" 
+                                        size="small"
+                                        @click="cancelRequest(request.id, request.bandId)"
+                                        :loading="cancellingRequestId === request.id"
+                                    />
+                                </div>
                             </div>
                         </template>
                         <p class="restriction-text">You cannot send more requests or create a band until this is resolved.</p>
@@ -113,6 +123,16 @@
                                 </div>
                                 <div class="request-date">
                                     Submitted: {{ new Date(request.timeCreated).toLocaleDateString() }}
+                                </div>
+                                <div class="request-actions">
+                                    <Button 
+                                        label="Cancel Request" 
+                                        icon="pi pi-times" 
+                                        severity="secondary" 
+                                        size="small"
+                                        @click="cancelRequest(request.id, request.bandId)"
+                                        :loading="cancellingRequestId === request.id"
+                                    />
                                 </div>
                             </div>
                         </template>
@@ -284,6 +304,7 @@ const bandForm = ref<BandForm>({
     location: ''
 });
 const bandFormErrors = ref<Record<string, string>>({});
+const cancellingRequestId = ref<string | null>(null);
 
 // --- Computed Properties ---
 const filteredBands = computed(() => {
@@ -380,6 +401,48 @@ const requestToJoin = async (bandId: string) => {
             detail: error instanceof Error ? error.message : 'Failed to send join request',
             life: 3000
         });
+    }
+};
+
+const cancelRequest = async (requestId: string, bandId: string) => {
+    cancellingRequestId.value = requestId;
+    
+    try {
+        const response = await fetch(`/api/bands/${bandId}/membership-requests/${requestId}/cancel`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to cancel request');
+        }
+        
+        toast.add({
+            severity: 'success',
+            summary: 'Success', 
+            detail: 'Request cancelled successfully!',
+            life: 3000
+        });
+        
+        // Refresh user status to hide the request
+        await fetchUserBandStatus();
+        
+    } catch (error) {
+        console.error('Error cancelling request:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error instanceof Error ? error.message : 'Failed to cancel request',
+            life: 3000
+        });
+    } finally {
+        cancellingRequestId.value = null;
     }
 };
 

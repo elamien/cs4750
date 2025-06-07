@@ -161,6 +161,14 @@
     color: var(--p-text-muted-color);
 }
 
+.request-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--p-surface-border);
+    display: flex;
+    justify-content: flex-end;
+}
+
 .restriction-text {
     margin-top: 1rem;
     font-style: italic;
