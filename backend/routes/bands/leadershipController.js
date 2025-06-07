@@ -181,6 +181,87 @@ router.post('/:id/promote-leader', async (req, res, next) => {
   }
 });
 
+// PUT /api/bands/:bandId/members/:memberId - Update a band member
+router.put('/:bandId/members/:memberId', async (req, res, next) => {
+  const { bandId, memberId } = req.params;
+  const { instrument, updatedBy } = req.body;
+  
+  if (!updatedBy) {
+    return res.status(400).json({ message: 'Updater user ID is required.' });
+  }
+  
+  try {
+    // 1. Verify current user is a band leader for this band
+    const [leaderCheck] = await pool.query(
+      `SELECT bl.user_role_id FROM band_leader bl 
+       JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+       WHERE bl.band_id = ? AND ur.user_id = ?`,
+      [bandId, updatedBy]
+    );
+    
+    if (leaderCheck.length === 0) {
+      return res.status(403).json({ message: 'Only band leaders can update member information.' });
+    }
+    
+    // 2. Verify target user is a band member or leader of this band
+    const [memberCheck] = await pool.query(
+      `SELECT ur.user_role_id FROM user_roles ur 
+       JOIN (
+         SELECT user_role_id FROM band_member WHERE band_id = ?
+         UNION 
+         SELECT user_role_id FROM band_leader WHERE band_id = ?
+       ) bm ON ur.user_role_id = bm.user_role_id
+       WHERE ur.user_id = ?`,
+      [bandId, bandId, memberId]
+    );
+    
+    if (memberCheck.length === 0) {
+      return res.status(404).json({ message: 'User is not a member of this band.' });
+    }
+    
+    // 3. Update the user's instrument in the user table
+    await pool.query(
+      'UPDATE user SET instrument = ? WHERE user_id = ?',
+      [instrument || null, memberId]
+    );
+    
+    // 4. Get updated member data for response
+    const [memberData] = await pool.query(
+      `SELECT u.user_id, u.first_name, u.last_name, u.email, u.instrument,
+              CASE 
+                WHEN bl.user_role_id IS NOT NULL THEN 'leader'
+                WHEN bm.user_role_id IS NOT NULL THEN 'member'
+                ELSE 'unknown'
+              END as role
+       FROM user u 
+       JOIN user_roles ur ON u.user_id = ur.user_id 
+       LEFT JOIN band_leader bl ON ur.user_role_id = bl.user_role_id AND bl.band_id = ?
+       LEFT JOIN band_member bm ON ur.user_role_id = bm.user_role_id AND bm.band_id = ?
+       WHERE u.user_id = ?`,
+      [bandId, bandId, memberId]
+    );
+    
+    if (memberData.length === 0) {
+      return res.status(404).json({ message: 'Member not found.' });
+    }
+    
+    res.json({ 
+      message: 'Member updated successfully',
+      member: {
+        id: memberData[0].user_id,
+        firstName: memberData[0].first_name,
+        lastName: memberData[0].last_name,
+        email: memberData[0].email,
+        instrument: memberData[0].instrument,
+        role: memberData[0].role
+      }
+    });
+  } catch (error) {
+    console.error('Failed to update member:', error);
+    next(error);
+  }
+});
+
 // POST /api/bands/:bandId/members/:memberId/remove - Remove a band member
 router.post('/:bandId/members/:memberId/remove', async (req, res, next) => {
   const { bandId, memberId } = req.params;

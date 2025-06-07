@@ -175,40 +175,7 @@
                 </template>
             </Card>
 
-            <!-- Quick Actions -->
-            <Card class="actions-card">
-                <template #title>
-                    <span>Quick Actions</span>
-                </template>
-                <template #content>
-                    <div class="actions-grid">
-                        <Button 
-                            label="View My Band Dashboard" 
-                            icon="pi pi-home"
-                            @click="router.push('/my-band')"
-                            outlined
-                        />
-                        <Button 
-                            label="Manage Members" 
-                            icon="pi pi-users"
-                            @click="router.push('/my-band/members')"
-                            outlined
-                        />
-                        <Button 
-                            label="Event Requests" 
-                            icon="pi pi-calendar"
-                            @click="router.push('/my-band/event-requests')"
-                            outlined
-                        />
-                        <Button 
-                            label="Membership Requests" 
-                            icon="pi pi-user-plus"
-                            @click="router.push('/my-band/member-requests')"
-                            outlined
-                        />
-                    </div>
-            </template>
-        </Card>
+
         </div>
     </div>
 </template>
@@ -317,8 +284,8 @@ const fetchBandInfo = async () => {
         const bandStatus = await response.json();
         console.log('BandInfoView - Band status response:', bandStatus);
         
-        // Check if user has a band
-        if (!bandStatus.isMemberOfBand || bandStatus.memberBands.length === 0) {
+        // Check if user has any bands (memberBands includes both members and leaders)
+        if (!bandStatus.memberBands || bandStatus.memberBands.length === 0) {
             bandInfo.value = { id: '', name: '', genre: null, description: null, location: null };
             return;
         }

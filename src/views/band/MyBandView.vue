@@ -13,11 +13,13 @@
                 <BandInformation 
                     class="band-info-section" 
                     :band-info="bandInfo" 
+                    @band-updated="handleBandUpdated"
                 />
                 
                 <BandMembers 
                     class="members-section" 
                     :members="bandInfo.members" 
+                    @members-updated="handleMembersUpdated"
                 />
                 
                 <BandActions 
@@ -430,6 +432,26 @@ const confirmLeaveBand = async () => {
         leavingBand.value = false;
         showLeaveBandDialog.value = false;
     }
+};
+
+const handleBandUpdated = (updatedBandInfo: { id: string; name: string; genre?: string | null; description?: string | null; location?: string | null }) => {
+    // Update the local band info state, preserving the members array
+    bandInfo.value = {
+        ...bandInfo.value,
+        id: updatedBandInfo.id,
+        name: updatedBandInfo.name,
+        genre: updatedBandInfo.genre,
+        description: updatedBandInfo.description,
+        location: updatedBandInfo.location
+    };
+};
+
+const handleMembersUpdated = (updatedMembers: BandUser[]) => {
+    // Update the local band info state with the new members array
+    bandInfo.value = {
+        ...bandInfo.value,
+        members: updatedMembers
+    };
 };
 
 // Lifecycle

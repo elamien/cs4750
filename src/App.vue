@@ -288,20 +288,6 @@ const bandMemberExtraItems: MenuItem[] = [
         label: 'My Band Dashboard', // For viewing events, setting availability, leaving band
         icon: 'pi pi-users',
         route: '/my-band' // MyBandView.vue
-    },
-    {
-        label: 'Notifications',
-        icon: 'pi pi-bell',
-        items: [
-            {
-                label: 'Band Updates', // General band announcements, schedule changes, etc.
-                icon: 'pi pi-info-circle',
-                route: '/notifications/band-updates',
-                // badge: '1'
-            }
-            // Future: Other notification types for band members
-            // Event invitations might be visible to all band members too
-        ]
     }
 ];
 
@@ -322,11 +308,6 @@ const bandLeaderExtraItems: MenuItem[] = [
                 icon: 'pi pi-info-circle',
                 route: '/my-band/info'
             },
-            {
-                label: 'Manage Members', // View, Add (via requests), Remove
-                icon: 'pi pi-users',
-                route: '/my-band/members'
-            },
 
             {
                 label: 'Membership Requests',
@@ -340,30 +321,34 @@ const bandLeaderExtraItems: MenuItem[] = [
                 route: '/my-band/create-fill-in'
             }
         ]
-    },
-    {
-        label: 'Notifications',
-        icon: 'pi pi-bell',
-        items: [
-            {
-                label: 'Find Gigs', // Link to the new "Gig Board"
-                icon: 'pi pi-briefcase',
-                route: '/events?filter=open'
-            }
-            // Future: Other notification types can be added here
-            // {
-            //     label: 'System Updates',
-            //     icon: 'pi pi-info-circle',
-            //     route: '/notifications/system'
-            // }
-        ]
     }
 ];
 
 // Menu items for WXTJ executives
 // Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
 const wxtjExecExtraItems: MenuItem[] = [
-    // Execs get the base band menu from baseSignedInItems (Browse + Join/Create)
+    // TEMPORARY: Show all possible dropdowns for testing
+    {
+        label: 'Manage My Band',
+        icon: 'pi pi-cog',
+        items: [
+            {
+                label: 'Band Dashboard',
+                icon: 'pi pi-desktop',
+                route: '/my-band'
+            },
+            {
+                label: 'Membership Requests',
+                icon: 'pi pi-user-plus',
+                route: '/my-band/member-requests',
+            },
+            {
+                label: 'Post Fill-In Request', // This is what you're looking for!
+                icon: 'pi pi-send',
+                route: '/my-band/create-fill-in'
+            }
+        ]
+    },
     {
         label: 'Admin Panel',
         icon: 'pi pi-shield',

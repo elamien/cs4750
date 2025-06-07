@@ -1,29 +1,186 @@
-/* BandMembers Component Styles */
+/* Band Members Component Styles */
+.members-section {
+    margin-bottom: 2rem;
+}
+
+.members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.members-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .members-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
+.select-all-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--p-surface-50);
+    border-radius: var(--p-border-radius);
+    border: 1px solid var(--p-surface-200);
+    margin-bottom: 0.5rem;
+}
+
+.select-all-row label {
+    font-weight: 600;
+    color: var(--theme-main-text);
+}
+
 .member-item {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.75rem;
-    border: 1px solid var(--p-surface-border);
-    border-radius: 6px;
+    padding: 1rem;
     background: var(--p-surface-0);
+    border-radius: var(--p-border-radius);
+    border: 1px solid var(--p-surface-200);
+    transition: all 0.2s ease;
+}
+
+.member-item:hover {
+    background: var(--p-surface-50);
+    border-color: var(--hoojams-orange);
+}
+
+.member-item.edit-mode {
+    background: var(--p-surface-100);
+    border-color: var(--hoojams-orange);
+    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.1);
+}
+
+.member-checkbox {
+    margin-right: 0.5rem;
 }
 
 .member-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.member-role {
+.member-name {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.member-name strong {
+    color: var(--theme-main-text);
+    font-size: 1rem;
+}
+
+.member-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.member-instrument {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--theme-secondary-text);
     font-size: 0.9rem;
-    color: var(--p-text-muted-color);
-    margin-top: 0.25rem;
+}
+
+.member-instrument i {
+    color: var(--hoojams-orange);
+}
+
+.member-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.no-members {
+    text-align: center;
+    padding: 3rem;
+    color: var(--theme-secondary-text);
+}
+
+.no-members i {
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.members-to-remove {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.members-to-remove li {
+    padding: 0.5rem;
+    background: var(--p-surface-100);
+    border-radius: var(--p-border-radius);
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .members-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .members-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .member-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .member-info {
+        order: 1;
+    }
+    
+    .member-actions {
+        order: 2;
+        justify-content: center;
+    }
+    
+    .member-checkbox {
+        order: 0;
+        align-self: flex-start;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animation for edit mode transitions */
+.member-item {
+    transition: all 0.3s ease;
+}
+
+/* Focus states for accessibility */
+.member-item:focus-within {
+    outline: 2px solid var(--hoojams-orange);
+    outline-offset: 2px;
 } 
