@@ -55,7 +55,7 @@ PORT=3001
 
 ### 6. Run the App
 ```bash
-npm run dev
+npm run dev  # Starts both frontend and backend
 ```
 
 **Access:**
