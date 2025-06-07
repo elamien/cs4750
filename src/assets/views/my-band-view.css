@@ -20,8 +20,8 @@
         grid-template-columns: 2fr 1fr;
         grid-template-areas: 
             "events info"
-            "events members"
-            "actions actions";
+            "events actions"
+            "members members";
     }
     
     .band-sections .events-section {

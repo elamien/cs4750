@@ -5,15 +5,25 @@
         <div class="band-content">
             <div class="band-sections">
                 <BandUpcomingEvents 
+                    class="events-section"
                     :upcoming-events="upcomingEvents" 
                     @set-availability="setAvailability"
                 />
                 
-                <BandInformation :band-info="bandInfo" />
+                <BandInformation 
+                    class="band-info-section" 
+                    :band-info="bandInfo" 
+                />
                 
-                <BandActions @leave-band="handleLeaveBand" />
+                <BandMembers 
+                    class="members-section" 
+                    :members="bandInfo.members" 
+                />
                 
-                <BandMembers :members="bandInfo.members" />
+                <BandActions 
+                    class="actions-section" 
+                    @leave-band="handleLeaveBand" 
+                />
             </div>
         </div>
 
