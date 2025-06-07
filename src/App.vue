@@ -93,7 +93,7 @@
         
         <!-- Authentication Modal -->
         <Dialog v-model:visible="showAuthModal" modal header="Welcome" :style="{ width: '25rem' }" :closable="true">
-            <div class="auth-container">
+            <div class="auth-container" @keydown="handleAuthKeydown">
                 <!-- Sign In Form -->
                 <div v-if="authMode === 'signin'" class="auth-form">
                     <h3>Sign In</h3>
@@ -102,21 +102,26 @@
                             <label for="email">Email</label>
                             <InputText 
                                 id="email" 
+                                ref="emailInput"
                                 v-model="authForm.email" 
                                 type="email" 
                                 placeholder="Enter your email" 
                                 class="w-full"
+                                autofocus
+                                @keyup.enter="focusPassword"
                             />
                         </div>
                         <div class="field">
                             <label for="password">Password</label>
                             <Password 
                                 id="password"
+                                ref="passwordInput"
                                 v-model="authForm.password" 
                                 placeholder="Enter your password"
                                 :feedback="false"
                                 toggleMask
                                 class="w-full"
+                                @keyup.enter="handleSignIn"
                             />
                         </div>
                         <div class="field-checkbox">
@@ -203,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { RouterView, RouterLink, useRouter } from 'vue-router';
 import Menubar from 'primevue/menubar';
 import type { MenuItem } from 'primevue/menuitem';
@@ -234,6 +239,10 @@ const isDarkMode = ref(false);
 // Profile menu refs
 const profileMenuRef = ref();
 const avatarRef = ref();
+
+// Auth form refs
+const emailInput = ref();
+const passwordInput = ref();
 
 // Authentication modal state
 const showAuthModal = ref(false);
@@ -537,6 +546,70 @@ const handleLogout = () => {
     logout(); // Use the composable's logout function
     router.push('/');
 };
+
+// Focus management functions
+const focusPassword = () => {
+    // For PrimeVue Password component, we need to access the input element
+    if (passwordInput.value && passwordInput.value.$el) {
+        const input = passwordInput.value.$el.querySelector('input');
+        if (input) {
+            input.focus();
+        }
+    }
+};
+
+// Handle ESC key behavior in auth modal
+const handleAuthKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+        const activeElement = document.activeElement;
+        
+        // Check if we're currently in an input field (insert mode)
+        if (activeElement && (
+            activeElement.tagName === 'INPUT' || 
+            activeElement.tagName === 'TEXTAREA' ||
+            (activeElement as HTMLElement).isContentEditable
+        )) {
+            // We're in insert mode - blur the input to exit insert mode
+            (activeElement as HTMLElement).blur();
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        // If not in insert mode, let the default ESC behavior close the modal
+    }
+};
+
+const focusEmailInput = async () => {
+    await nextTick();
+    
+    // More persistent focus approach - retry multiple times
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const tryFocus = () => {
+        if (attempts >= maxAttempts) return;
+        
+        if (emailInput.value && emailInput.value.$el) {
+            emailInput.value.$el.focus();
+            
+            // Check if focus actually worked
+            setTimeout(() => {
+                if (document.activeElement !== emailInput.value?.$el && attempts < maxAttempts) {
+                    attempts++;
+                    tryFocus();
+                }
+            }, 50);
+        }
+    };
+    
+    setTimeout(tryFocus, 100);
+};
+
+// Watch for modal opening to auto-focus email field
+watch([showAuthModal, authMode], async ([modalVisible, mode]) => {
+    if (modalVisible && mode === 'signin') {
+        await focusEmailInput();
+    }
+});
 
 // Utility functions
 const getInitials = (firstName: string, lastName: string): string => {
