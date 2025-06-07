@@ -16,10 +16,10 @@
           </button>
           
           <div class="music-info">
-            <div class="music-label">Epic Background Music</div>
+            <div class="music-label">WXTJ 100.1 FM</div>
             <div class="title-container">
               <div class="scrolling-title" :class="{ 'scrolling': isPlaying }">
-                {{ formattedTitle }}
+                {{ currentTitle }}
               </div>
             </div>
           </div>
@@ -29,18 +29,26 @@
         
         <audio 
           ref="audioPlayer" 
-          loop 
           preload="none"
+          crossorigin="anonymous"
           @loadstart="onLoadStart"
           @canplay="onCanPlay"
+          @error="onError"
+          @playing="onPlaying"
+          @waiting="onWaiting"
         >
-          <source src="/Hasley-badAtLove-Instrumental.mp3" type="audio/mpeg">
+          <source src="https://streams.wtju.net/wxtj-live.mp3" type="audio/mpeg">
         </audio>
         
         <!-- Audio wave animation -->
         <div v-if="!hasInteracted" class="audio-wave-indicator">
           <div class="wave-ring"></div>
           <div class="wave-ring wave-ring-delayed"></div>
+        </div>
+        
+        <!-- Loading indicator for radio stream -->
+        <div v-if="isLoading && hasInteracted" class="loading-indicator">
+          <div class="loading-spinner"></div>
         </div>
       </div>
       
@@ -64,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useMusicState } from '@/composables/useMusicState'
 
 const audioPlayer = ref<HTMLAudioElement>()
@@ -73,6 +81,8 @@ const isVisible = ref(true)
 const showPlayer = ref(false)
 const hasInteracted = ref(false)
 const isDismissedThisSession = ref(false)
+const isLoading = ref(false)
+const currentTitle = ref('Live University of Virginia Student Radio')
 
 // Global music state management
 const { setMusicPlaying } = useMusicState()
@@ -127,19 +137,6 @@ const stopMusicNotes = () => {
   musicNotes.value = []
 }
 
-const filename = 'Hasley-badAtLove-Instrumental.mp3'
-const formattedTitle = computed(() => {
-  return filename
-    .replace('.mp3', '')
-    .split('-')
-    .join(' ')
-    .replace(/([A-Z])/g, ' $1')
-    .trim()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
-})
-
 const togglePlay = async () => {
   hasInteracted.value = true
   
@@ -152,13 +149,19 @@ const togglePlay = async () => {
       setMusicPlaying(false)
       stopMusicNotes()
     } else {
+      isLoading.value = true
       await audioPlayer.value.play()
-      isPlaying.value = true
+      // isPlaying and isLoading will be updated in onPlaying event
       setMusicPlaying(true)
       startMusicNotes()
     }
   } catch (error) {
-    console.log('Audio play failed:', error)
+    console.log('Radio stream play failed:', error)
+    isLoading.value = false
+    currentTitle.value = 'Unable to connect to WXTJ 100.1 FM'
+    setTimeout(() => {
+      currentTitle.value = 'Live University of Virginia Student Radio'
+    }, 3000)
   }
 }
 
@@ -179,11 +182,33 @@ const hidePlayer = () => {
 }
 
 const onLoadStart = () => {
-  console.log('Audio loading...')
+  console.log('Radio stream loading...')
+  isLoading.value = true
 }
 
 const onCanPlay = () => {
-  console.log('Audio ready to play')
+  console.log('Radio stream ready to play')
+}
+
+const onPlaying = () => {
+  console.log('Radio stream is playing')
+  isLoading.value = false
+  isPlaying.value = true
+}
+
+const onWaiting = () => {
+  console.log('Radio stream buffering...')
+  isLoading.value = true
+}
+
+const onError = (event: Event) => {
+  console.error('Radio stream error:', event)
+  isLoading.value = false
+  isPlaying.value = false
+  currentTitle.value = 'Connection error - Please try again'
+  setTimeout(() => {
+    currentTitle.value = 'Live University of Virginia Student Radio'
+  }, 3000)
 }
 
 onMounted(() => {
@@ -223,6 +248,7 @@ onMounted(() => {
   overflow: hidden;
   max-width: 300px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .player-hidden {
@@ -286,11 +312,9 @@ onMounted(() => {
   width: 180px;
   overflow: hidden;
   position: relative;
-  mask: linear-gradient(to right, transparent 0px, white 15px, white calc(100% - 15px), transparent 100%);
-  -webkit-mask: linear-gradient(to right, transparent 0px, white 15px, white calc(100% - 15px), transparent 100%);
+  mask: linear-gradient(to right, transparent 0px, white 8px, white calc(100% - 8px), transparent 100%);
+  -webkit-mask: linear-gradient(to right, transparent 0px, white 8px, white calc(100% - 8px), transparent 100%);
 }
-
-
 
 .scrolling-title {
   font-size: 13px;
@@ -300,7 +324,7 @@ onMounted(() => {
 }
 
 .scrolling-title.scrolling {
-  animation: scroll-text 15s linear infinite;
+  animation: scroll-text 12s linear infinite;
 }
 
 .close-button {
@@ -317,6 +341,24 @@ onMounted(() => {
 .close-button:hover {
   background: rgba(255, 255, 255, 0.2);
   color: white;
+}
+
+/* Loading Indicator for Radio Stream */
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 /* Audio Wave Indicator */
@@ -344,8 +386,6 @@ onMounted(() => {
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
-
-
 
 /* Music Notes Animation */
 .music-notes-container {
@@ -392,7 +432,7 @@ onMounted(() => {
 
 @keyframes scroll-text {
   0% { transform: translateX(100%); }
-  100% { transform: translateX(-115%); }
+  100% { transform: translateX(-150%); }
 }
 
 @keyframes playing-pulse {
@@ -415,7 +455,10 @@ onMounted(() => {
   }
 }
 
-
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 /* Transition animations */
 .music-player-enter-active,
