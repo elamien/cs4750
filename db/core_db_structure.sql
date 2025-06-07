@@ -161,7 +161,7 @@ CREATE TABLE membership_request (
     membership_request_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     band_id INT NOT NULL,
-    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    status ENUM('pending', 'approved', 'rejected', 'cancelled') DEFAULT 'pending',
     time_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- NEW: Track who responded to the membership request (band leader who approved/denied)
     responded_by_user_id INT,

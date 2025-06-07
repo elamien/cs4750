@@ -197,4 +197,37 @@ router.post('/:bandId/membership-requests/:requestId/reject', async (req, res, n
   }
 });
 
+// DELETE /api/bands/:bandId/membership-requests/:requestId/cancel - Cancel a membership request (by sender)
+router.delete('/:bandId/membership-requests/:requestId/cancel', async (req, res, next) => {
+  const { bandId, requestId } = req.params;
+  const { userId: cancellingUserId } = req.body;
+  
+  if (!cancellingUserId) {
+    return res.status(400).json({ message: 'User ID is required to cancel a request.' });
+  }
+  
+  try {
+    // Check if request exists and is pending, and belongs to the cancelling user
+    const [requestCheck] = await pool.query(
+      'SELECT * FROM membership_request WHERE membership_request_id = ? AND band_id = ? AND user_id = ? AND status = "pending"',
+      [requestId, bandId, cancellingUserId]
+    );
+    
+    if (requestCheck.length === 0) {
+      return res.status(404).json({ message: 'Membership request not found, already processed, or you do not have permission to cancel it.' });
+    }
+    
+    // Update request status to cancelled
+    await pool.query(
+      'UPDATE membership_request SET status = "cancelled", responded_by_user_id = ?, time_responded = NOW() WHERE membership_request_id = ?',
+      [cancellingUserId, requestId]
+    );
+    
+    res.json({ message: 'Membership request cancelled successfully' });
+  } catch (error) {
+    console.error('Failed to cancel membership request:', error);
+    next(error);
+  }
+});
+
 export default router; 
