@@ -1,12 +1,26 @@
 <template>
     <div class="favorites-view">
-        <div class="header">
-            <h1>My Favorites</h1>
-            <p>Your saved bands and events</p>
-        </div>
-
-        <TabView>
-            <TabPanel header="Favorite Bands" value="bands">
+        <!-- Glass Submenu -->
+        <GlassSubmenu 
+            v-if="!loading && activeSection"
+            title="My Favorites"
+            :menu-items="submenuItems"
+            :active-item="activeSection"
+            @item-selected="handleSectionChange"
+        />
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Loading State -->
+            <div v-if="loading || !activeSection" class="content-section">
+                <div class="empty-state">
+                    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--p-primary-color);"></i>
+                    <h3>Loading...</h3>
+                </div>
+            </div>
+            
+            <!-- Favorite Bands Section -->
+            <div v-else-if="activeSection === 'bands'" class="content-section">
                 <div v-if="favoriteBands.length > 0" class="favorites-grid">
                     <Card v-for="band in favoriteBands" :key="band.id" class="favorite-card">
                         <template #header>
@@ -41,9 +55,10 @@
                     <p>Browse bands and add them to your favorites</p>
                     <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/bands')" />
                 </div>
-            </TabPanel>
+            </div>
 
-            <TabPanel header="Favorite Events" value="events">
+            <!-- Favorite Events Section -->
+            <div v-else-if="activeSection === 'events'" class="content-section">
                 <div v-if="favoriteEvents.length > 0" class="favorites-grid">
                     <Card v-for="event in favoriteEvents" :key="event.id" class="favorite-card">
                         <template #header>
@@ -90,20 +105,41 @@
                     <p>Browse events and add them to your favorites</p>
                     <Button label="Browse Events" icon="pi pi-calendar" @click="router.push('/events')" />
                 </div>
-            </TabPanel>
-        </TabView>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Card from 'primevue/card';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
 import Button from 'primevue/button';
+import GlassSubmenu from '@/components/ui/GlassSubmenu.vue';
 
+const route = useRoute();
 const router = useRouter();
+
+// Active section for glass submenu
+const activeSection = ref('');
+const loading = ref(true);
+
+// Submenu items
+const submenuItems = computed(() => {
+    const items = [
+        { label: 'Favorite Bands', value: 'bands', icon: 'pi pi-users' },
+        { label: 'Favorite Events', value: 'events', icon: 'pi pi-calendar' }
+    ];
+    
+    return items;
+});
+
+// Event Handlers
+const handleSectionChange = (section: string) => {
+    activeSection.value = section;
+    // Update URL to reflect the current section
+    router.replace({ query: { section } });
+};
 
 // Get current authenticated user ID from localStorage
 const getCurrentUserId = () => {
@@ -278,32 +314,52 @@ const removeFavoriteEvent = async (eventId: string) => {
     }
 };
 
-onMounted(() => {
-    fetchFavoriteBands();
-    fetchFavoriteEvents();
+onMounted(async () => {
+    loading.value = true;
+    
+    // Set initial section from URL or default to first item
+    const sectionFromUrl = route.query.section as string;
+    if (sectionFromUrl && ['bands', 'events'].includes(sectionFromUrl)) {
+        activeSection.value = sectionFromUrl;
+    } else {
+        // Default to the first item in submenuItems
+        const firstItem = submenuItems.value[0];
+        if (firstItem) {
+            activeSection.value = firstItem.value;
+        }
+    }
+    
+    await Promise.all([
+        fetchFavoriteBands(),
+        fetchFavoriteEvents()
+    ]);
+    
+    loading.value = false;
 });
 </script>
 
 <style scoped>
+/* FavoritesView Styles - Glass Submenu Layout */
 .favorites-view {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    position: relative;
+}
+
+/* Main content area - positioned to account for fixed glass submenu */
+.main-content {
+    margin-left: 280px; /* Space for the glass submenu */
+    width: calc(100vw - 280px); /* Ensure it doesn't overflow */
+    max-width: calc(100vw - 280px);
     padding: 2rem;
+    box-sizing: border-box;
+    overflow-x: auto; /* Handle any internal overflow gracefully */
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.header h1 {
-    color: var(--p-text-color);
-    margin-bottom: 0.5rem;
-}
-
-.header p {
-    color: var(--p-text-muted-color);
-    font-size: 1.1rem;
+.content-section {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .favorites-grid {
@@ -394,5 +450,32 @@ onMounted(() => {
 
 .empty-state p {
     margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 220px;
+        width: calc(100vw - 220px);
+        max-width: calc(100vw - 220px);
+        padding: 1.5rem;
+    }
+    
+    .favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        margin-left: 200px;
+        width: calc(100vw - 200px);
+        max-width: calc(100vw - 200px);
+        padding: 1rem;
+    }
+    
+    .favorites-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style> 

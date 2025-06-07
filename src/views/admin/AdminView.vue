@@ -1,137 +1,149 @@
 <template>
     <div class="admin">
-        <div class="admin-tabs-container">
-            <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
-                <TabPanel header="Manage Users" value="users">
-                    <div class="admin-content">
-                        <AdminUsersComponent />
-                    </div>
-                </TabPanel>
-                
-                <TabPanel header="Manage Bands" value="bands">
-                    <div class="admin-content">
-                        <AdminBandsComponent />
-                    </div>
-                </TabPanel>
-                
-                <TabPanel header="Manage Events" value="events">
-                    <div class="admin-content">
-                        <AdminEventsComponent />
-                    </div>
-                </TabPanel>
-            </TabView>
+        <!-- Glass Submenu -->
+        <GlassSubmenu 
+            v-if="!loading && activeSection"
+            title="Admin Panel"
+            :menu-items="submenuItems"
+            :active-item="activeSection"
+            @item-selected="handleSectionChange"
+        />
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Loading State -->
+            <div v-if="loading || !activeSection" class="content-section">
+                <div class="empty-state">
+                    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--p-primary-color);"></i>
+                    <h3>Loading...</h3>
+                </div>
+            </div>
+            
+            <!-- Manage Users Section -->
+            <div v-else-if="activeSection === 'users'" class="content-section">
+                <AdminUsersComponent />
+            </div>
+            
+            <!-- Manage Bands Section -->
+            <div v-else-if="activeSection === 'bands'" class="content-section">
+                <AdminBandsComponent />
+            </div>
+            
+            <!-- Manage Events Section -->
+            <div v-else-if="activeSection === 'events'" class="content-section">
+                <AdminEventsComponent />
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
 import AdminUsersComponent from './AdminUsersView.vue';
 import AdminBandsComponent from './AdminBandsView.vue';
 import AdminEventsComponent from './AdminEventsView.vue';
+import GlassSubmenu from '@/components/ui/GlassSubmenu.vue';
 
 const route = useRoute();
 const router = useRouter();
 
-// Active tab index (0 = Users, 1 = Bands, 2 = Events)
-const activeTab = ref(0);
+// Active section for glass submenu
+const activeSection = ref('');
+const loading = ref(true);
 
-// Set initial tab based on route query
-onMounted(() => {
-    const tab = route.query.tab as string;
-    if (tab === 'bands') {
-        activeTab.value = 1;
-    } else if (tab === 'events') {
-        activeTab.value = 2;
-    } else {
-        activeTab.value = 0; // default to users
-    }
+// Submenu items
+const submenuItems = computed(() => {
+    const items = [
+        { label: 'Manage Users', value: 'users', icon: 'pi pi-users' },
+        { label: 'Manage Bands', value: 'bands', icon: 'pi pi-users' },
+        { label: 'Manage Events', value: 'events', icon: 'pi pi-calendar' }
+    ];
+    
+    return items;
 });
 
-// Update URL when tab changes
-const updateRoute = (index: number) => {
-    const tabName = index === 2 ? 'events' : index === 1 ? 'bands' : 'users';
-    router.replace({ query: { ...route.query, tab: tabName } });
+// Event Handlers
+const handleSectionChange = (section: string) => {
+    activeSection.value = section;
+    // Update URL to reflect the current section
+    router.replace({ query: { tab: section } });
 };
+
+// Lifecycle
+onMounted(async () => {
+    loading.value = true;
+    
+    // Set initial section from URL or default to first item
+    const sectionFromUrl = route.query.tab as string;
+    if (sectionFromUrl && ['users', 'bands', 'events'].includes(sectionFromUrl)) {
+        activeSection.value = sectionFromUrl;
+    } else {
+        // Default to the first item in submenuItems
+        const firstItem = submenuItems.value[0];
+        if (firstItem) {
+            activeSection.value = firstItem.value;
+        }
+    }
+    
+    loading.value = false;
+});
 </script>
 
 <style scoped>
+/* AdminView Styles - Glass Submenu Layout */
 .admin {
     width: 100%;
+    position: relative;
 }
 
-.admin-tabs-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem 2rem 0 2rem;
-}
-
-.admin-content {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
+/* Main content area - positioned to account for fixed glass submenu */
+.main-content {
+    margin-left: 280px; /* Space for the glass submenu */
+    width: calc(100vw - 280px); /* Ensure it doesn't overflow */
+    max-width: calc(100vw - 280px);
     padding: 2rem;
+    box-sizing: border-box;
+    overflow-x: auto; /* Handle any internal overflow gracefully */
 }
 
-/* Custom TabView styling to match other pages */
-:deep(.p-tabview) {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+.content-section {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--p-text-muted-color);
+    border: 1px dashed var(--p-surface-border);
     border-radius: 8px;
-    overflow: visible;
+    margin-bottom: 1rem;
 }
 
-:deep(.p-tabview-nav) {
-    background: var(--p-surface-100);
-    border-bottom: 1px solid var(--p-surface-border);
-    padding: 0;
-}
-
-:deep(.p-tabview-nav-link) {
-    padding: 1rem 2rem;
-    font-weight: 500;
-    font-size: 1rem;
-    border: none;
-    background: transparent;
+.empty-state h3 {
+    margin: 1rem 0 0.5rem;
     color: var(--p-text-color);
-    transition: all 0.2s ease;
 }
 
-:deep(.p-tabview-nav-link:hover) {
-    background: var(--p-surface-200);
-}
-
-:deep(.p-tabview-nav-link:focus) {
-    box-shadow: none;
-}
-
-:deep(.p-tabview-selected .p-tabview-nav-link) {
-    background: var(--p-primary-color);
-    color: white;
-}
-
-:deep(.p-tabview-panels) {
-    background: transparent;
-    padding: 0;
-}
-
-:deep(.p-tabview-panel) {
-    padding: 0;
-}
-
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .admin-tabs-container {
-        padding: 1rem 1rem 0 1rem;
+    .main-content {
+        margin-left: 220px;
+        width: calc(100vw - 220px);
+        max-width: calc(100vw - 220px);
+        padding: 1.5rem;
     }
-    
-    .admin-content {
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        margin-left: 200px;
+        width: calc(100vw - 200px);
+        max-width: calc(100vw - 200px);
         padding: 1rem;
-    }
-    
-    :deep(.p-tabview-nav-link) {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
     }
 }
 </style> 

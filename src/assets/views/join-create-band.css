@@ -1,18 +1,24 @@
-/* JoinCreateBandView Styles */
+/* JoinCreateBandView Styles - Glass Submenu Layout */
 .join-create-band {
     width: 100%;
+    position: relative;
 }
 
-.bands-tabs-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem 2rem 0 2rem;
-}
-
-.bands-content {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
+/* Main content area - positioned to account for fixed glass submenu */
+.main-content {
+    margin-left: 280px; /* Space for the glass submenu */
+    width: calc(100vw - 280px); /* Ensure it doesn't overflow */
+    max-width: calc(100vw - 280px);
     padding: 2rem;
+    box-sizing: border-box;
+    overflow-x: auto; /* Handle any internal overflow gracefully */
+}
+
+.content-section {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .search-section {
@@ -23,6 +29,8 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .bands-list {
@@ -33,6 +41,8 @@
 
 .band-card {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .band-needs {
@@ -51,6 +61,8 @@
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .field {
@@ -195,4 +207,52 @@
     margin-bottom: 1rem;
     font-size: 1rem;
     line-height: 1.5;
+}
+
+/* Responsive adjustments for glass submenu layout */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 220px; /* Adjust for smaller submenu */
+        width: calc(100vw - 220px);
+        max-width: calc(100vw - 220px);
+        padding: 1rem;
+    }
+    
+    .search-filters {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        margin-left: 200px; /* Adjust for mobile submenu */
+        width: calc(100vw - 200px);
+        max-width: calc(100vw - 200px);
+        padding: 0.5rem;
+    }
+    
+    .search-filters,
+    .form-grid {
+        gap: 0.5rem;
+    }
+    
+    .bands-list {
+        gap: 0.75rem;
+    }
+    
+    .empty-state,
+    .notice-message {
+        padding: 1.5rem;
+    }
 } 
