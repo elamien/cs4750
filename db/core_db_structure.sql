@@ -340,7 +340,7 @@ CREATE INDEX idx_app_settings_name ON app_settings(setting_name);
 
 -- Insert test users with all required fields
 INSERT INTO user (first_name, last_name, bio, email, phone_number, genre, instrument, password) VALUES
-    ('wxtj', 'exec', 'WXTJ station executive with full administrative privileges.', 'wxtjexec@example.com', '434-555-WXTJ', 'Pop', 'Clarinet', 'wxtjexec'),
+    ('wxtj', 'exec', 'WXTJ station executive with full administrative privileges.', 'wxtjexec@example.com', '434-555-WXTJ', 'Pop', 'Clarinet', 'test123'),
     ('Test', 'User', 'General user for testing basic functionality.', 'test.user@example.com', '434-555-0001', 'Indie', 'Guitar', 'test123'),
     ('Alex', 'Rockstar', 'Passionate guitarist with 10 years experience in rock and indie music.', 'alex.band@test.com', '434-555-0101', 'Alternative', 'Guitar', 'test123'),
     ('Jamie', 'Beats', 'Professional drummer specializing in rock, jazz, and fusion styles.', 'jamie.drums@test.com', '434-555-0202', 'Jazz', 'Drums', 'test123');
