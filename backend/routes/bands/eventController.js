@@ -18,6 +18,7 @@ router.get('/:id/events', async (req, res, next) => {
         e.location,
         e.description,
         e.genre,
+        e.time_slot AS timeSlot,
         er.time_responded AS acceptedAt,
         CASE 
           WHEN bmea.is_available IS NOT NULL THEN bmea.is_available

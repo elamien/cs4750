@@ -52,6 +52,9 @@
                                     :class="{ 'p-invalid': !form.eventId && formSubmitted }"
                                 />
                                 <small v-if="!form.eventId && formSubmitted" class="p-error">Please select an event</small>
+                                <small v-if="upcomingEvents.length === 0" class="p-info">
+                                    No events available. Your band needs to accept event invitations before creating fill-in requests.
+                                </small>
                             </div>
 
                             <div class="field">
@@ -212,6 +215,7 @@ interface EventInfo {
     datetime: string;
     location?: string;
     genre?: string;
+    timeSlot?: number;
     displayName: string;
     slotOne?: string;
     slotTwo?: string;
@@ -334,35 +338,25 @@ const availableSlotOptions = computed(() => {
     }
     
     const event = selectedEvent.value;
-    const bandName = userBand.value.name;
-    const availableSlots: number[] = [];
     
-    // Check which slots the band is playing in
-    if (event.slotOne === bandName) availableSlots.push(1);
-    if (event.slotTwo === bandName) availableSlots.push(2);
-    if (event.slotThree === bandName) availableSlots.push(3);
-    if (event.slotFour === bandName) availableSlots.push(4);
+    // If the event has a specific time slot assigned, only show that slot
+    if (event.timeSlot) {
+        return slotOptions.value.filter(slot => slot.value === event.timeSlot);
+    }
     
-    // Return only the slot options where the band is playing
-    return slotOptions.value.filter(slot => availableSlots.includes(slot.value));
+    // Fallback: if no specific slot is assigned, show all slots
+    // This shouldn't normally happen for events with accepted band invitations
+    return slotOptions.value;
 });
 
 // API functions
 const fetchBandEvents = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/events`);
-        if (!response.ok) throw new Error('Failed to fetch events');
+        // Use the correct band-specific endpoint instead of general events endpoint
+        const response = await fetch(`${API_BASE_URL}/bands/${userBand.value.id}/events?userId=${currentUserId.value}`);
+        if (!response.ok) throw new Error('Failed to fetch band events');
         
-        const allEvents = await response.json() as EventInfo[];
-        const bandName = userBand.value.name;
-        
-        // Filter events where this band is playing in any slot
-        const bandEvents = allEvents.filter((event: EventInfo) => 
-            event.slotOne === bandName || 
-            event.slotTwo === bandName || 
-            event.slotThree === bandName || 
-            event.slotFour === bandName
-        );
+        const bandEvents = await response.json() as EventInfo[];
         
         // Map to the format needed for the dropdown
         upcomingEvents.value = bandEvents.map((event: EventInfo) => ({
@@ -371,16 +365,16 @@ const fetchBandEvents = async () => {
             datetime: event.datetime,
             location: event.location,
             genre: event.genre,
-            slotOne: event.slotOne,
-            slotTwo: event.slotTwo,
-            slotThree: event.slotThree,
-            slotFour: event.slotFour,
+            timeSlot: event.timeSlot,
             displayName: `${event.eventTitle} - ${formatDate(event.datetime)}`
         }));
         
+        console.log('Loaded band events:', upcomingEvents.value);
+        
     } catch (error) {
         console.error('Error fetching band events:', error);
-        alert('Failed to load events');
+        // Show more helpful error message
+        alert('Failed to load events. Make sure your band has accepted event invitations to create fill-in requests.');
     }
 };
 const fetchUserBandInfo = async () => {
@@ -469,10 +463,11 @@ const createFillInRequest = async () => {
     }
 };
 
-// Watch for event changes to reset slot selection
-watch(() => form.value.eventId, () => {
-    // Reset slot selection when event changes
-    form.value.slotNumber = 1;
+// Watch for event selection and auto-set the slot
+watch(() => form.value.eventId, (newEventId) => {
+    if (newEventId && selectedEvent.value?.timeSlot) {
+        form.value.slotNumber = selectedEvent.value.timeSlot;
+    }
 });
 
 onMounted(async () => {
