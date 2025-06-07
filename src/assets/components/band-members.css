@@ -52,12 +52,12 @@
 }
 
 .member-item:hover {
-    background: var(--p-surface-50);
+    background: var(--theme-card-hover-bg);
     border-color: var(--hoojams-orange);
 }
 
 .member-item.edit-mode {
-    background: var(--p-surface-100);
+    background: var(--theme-card-hover-bg);
     border-color: var(--hoojams-orange);
     box-shadow: 0 2px 8px rgba(255, 167, 38, 0.1);
 }

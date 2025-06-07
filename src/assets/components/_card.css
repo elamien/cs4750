@@ -4,7 +4,7 @@
   background: var(--theme-card-bg) !important;
   border: 1px solid var(--theme-card-border);
   color: var(--theme-card-text) !important;
-}
+  }
 
 /* Explicitly theme PrimeVue card structural elements */
 .p-card .p-card-title {
@@ -32,4 +32,4 @@
 .p-card .p-card-body .p-card-content span,
 .p-card .p-card-body .p-card-content div {
   color: var(--theme-card-text) !important;
-} 
+  } 

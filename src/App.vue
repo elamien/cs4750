@@ -97,6 +97,13 @@
                 <!-- Sign In Form -->
                 <div v-if="authMode === 'signin'" class="auth-form">
                     <h3>Sign In</h3>
+                    <!-- Sign In Error Message -->
+                    <div v-if="signInError" class="p-message p-message-error" style="margin-bottom: 1rem;">
+                        <div class="p-message-wrapper">
+                            <div class="p-message-icon pi pi-times-circle"></div>
+                            <div class="p-message-text">{{ signInError }}</div>
+                        </div>
+                    </div>
                     <div class="form-fields">
                         <div class="field">
                             <label for="email">Email</label>
@@ -109,6 +116,7 @@
                                 class="w-full"
                                 autofocus
                                 @keyup.enter="focusPassword"
+                                @input="signInError = ''"
                             />
                         </div>
                         <div class="field">
@@ -122,6 +130,7 @@
                                 toggleMask
                                 class="w-full"
                                 @keyup.enter="handleSignIn"
+                                @input="signInError = ''"
                             />
                         </div>
                         <div class="field-checkbox">
@@ -259,6 +268,7 @@ const authForm = ref({
     wxtjAccessKey: ''
 });
 const signUpErrors = ref<Record<string, string>>({});
+const signInError = ref<string>('');
 
 // Menu items for anonymous users (not signed in)
 const anonymousItems: MenuItem[] = [
@@ -411,6 +421,9 @@ const toggleProfileMenu = (event: Event) => {
 
 // Real authentication functions
 const handleSignIn = async () => {
+    // Clear any previous error
+    signInError.value = '';
+    
     try {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
@@ -426,8 +439,8 @@ const handleSignIn = async () => {
         const data = await response.json();
 
         if (!response.ok) {
-            // Show error toast
-            console.error('Login failed:', data.message);
+            // Show user-friendly error message
+            signInError.value = data.message || 'Invalid email or password. Please try again.';
             return;
         }
 
@@ -441,6 +454,7 @@ const handleSignIn = async () => {
     
     } catch (error) {
         console.error('Login error:', error);
+        signInError.value = 'Unable to connect to the server. Please try again later.';
     }
 };
 
@@ -540,6 +554,8 @@ const resetAuthForm = () => {
         wxtjAccessKey: ''
     };
     authMode.value = 'signin';
+    signInError.value = '';
+    signUpErrors.value = {};
 };
 
 const handleLogout = () => {
