@@ -247,12 +247,11 @@ router.get('/:id', async (req, res, next) => {
 // PUT /api/bands/:id - Update band profile
 router.put('/:id', async (req, res, next) => {
   const { id: bandId } = req.params;
-  let { name, genre, location, description } = req.body;
+  let { name, genre, description } = req.body;
 
   // Clean profanity from inputs
   name = filter.clean(name || '');
   description = filter.clean(description || '');
-  location = filter.clean(location || '');
 
   if (!name) {
     return res.status(400).json({ message: 'Band name is required.' });
@@ -264,15 +263,13 @@ router.put('/:id', async (req, res, next) => {
       SET 
         name = ?,
         genre = ?,
-        description = ?,
-        location = ?
+        description = ?
       WHERE band_id = ?;
     `;
     const [result] = await pool.query(query, [
       name, 
       genre || null, 
       description || null,
-      location || null,
       bandId
     ]);
     
@@ -282,7 +279,7 @@ router.put('/:id', async (req, res, next) => {
     
     // Return updated band
     const [updatedRows] = await pool.query(
-      `SELECT band_id AS id, name, genre, description, location FROM band WHERE band_id = ?`,
+      `SELECT band_id AS id, name, genre, description FROM band WHERE band_id = ?`,
       [bandId]
     );
     
