@@ -347,28 +347,90 @@ router.delete('/:id', async (req, res, next) => {
   }
 
   try {
-    // Check if the event exists and user is the creator
-    const [eventCheck] = await pool.query(
-      'SELECT user_id, event_title FROM event WHERE event_id = ?',
-      [eventId]
-    );
+    // Start transaction for data consistency
+    await pool.query('START TRANSACTION');
 
-    if (eventCheck.length === 0) {
-      return res.status(404).json({ message: 'Event not found.' });
+    try {
+      // Check if the event exists and user is the creator, also get band assignment info
+      const [eventCheck] = await pool.query(
+        `SELECT e.user_id, e.event_title, e.assigned_band_id, e.status, b.name AS assigned_band_name
+         FROM event e
+         LEFT JOIN band b ON e.assigned_band_id = b.band_id
+         WHERE e.event_id = ?`,
+        [eventId]
+      );
+
+      if (eventCheck.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(404).json({ message: 'Event not found.' });
+      }
+
+      const event = eventCheck[0];
+
+      if (event.user_id !== parseInt(userId)) {
+        await pool.query('ROLLBACK');
+        return res.status(403).json({ message: 'You can only delete your own events.' });
+      }
+
+      // Track if this event had a band assigned for response message
+      const hadAssignedBand = event.assigned_band_id !== null;
+      const assignedBandName = event.assigned_band_name;
+
+      // Get count of related records that will be cleaned up
+      const [relatedRecords] = await pool.query(
+        `SELECT 
+           (SELECT COUNT(*) FROM event_request WHERE event_id = ?) AS requestCount,
+           (SELECT COUNT(*) FROM band_member_event_availability WHERE event_id = ?) AS availabilityCount`,
+        [eventId, eventId]
+      );
+
+      // Delete the event (CASCADE will handle related records)
+      const [deleteResult] = await pool.query('DELETE FROM event WHERE event_id = ?', [eventId]);
+
+      if (deleteResult.affectedRows === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(404).json({ message: 'Event could not be deleted.' });
+      }
+
+      await pool.query('COMMIT');
+
+      // Prepare response message based on what was cleaned up
+      let message = 'Event deleted successfully.';
+      const cleanupDetails = [];
+
+      if (hadAssignedBand) {
+        cleanupDetails.push(`${assignedBandName} has been freed from this commitment`);
+      }
+
+      if (relatedRecords[0].requestCount > 0) {
+        cleanupDetails.push(`${relatedRecords[0].requestCount} event request(s) removed`);
+      }
+
+      if (relatedRecords[0].availabilityCount > 0) {
+        cleanupDetails.push(`${relatedRecords[0].availabilityCount} availability record(s) removed`);
+      }
+
+      if (cleanupDetails.length > 0) {
+        message += ` ${cleanupDetails.join(', ')}.`;
+      }
+
+      res.json({ 
+        message,
+        deletedEventId: eventId,
+        eventTitle: event.event_title,
+        hadAssignedBand,
+        assignedBandName: hadAssignedBand ? assignedBandName : null,
+        cleanupSummary: {
+          eventRequests: relatedRecords[0].requestCount,
+          availabilityRecords: relatedRecords[0].availabilityCount
+        }
+      });
+
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      throw error;
     }
 
-    if (eventCheck[0].user_id !== parseInt(userId)) {
-      return res.status(403).json({ message: 'You can only delete your own events.' });
-    }
-
-    // Delete the event (CASCADE will handle related records)
-    await pool.query('DELETE FROM event WHERE event_id = ?', [eventId]);
-
-    res.json({ 
-      message: 'Event deleted successfully.',
-      deletedEventId: eventId,
-      eventTitle: eventCheck[0].event_title
-    });
   } catch (error) {
     console.error('Failed to delete event:', error);
     next(error);
