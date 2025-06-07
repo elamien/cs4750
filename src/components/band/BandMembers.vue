@@ -1,5 +1,6 @@
 <template>
-    <Card class="members-section">
+    <div>
+        <Card class="members-section">
         <template #title>
             <div class="members-header">
                 <span>Band Members</span>
@@ -135,6 +136,7 @@
             />
         </template>
     </Dialog>
+    </div>
 </template>
 
 <script setup lang="ts">

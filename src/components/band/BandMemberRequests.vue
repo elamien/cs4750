@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Avatar from 'primevue/avatar';
@@ -110,6 +110,10 @@ interface MembershipRequest {
     email: string;
     instrument?: string | null;
 }
+
+const props = defineProps<{
+    bandId?: string;
+}>();
 
 const emit = defineEmits<{
     requestsUpdated: [];
@@ -142,8 +146,8 @@ const currentUserId = getCurrentUserId();
 
 // Get current band ID
 const getCurrentBandId = () => {
-    // This should come from parent component or global state
-    return '1'; // TODO: Get actual band ID
+    // Use band ID from props, fallback to hardcoded value for development
+    return props.bandId || '1';
 };
 
 // Utility functions
@@ -167,25 +171,35 @@ const formatDate = (dateString: string): string => {
 
 // API functions
 const fetchMembershipRequests = async () => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+        console.log('BandMemberRequests: No current user ID');
+        return;
+    }
     
     loading.value = true;
     
     try {
         const bandId = getCurrentBandId();
+        console.log('BandMemberRequests: Fetching requests for band ID:', bandId);
+        console.log('BandMemberRequests: Current user ID:', currentUserId);
+        
         const response = await fetch(`/api/bands/${bandId}/membership-requests`);
         
         if (!response.ok) {
+            console.error('BandMemberRequests: API response not ok:', response.status, response.statusText);
             throw new Error('Failed to fetch membership requests');
         }
         
         const requests = await response.json();
+        console.log('BandMemberRequests: Fetched requests:', requests);
         membershipRequests.value = requests;
         
         // Show only first 3 pending requests on dashboard
         pendingRequests.value = requests
             .filter((request: MembershipRequest) => request.status === 'pending')
             .slice(0, 3);
+        
+        console.log('BandMemberRequests: Pending requests:', pendingRequests.value);
             
     } catch (error) {
         console.error('Error fetching membership requests:', error);
@@ -297,8 +311,19 @@ const viewAllRequests = () => {
 
 // Lifecycle
 onMounted(() => {
-    fetchMembershipRequests();
+    // Only fetch if we already have a band ID
+    if (props.bandId) {
+        fetchMembershipRequests();
+    }
 });
+
+// Watch for band ID changes
+watch(() => props.bandId, (newBandId) => {
+    if (newBandId) {
+        console.log('BandMemberRequests: Band ID changed to:', newBandId);
+        fetchMembershipRequests();
+    }
+}, { immediate: true });
 
 // Expose refresh function for parent component
 defineExpose({

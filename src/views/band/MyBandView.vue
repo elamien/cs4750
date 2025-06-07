@@ -24,6 +24,7 @@
                 
                 <BandMemberRequests 
                     class="member-requests-section"
+                    :band-id="bandInfo.id"
                     @requests-updated="handleRequestsUpdated"
                 />
                 
@@ -158,6 +159,7 @@ const fetchBandInfo = async () => {
     try {
         // First get user's band status to find their band ID
         const currentUserId = '2'; // TODO: Get from auth/session
+        console.log('MyBandView: Using currentUserId:', currentUserId);
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
         
         if (!statusResponse.ok) {
@@ -193,6 +195,8 @@ const fetchBandInfo = async () => {
             ...bandData,
             members: membersData
         };
+        
+        console.log('MyBandView: Band info loaded:', bandInfo.value);
     } catch (error) {
         console.error('Error fetching band info:', error);
         toast.add({
