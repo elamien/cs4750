@@ -6,7 +6,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 // Import route modules
 import eventsRoutes from './routes/events.js';
 import usersRoutes from './routes/users.js';
-import bandsRoutes from './routes/bands.js';
+import bandsRoutes from './routes/bands/index.js';
 import fillInRequestsRoutes from './routes/fillInRequests.js';
 import authRoutes from './routes/auth.js';
 import referenceDataRoutes from './routes/referenceData.js';
