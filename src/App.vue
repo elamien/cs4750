@@ -41,7 +41,7 @@
                                 title="Admin Panel"
                             >
                                 <i class="pi pi-shield" style="margin-right: 0.5rem;"></i>
-                                <span>Admin</span>
+                                <span>Manage</span>
                             </RouterLink>
                             <RouterLink 
                                 to="/favorites"
