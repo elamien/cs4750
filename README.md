@@ -1,5 +1,4 @@
-# HooJams - Band Finder App
-
+# HooJams - Band Management System
 ## Complete Setup (Fresh System)
 
 ### 1. Install Prerequisites
