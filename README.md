@@ -35,7 +35,11 @@ cd backend && npm install && cd ..
 # Windows: Start MySQL service from Services
 
 # Create database (use --login-path=local if you have it configured)
-# Version of command below but for ^ method: mysql --login-path=local -e "CREATE DATABASE hoojams;"
+# Version of command below but for ^ method:
+# mysql --login-path=local -e "CREATE DATABASE hoojams;"
+# if not using method above, it probably means you just a password set up,
+# so just go ahead and use command below. It should ask you for your password
+
 # Type your MySQL password when prompted
 mysql -u root -p -e "CREATE DATABASE hoojams;"
 
