@@ -112,9 +112,10 @@
                                     rows="4"
                                     placeholder="Describe the requirements, skill level needed, any special notes..."
                                     class="w-full"
-                                    :class="{ 'p-invalid': !form.description && formSubmitted }"
+                                    :class="{ 'p-invalid': formErrors.description }"
+                                    @input="validateForm"
                                 />
-                                <small v-if="!form.description && formSubmitted" class="p-error">Please provide a description</small>
+                                <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
                             </div>
                         </div>
 
@@ -185,6 +186,7 @@ import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
 import { useReferenceData } from '@/composables/useReferenceData';
+import { containsProfanity } from '@/utils/profanityFilter';
 
 const router = useRouter();
 const { instruments, initializeInstruments } = useReferenceData();
@@ -265,6 +267,8 @@ const form = ref<FillInForm>({
     description: ''
 });
 
+const formErrors = ref<Record<string, string>>({});
+
 // Options
 const slotOptions = ref([
     { name: 'Slot 1 (8:00 AM - 9:00 AM)', value: 1, timeRange: '8:00 AM - 9:00 AM' },
@@ -289,13 +293,22 @@ const selectedMember = computed(() => {
     return bandMembers.value.find(member => member.id === form.value.unavailableMemberId);
 });
 
-const isFormValid = computed(() => {
-    return form.value.eventId && 
-           form.value.slotNumber && 
-           form.value.unavailableMemberId && 
-           form.value.instrumentNeeded && 
-           form.value.description;
-});
+const validateForm = () => {
+    formErrors.value = {};
+    
+    if (!form.value.eventId) formErrors.value.eventId = 'Please select an event.';
+    if (!form.value.slotNumber) formErrors.value.slotNumber = 'Please select a slot.';
+    if (!form.value.unavailableMemberId) formErrors.value.unavailableMemberId = 'Please select the unavailable member.';
+    if (!form.value.instrumentNeeded) formErrors.value.instrumentNeeded = 'Please specify the instrument needed.';
+    
+    if (!form.value.description.trim()) {
+        formErrors.value.description = 'Please provide a description.';
+    } else if (containsProfanity(form.value.description)) {
+        formErrors.value.description = 'Inappropriate language is not allowed.';
+    }
+    
+    return Object.keys(formErrors.value).length === 0;
+};
 
 // Utility functions
 const formatDate = (dateString: string) => {
@@ -411,10 +424,7 @@ const fetchUserBandInfo = async () => {
 };
 
 const createFillInRequest = async () => {
-    formSubmitted.value = true;
-    
-    if (!isFormValid.value) {
-        alert('Please fill in all required fields');
+    if (!validateForm()) {
         return;
     }
 

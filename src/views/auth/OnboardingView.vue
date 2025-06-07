@@ -17,7 +17,10 @@
                 v-model="profile.bio" 
                 placeholder="Tell us about your musical journey, experience, and what you're looking for..."
                 rows="4"
+                :class="{ 'p-invalid': profileErrors.bio }"
+                @input="validateProfile"
               />
+              <small v-if="profileErrors.bio" class="p-error">{{ profileErrors.bio }}</small>
             </div>
             <div class="field">
               <label for="instruments">Instruments</label>
@@ -64,6 +67,7 @@ import Textarea from 'primevue/textarea'
 import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 import { useReferenceData } from '@/composables/useReferenceData'
+import { containsProfanity } from '@/utils/profanityFilter'
 
 const router = useRouter()
 const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData()
@@ -78,6 +82,8 @@ const profile = ref<{
   genres: []
 })
 
+const profileErrors = ref<Record<string, string>>({})
+
 // Initialize reference data on component mount
 onMounted(async () => {
   await Promise.all([
@@ -86,13 +92,34 @@ onMounted(async () => {
   ])
 })
 
+const validateProfile = () => {
+  profileErrors.value = {}
+  
+  if (!profile.value.bio.trim()) {
+    profileErrors.value.bio = 'Bio is required.'
+  } else if (containsProfanity(profile.value.bio)) {
+    profileErrors.value.bio = 'Inappropriate language is not allowed in bio.'
+  }
+  
+  if (profile.value.instruments.length === 0) {
+    profileErrors.value.instruments = 'Please select at least one instrument.'
+  }
+  
+  if (profile.value.genres.length === 0) {
+    profileErrors.value.genres = 'Please select at least one genre.'
+  }
+  
+  return Object.keys(profileErrors.value).length === 0
+}
+
 const canProceed = computed(() => {
-  return profile.value.bio.trim() && 
-         profile.value.instruments.length > 0 && 
-         profile.value.genres.length > 0
+  return validateProfile()
 })
 
 const completeOnboarding = () => {
+  if (!validateProfile()) {
+    return
+  }
   console.log('Onboarding completed:', profile.value)
   // Save profile and redirect
   router.push('/')

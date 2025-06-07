@@ -107,8 +107,11 @@
                     <InputText 
                         id="create-title" 
                         v-model="createForm.eventTitle" 
+                        :class="{'p-invalid': formErrors.eventTitle}"
+                        @input="validateEventForm('create')"
                         placeholder="Enter event title"
                     />
+                    <small v-if="formErrors.eventTitle" class="p-error">{{ formErrors.eventTitle }}</small>
                 </div>
                 
                 <div class="field">
@@ -116,8 +119,11 @@
                     <InputText 
                         id="create-location" 
                         v-model="createForm.location" 
+                        :class="{'p-invalid': formErrors.location}"
+                        @input="validateEventForm('create')"
                         placeholder="Event location"
                     />
+                    <small v-if="formErrors.location" class="p-error">{{ formErrors.location }}</small>
                 </div>
                 
                 <div class="field">
@@ -161,9 +167,12 @@
                     <Textarea 
                         id="create-description" 
                         v-model="createForm.description" 
+                        :class="{'p-invalid': formErrors.description}"
+                        @input="validateEventForm('create')"
                         rows="4" 
                         placeholder="Describe your event..."
                     />
+                    <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
                 </div>
             </div>
             
@@ -197,8 +206,11 @@
                     <InputText 
                         id="edit-title" 
                         v-model="editForm.eventTitle" 
+                        :class="{'p-invalid': formErrors.eventTitle}"
+                        @input="validateEventForm('edit')"
                         placeholder="Enter event title"
                     />
+                    <small v-if="formErrors.eventTitle" class="p-error">{{ formErrors.eventTitle }}</small>
                 </div>
                 
                 <div class="field">
@@ -206,8 +218,11 @@
                     <InputText 
                         id="edit-location" 
                         v-model="editForm.location" 
+                        :class="{'p-invalid': formErrors.location}"
+                        @input="validateEventForm('edit')"
                         placeholder="Event location"
                     />
+                    <small v-if="formErrors.location" class="p-error">{{ formErrors.location }}</small>
                 </div>
                 
                 <div class="field">
@@ -251,9 +266,12 @@
                     <Textarea 
                         id="edit-description" 
                         v-model="editForm.description" 
+                        :class="{'p-invalid': formErrors.description}"
+                        @input="validateEventForm('edit')"
                         rows="4" 
                         placeholder="Describe your event..."
                     />
+                    <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
                 </div>
             </div>
             
@@ -321,6 +339,7 @@ import Calendar from 'primevue/calendar';
 import Badge from 'primevue/badge';
 import { useReferenceData } from '@/composables/useReferenceData';
 import { useAuth } from '@/composables/useAuth';
+import { containsProfanity } from '@/utils/profanityFilter';
 
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
@@ -375,6 +394,8 @@ const editForm = ref({
     genre: '',
     description: ''
 });
+
+const formErrors = ref<Record<string, string>>({});
 
 // Edit/Delete data
 const editingEvent = ref<MyEvent | null>(null);
@@ -553,8 +574,37 @@ const loadAvailableSlots = async (dateStr: string, type: 'create' | 'edit', excl
 };
 
 // CRUD operations
+const validateEventForm = (formType: 'create' | 'edit') => {
+    formErrors.value = {};
+    const form = formType === 'create' ? createForm.value : editForm.value;
+
+    if (!form.eventTitle.trim()) {
+        formErrors.value.eventTitle = 'Event title is required.';
+    } else if (containsProfanity(form.eventTitle)) {
+        formErrors.value.eventTitle = 'Inappropriate language is not allowed.';
+    }
+
+    if (containsProfanity(form.location)) {
+        formErrors.value.location = 'Inappropriate language is not allowed.';
+    }
+    
+    if (containsProfanity(form.description)) {
+        formErrors.value.description = 'Inappropriate language is not allowed.';
+    }
+
+    if (formType === 'create') {
+        if (!form.eventDate) formErrors.value.eventDate = 'Event date is required.';
+        if (!form.timeSlot) formErrors.value.timeSlot = 'Time slot is required.';
+    }
+    
+    return Object.keys(formErrors.value).length === 0;
+};
+
 const createEvent = async () => {
-    if (!isCreateFormValid.value) return;
+    if (!validateEventForm('create')) {
+        toast.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fix the errors before creating the event.', life: 3000 });
+        return;
+    }
     
     creating.value = true;
     try {
@@ -604,6 +654,11 @@ const createEvent = async () => {
 };
 
 const saveEvent = async () => {
+    if (!validateEventForm('edit')) {
+        toast.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fix the errors before saving the event.', life: 3000 });
+        return;
+    }
+    
     if (!editingEvent.value) return;
     
     saving.value = true;

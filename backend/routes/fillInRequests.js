@@ -1,7 +1,9 @@
 import express from 'express';
 import { pool } from '../config/database.js';
+import { Filter } from 'bad-words';
 
 const router = express.Router();
+const filter = new Filter();
 
 // GET /api/fill-in-requests - Fetch all fill-in requests with joined data
 router.get('/', async (req, res, next) => {
@@ -139,11 +141,14 @@ router.post('/:id/accept', async (req, res, next) => {
 
 // POST /api/fill-in-requests - Create a new fill-in request
 router.post('/', async (req, res, next) => {
-  const { bandId, eventId, slotNumber, fillInMemberId, fillInDescription } = req.body;
+  let { bandId, eventId, slotNumber, fillInDescription, fillInMemberId } = req.body;
 
-  if (!bandId || !eventId || !slotNumber || !fillInMemberId || !fillInDescription) {
+  // Clean profanity from inputs
+  fillInDescription = filter.clean(fillInDescription || '');
+
+  if (!bandId || !eventId || !slotNumber || !fillInDescription) {
     return res.status(400).json({ 
-      message: 'Band ID, Event ID, Slot Number, Fill-in Member ID, and Description are required.' 
+      message: 'Band ID, event ID, slot number, and description are required.' 
     });
   }
 

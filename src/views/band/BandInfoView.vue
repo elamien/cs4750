@@ -76,8 +76,10 @@
                                         id="band-name"
                                         v-model="editForm.name" 
                                         placeholder="Enter band name"
-                                        required
+                                        :class="{'p-invalid': editErrors.name}"
+                                        @input="validateForm"
                                     />
+                                    <small v-if="editErrors.name" class="p-error">{{ editErrors.name }}</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="band-genre">Genre</label>
@@ -102,7 +104,10 @@
                                         v-model="editForm.description" 
                                         placeholder="Tell people about your band..."
                                         rows="4"
+                                        :class="{'p-invalid': editErrors.description}"
+                                        @input="validateForm"
                                     />
+                                    <small v-if="editErrors.description" class="p-error">{{ editErrors.description }}</small>
                                 </div>
                             </div>
                             <div class="form-actions">
@@ -218,6 +223,7 @@ import Textarea from 'primevue/textarea';
 import Avatar from 'primevue/avatar';
 import Tag from 'primevue/tag';
 import { useToast } from 'primevue/usetoast';
+import { containsProfanity } from '@/utils/profanityFilter';
 
 const router = useRouter();
 const toast = useToast();
@@ -263,6 +269,7 @@ const editForm = ref({
     location: '',
     description: ''
 });
+const editErrors = ref<Record<string, string>>({});
 
 // Get current user ID from localStorage
 const getCurrentUserId = () => {
@@ -371,12 +378,28 @@ const fetchBandMembers = async () => {
     }
 };
 
+const validateForm = () => {
+    editErrors.value = {};
+    const { name, description } = editForm.value;
+
+    if (!name.trim()) {
+        editErrors.value.name = 'Band name is required.';
+    } else if (containsProfanity(name)) {
+        editErrors.value.name = 'Inappropriate language is not allowed.';
+    }
+
+    if (containsProfanity(description)) {
+        editErrors.value.description = 'Inappropriate language is not allowed.';
+    }
+};
+
 const saveBandInfo = async () => {
-    if (!editForm.value.name.trim()) {
+    validateForm();
+    if (Object.keys(editErrors.value).length > 0) {
         toast.add({
             severity: 'warn',
             summary: 'Validation Error',
-            detail: 'Band name is required',
+            detail: Object.values(editErrors.value)[0],
             life: 3000
         });
         return;

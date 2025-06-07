@@ -88,9 +88,10 @@
                                     id="firstName" 
                                     v-model="editForm.firstName" 
                                     class="w-full"
-                                    :class="{ 'p-invalid': !editForm.firstName }"
+                                    :class="{ 'p-invalid': editErrors.firstName }"
+                                    @input="validateForm"
                                 />
-                                <small v-if="!editForm.firstName" class="p-error">First name is required</small>
+                                <small v-if="editErrors.firstName" class="p-error">{{ editErrors.firstName }}</small>
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('lastName') }">
                                 <label for="lastName">Last Name *</label>
@@ -98,9 +99,10 @@
                                     id="lastName" 
                                     v-model="editForm.lastName" 
                                     class="w-full"
-                                    :class="{ 'p-invalid': !editForm.lastName }"
+                                    :class="{ 'p-invalid': editErrors.lastName }"
+                                    @input="validateForm"
                                 />
-                                <small v-if="!editForm.lastName" class="p-error">Last name is required</small>
+                                <small v-if="editErrors.lastName" class="p-error">{{ editErrors.lastName }}</small>
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('email') }">
                                 <label for="email">Email *</label>
@@ -109,10 +111,10 @@
                                     v-model="editForm.email" 
                                     type="email"
                                     class="w-full"
-                                    :class="{ 'p-invalid': !editForm.email || !isValidEmail(editForm.email) }"
+                                    :class="{ 'p-invalid': editErrors.email }"
+                                    @input="validateForm"
                                 />
-                                <small v-if="!editForm.email" class="p-error">Email is required</small>
-                                <small v-else-if="!isValidEmail(editForm.email)" class="p-error">Please enter a valid email</small>
+                                <small v-if="editErrors.email" class="p-error">{{ editErrors.email }}</small>
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('phoneNumber') }">
                                 <label for="phone">Phone</label>
@@ -156,7 +158,10 @@
                                     rows="4"
                                     placeholder="Tell us about yourself..."
                                     class="w-full"
+                                    :class="{ 'p-invalid': editErrors.bio }"
+                                    @input="validateForm"
                                 />
+                                <small v-if="editErrors.bio" class="p-error">{{ editErrors.bio }}</small>
                             </div>
                         </div>
                         
@@ -216,6 +221,7 @@ import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { useReferenceData } from '@/composables/useReferenceData';
+import { containsProfanity } from '@/utils/profanityFilter';
 
 // Aligned with `user` table from core_db_structure.sql
 interface UserProfile {
@@ -285,6 +291,8 @@ const originalProfile = ref<UserProfile>({
     genre: null
 });
 
+const editErrors = ref<Record<string, string>>({});
+
 // Options (fetched from API via useReferenceData composable)
 // genreOptions and instrumentOptions are now available as 'genres' and 'instruments' from the composable
 
@@ -299,12 +307,31 @@ const hasChanges = computed(() => {
     });
 });
 
-const isFormValid = computed(() => {
-    return editForm.value.firstName && 
-           editForm.value.lastName && 
-           editForm.value.email && 
-           isValidEmail(editForm.value.email);
-});
+const validateForm = () => {
+    editErrors.value = {};
+
+    if (!editForm.value.firstName) {
+        editErrors.value.firstName = 'First name is required.';
+    } else if (containsProfanity(editForm.value.firstName)) {
+        editErrors.value.firstName = 'Inappropriate language is not allowed.';
+    }
+
+    if (!editForm.value.lastName) {
+        editErrors.value.lastName = 'Last name is required.';
+    } else if (containsProfanity(editForm.value.lastName)) {
+        editErrors.value.lastName = 'Inappropriate language is not allowed.';
+    }
+
+    if (!editForm.value.email) {
+        editErrors.value.email = 'Email is required.';
+    } else if (!isValidEmail(editForm.value.email)) {
+        editErrors.value.email = 'Please enter a valid email.';
+    }
+    
+    if (containsProfanity(editForm.value.bio)) {
+        editErrors.value.bio = 'Inappropriate language is not allowed in bio.';
+    }
+};
 
 // Utility functions
 const isValidEmail = (email: string) => {
@@ -382,14 +409,15 @@ const fetchProfile = async () => {
 };
 
 const saveProfile = async () => {
+    validateForm();
+    if (Object.keys(editErrors.value).length > 0) {
+        // Using alert for now as per existing implementation, but a toast would be better.
+        alert('Please fix the errors before saving.');
+        return;
+    }
     if (!currentUserId.value) {
         console.error('User not authenticated');
         alert('Please sign in to save your profile');
-        return;
-    }
-    
-    if (!isFormValid.value) {
-        alert('Please fill in all required fields with valid information');
         return;
     }
     

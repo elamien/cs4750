@@ -1,7 +1,9 @@
 import express from 'express';
 import { pool } from '../config/database.js';
+import { Filter } from 'bad-words';
 
 const router = express.Router();
+const filter = new Filter();
 
 // GET /api/users - Fetch all users (for admin use)
 router.get('/', async (req, res, next) => {
@@ -93,11 +95,16 @@ router.get('/:id', async (req, res, next) => {
 // PUT /api/users/:id - Update a specific user by ID
 router.put('/:id', async (req, res, next) => {
   const { id: userId } = req.params;
-  const { firstName, lastName, email, phoneNumber, bio, instrument, genre } = req.body;
+  let { firstName, lastName, email, phoneNumber, bio, instrument, genre } = req.body;
   
   if (!firstName || !lastName || !email) {
     return res.status(400).json({ message: 'First name, last name, and email are required.' });
   }
+
+  // Clean profanity from inputs
+  firstName = filter.clean(firstName || '');
+  lastName = filter.clean(lastName || '');
+  bio = filter.clean(bio || '');
   
   try {
     const query = `
@@ -417,6 +424,8 @@ router.get('/:id/events', async (req, res, next) => {
   }
 });
 
+// DELETE /api/users/:id - Delete a user (admin only) - DISABLED FOR SCOPE
+/*
 // DELETE /api/users/:id - Delete a user (admin only)
 router.delete('/:id', async (req, res, next) => {
   const { id: userId } = req.params;
@@ -450,5 +459,6 @@ router.delete('/:id', async (req, res, next) => {
     next(error);
   }
 });
+*/
 
 export default router; 

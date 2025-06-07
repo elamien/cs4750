@@ -1,7 +1,9 @@
 import express from 'express';
 import { pool } from '../config/database.js';
+import { Filter } from 'bad-words';
 
 const router = express.Router();
+const filter = new Filter();
 
 // GET /api/bands - Fetch all bands with member counts for join view (with optional search)
 router.get('/', async (req, res, next) => {
@@ -245,8 +247,13 @@ router.get('/:id', async (req, res, next) => {
 // PUT /api/bands/:id - Update band profile
 router.put('/:id', async (req, res, next) => {
   const { id: bandId } = req.params;
-  const { name, genre, description, location } = req.body;
-  
+  let { name, genre, location, description } = req.body;
+
+  // Clean profanity from inputs
+  name = filter.clean(name || '');
+  description = filter.clean(description || '');
+  location = filter.clean(location || '');
+
   if (!name) {
     return res.status(400).json({ message: 'Band name is required.' });
   }
@@ -350,12 +357,17 @@ router.get('/:id/members', async (req, res, next) => {
 
 // POST /api/bands - Create a new band
 router.post('/', async (req, res, next) => {
-  const { name, genre, description, creatorUserId } = req.body;
-  
-  if (!name || !creatorUserId) {
-    return res.status(400).json({ message: 'Band name and creator user ID are required.' });
+  let { name, genre, description, location, creatorUserId } = req.body;
+
+  if (!name || !genre || !creatorUserId) {
+    return res.status(400).json({ message: 'Band name, genre, and creator user ID are required.' });
   }
+
+  // Clean profanity from inputs
+  name = filter.clean(name || '');
+  description = filter.clean(description || '');
   
+  const connection = await pool.getConnection();
   try {
     // Start transaction for data consistency
     await pool.query('START TRANSACTION');

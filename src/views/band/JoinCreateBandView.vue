@@ -116,7 +116,10 @@
                                     id="bandName" 
                                     v-model="bandForm.name" 
                                     placeholder="Enter band name"
+                                    :class="{ 'p-invalid': bandFormErrors.name }"
+                                    @input="validateBandForm"
                                 />
+                                <small v-if="bandFormErrors.name" class="p-error">{{ bandFormErrors.name }}</small>
                             </div>
                             
                             <div class="field">
@@ -147,7 +150,10 @@
                                     v-model="bandForm.description" 
                                     rows="4"
                                     placeholder="Describe your band's style and goals..."
+                                    :class="{ 'p-invalid': bandFormErrors.description }"
+                                    @input="validateBandForm"
                                 />
+                                <small v-if="bandFormErrors.description" class="p-error">{{ bandFormErrors.description }}</small>
                             </div>
                             
 
@@ -200,6 +206,7 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useReferenceData } from '@/composables/useReferenceData';
 import BrowseBandsComponent from '@/components/events/BrowseBandsComponent.vue';
+import { containsProfanity } from '@/utils/profanityFilter';
 
 const router = useRouter();
 const route = useRoute();
@@ -258,6 +265,7 @@ const bandForm = ref<BandForm>({
     description: '',
     location: ''
 });
+const bandFormErrors = ref<Record<string, string>>({});
 
 // --- Computed Properties ---
 const filteredBands = computed(() => {
@@ -357,18 +365,35 @@ const requestToJoin = async (bandId: string) => {
     }
 };
 
-const createBand = async () => {
-    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) return;
+const validateBandForm = () => {
+    bandFormErrors.value = {};
+    const { name, description } = bandForm.value;
+
+    if (!name.trim()) {
+        bandFormErrors.value.name = 'Band name is required.';
+    } else if (containsProfanity(name)) {
+        bandFormErrors.value.name = 'Inappropriate language is not allowed.';
+    }
+
+    if (containsProfanity(description)) {
+        bandFormErrors.value.description = 'Inappropriate language is not allowed.';
+    }
     
-    if (!bandForm.value.name.trim()) {
+    return Object.keys(bandFormErrors.value).length === 0;
+};
+
+const createBand = async () => {
+    if (!validateBandForm()) {
+        const firstError = Object.values(bandFormErrors.value)[0];
         toast.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Band name is required',
+            summary: 'Validation Error',
+            detail: firstError || 'Please fix the errors before creating the band.',
             life: 3000
         });
         return;
     }
+    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) return;
     
     try {
         const response = await fetch('/api/bands', {
@@ -435,6 +460,7 @@ const resetBandForm = () => {
         description: '',
         location: ''
     };
+    bandFormErrors.value = {};
 };
 
 const goToMyBand = () => {

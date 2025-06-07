@@ -1,7 +1,9 @@
 import express from 'express';
 import { pool } from '../config/database.js';
+import { Filter } from 'bad-words';
 
 const router = express.Router();
+const filter = new Filter();
 
 // GET /api/events - Fetch all events with new time slot structure
 router.get('/', async (req, res, next) => {
@@ -63,19 +65,18 @@ router.get('/', async (req, res, next) => {
 
 // POST /api/events - Create a new event with time slot system
 router.post('/', async (req, res, next) => {
-  const {
-    userId,
-    eventTitle,
-    eventDate,
-    timeSlot,
-    location,
-    genre,
-    description,
-    status = 'open'
-  } = req.body;
+  let { userId, eventTitle, eventDate, timeSlot, location, genre, description, isOpenCall } = req.body;
 
+  // Clean profanity from inputs
+  eventTitle = filter.clean(eventTitle || '');
+  location = filter.clean(location || '');
+  description = filter.clean(description || '');
+
+  // Validation
   if (!userId || !eventTitle || !eventDate || !timeSlot) {
-    return res.status(400).json({ message: 'User ID, Event Title, Event Date, and Time Slot are required.' });
+    return res.status(400).json({ 
+      message: 'User ID, event title, date, and time slot are required.' 
+    });
   }
 
   if (![1, 2, 3, 4].includes(timeSlot)) {
@@ -234,14 +235,17 @@ router.get('/available-dates', async (req, res, next) => {
 // PUT /api/events/:id - Update an event (only by creator)
 router.put('/:id', async (req, res, next) => {
   const { id: eventId } = req.params;
-  const { userId, eventTitle, eventDate, timeSlot, location, genre, description } = req.body;
+  let { userId, eventTitle, eventDate, timeSlot, location, genre, description, isOpenCall } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({ message: 'User ID is required.' });
-  }
+  // Clean profanity from inputs
+  eventTitle = filter.clean(eventTitle || '');
+  location = filter.clean(location || '');
+  description = filter.clean(description || '');
 
-  if (!eventTitle || !eventDate || !timeSlot) {
-    return res.status(400).json({ message: 'Event Title, Event Date, and Time Slot are required.' });
+  if (!userId || !eventTitle || !eventDate || !timeSlot) {
+    return res.status(400).json({ 
+      message: 'User ID, event title, date, and time slot are required.' 
+    });
   }
 
   if (![1, 2, 3, 4].includes(timeSlot)) {

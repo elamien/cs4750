@@ -96,6 +96,8 @@
                                     @click="viewUser(data)"
                                     v-tooltip="'View Details'"
                                 />
+                                <!-- Edit/Delete disabled for scope -->
+                                <!--
                                 <Button 
                                     icon="pi pi-pencil" 
                                     severity="warning" 
@@ -110,6 +112,7 @@
                                     @click="deleteUser(data)"
                                     v-tooltip="'Delete User'"
                                 />
+                                -->
                             </div>
                         </template>
                     </Column>
@@ -118,7 +121,7 @@
         </Card>
         
         <!-- Confirmation Dialog -->
-        <ConfirmDialog />
+        <!-- <ConfirmDialog /> -->
         
         <!-- User Details Modal -->
         <Dialog 
@@ -191,7 +194,8 @@
                     </div>
                 </div>
                 
-                <!-- Action Buttons -->
+                <!-- Action Buttons - Edit/Delete disabled for scope -->
+                <!--
                 <div class="modal-actions">
                     <Button 
                         label="Edit User" 
@@ -207,6 +211,7 @@
                         @click="deleteUserFromModal"
                     />
                 </div>
+                -->
             </div>
         </Dialog>
     </div>
@@ -214,14 +219,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useConfirm } from 'primevue/useconfirm'
-import { useToast } from 'primevue/usetoast'
+// Commented out while edit/delete functionality is disabled
+// import { useConfirm } from 'primevue/useconfirm'
+// import { useToast } from 'primevue/usetoast'
 import Card from 'primevue/card'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import ConfirmDialog from 'primevue/confirmdialog'
+// import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
 
 interface User {
@@ -239,8 +245,8 @@ interface User {
 
 const users = ref<User[]>([])
 const loading = ref(true)
-const confirm = useConfirm()
-const toast = useToast()
+// const confirm = useConfirm()
+// const toast = useToast()
 const showUserDetailsModal = ref(false)
 const selectedUser = ref<User | null>(null)
 
@@ -285,6 +291,17 @@ const viewUser = (user: User) => {
     showUserDetailsModal.value = true
 }
 
+// Edit/Delete functions disabled for scope
+/*
+const editUser = () => {
+    toast.add({
+        severity: 'info',
+        summary: 'Feature Coming Soon',
+        detail: 'User editing functionality will be available in a future update.',
+        life: 4000
+    })
+}
+
 const editUserFromModal = () => {
     editUser()
     showUserDetailsModal.value = false
@@ -295,15 +312,6 @@ const deleteUserFromModal = () => {
         deleteUser(selectedUser.value)
         showUserDetailsModal.value = false
     }
-}
-
-const editUser = () => {
-    toast.add({
-        severity: 'info',
-        summary: 'Feature Coming Soon',
-        detail: 'User editing functionality will be available in a future update.',
-        life: 4000
-    })
 }
 
 const deleteUser = (user: User) => {
@@ -353,6 +361,7 @@ const deleteUser = (user: User) => {
         }
     })
 }
+*/
 
 onMounted(() => {
     fetchUsers()

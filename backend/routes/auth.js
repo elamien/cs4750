@@ -1,7 +1,9 @@
 import express from 'express';
 import { pool } from '../config/database.js';
+import { Filter } from 'bad-words';
 
 const router = express.Router();
+const filter = new Filter();
 
 // Login endpoint
 router.post('/login', async (req, res) => {
@@ -70,8 +72,12 @@ router.post('/logout', (req, res) => {
 // Registration endpoint
 router.post('/register', async (req, res) => {
     try {
-        const { firstName, lastName, email, password, isWXTJExecutive, wxtjAccessKey } = req.body;
+        let { firstName, lastName, email, password, isWXTJExecutive, wxtjAccessKey } = req.body;
         
+        // Clean profanity from user-provided fields
+        firstName = filter.clean(firstName || '');
+        lastName = filter.clean(lastName || '');
+
         if (!firstName || !lastName || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }

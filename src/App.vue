@@ -126,67 +126,37 @@
                     <div class="form-fields">
                         <div class="field">
                             <label for="firstName">First Name</label>
-                            <InputText 
-                                id="firstName" 
-                                v-model="authForm.firstName" 
-                                placeholder="Enter your first name" 
-                                class="w-full"
-                            />
+                            <InputText id="firstName" v-model="authForm.firstName" type="text" placeholder="Enter your first name" class="w-full" :class="{'p-invalid': signUpErrors.firstName}" @input="validateSignUp" />
+                            <small v-if="signUpErrors.firstName" class="p-error">{{ signUpErrors.firstName }}</small>
                         </div>
                         <div class="field">
                             <label for="lastName">Last Name</label>
-                            <InputText 
-                                id="lastName" 
-                                v-model="authForm.lastName" 
-                                placeholder="Enter your last name" 
-                                class="w-full"
-                            />
+                            <InputText id="lastName" v-model="authForm.lastName" type="text" placeholder="Enter your last name" class="w-full" :class="{'p-invalid': signUpErrors.lastName}" @input="validateSignUp" />
+                            <small v-if="signUpErrors.lastName" class="p-error">{{ signUpErrors.lastName }}</small>
                         </div>
                         <div class="field">
-                            <label for="signupEmail">Email</label>
-                            <InputText 
-                                id="signupEmail" 
-                                v-model="authForm.email" 
-                                type="email" 
-                                placeholder="Enter your email" 
-                                class="w-full"
-                            />
+                            <label for="email">Email</label>
+                            <InputText id="email" v-model="authForm.email" type="email" placeholder="Enter your email" class="w-full" :class="{'p-invalid': signUpErrors.email}" @input="validateSignUp" />
+                            <small v-if="signUpErrors.email" class="p-error">{{ signUpErrors.email }}</small>
                         </div>
                         <div class="field">
-                            <label for="signupPassword">Password</label>
-                            <Password 
-                                id="signupPassword"
-                                v-model="authForm.password" 
-                                placeholder="Create a password"
-                                :feedback="true"
-                                toggleMask
-                                class="w-full"
-                            />
+                            <label for="password">Password</label>
+                            <Password id="password" v-model="authForm.password" placeholder="Create a password" :feedback="true" toggleMask class="w-full" :class="{'p-invalid': signUpErrors.password}" @input="validateSignUp" />
+                            <small v-if="signUpErrors.password" class="p-error">{{ signUpErrors.password }}</small>
                         </div>
                         <div class="field">
                             <label for="confirmPassword">Confirm Password</label>
-                            <Password 
-                                id="confirmPassword"
-                                v-model="authForm.confirmPassword" 
-                                placeholder="Confirm your password"
-                                :feedback="false"
-                                toggleMask
-                                class="w-full"
-                            />
+                            <Password id="confirmPassword" v-model="authForm.confirmPassword" placeholder="Confirm your password" :feedback="false" toggleMask class="w-full" :class="{'p-invalid': signUpErrors.confirmPassword}" @input="validateSignUp" />
+                            <small v-if="signUpErrors.confirmPassword" class="p-error">{{ signUpErrors.confirmPassword }}</small>
                         </div>
-                        <div class="field-checkbox">
-                            <Checkbox id="wxtjExec" v-model="authForm.isWXTJExecutive" :binary="true" />
-                            <label for="wxtjExec">I am a WXTJ Executive</label>
+                        <div class="field-checkbox my-3">
+                            <Checkbox inputId="isWXTJExecutive" v-model="authForm.isWXTJExecutive" :binary="true" @change="validateSignUp" />
+                            <label for="isWXTJExecutive" class="ml-2">I am a WXTJ Executive</label>
                         </div>
                         <div v-if="authForm.isWXTJExecutive" class="field">
-                            <label for="wxtjKey">Executive Access Key</label>
-                            <InputText 
-                                id="wxtjKey" 
-                                v-model="authForm.wxtjAccessKey" 
-                                type="password"
-                                placeholder="Enter the executive access key" 
-                                class="w-full"
-                            />
+                            <label for="wxtjAccessKey">WXTJ Access Key</label>
+                            <InputText id="wxtjAccessKey" v-model="authForm.wxtjAccessKey" type="text" placeholder="Enter the executive access key" class="w-full" :class="{'p-invalid': signUpErrors.wxtjAccessKey}" @input="validateSignUp" />
+                            <small v-if="signUpErrors.wxtjAccessKey" class="p-error">{{ signUpErrors.wxtjAccessKey }}</small>
                             <small class="p-text-secondary">You should have received this key from an already registered WXTJ executive</small>
                         </div>
                         <div class="field-checkbox">
@@ -232,6 +202,7 @@ import BackgroundMusicPlayer from './components/ui/BackgroundMusicPlayer.vue';
 import AmbientMusicBackground from './components/ui/AmbientMusicBackground.vue';
 import styles from './styles/App.module.css';
 import { useAuth } from '@/composables/useAuth';
+import { containsProfanity } from '@/utils/profanityFilter';
 
 // Router instance
 const router = useRouter();
@@ -260,6 +231,7 @@ const authForm = ref({
     isWXTJExecutive: false,
     wxtjAccessKey: ''
 });
+const signUpErrors = ref<Record<string, string>>({});
 
 // Menu items for anonymous users (not signed in)
 const anonymousItems: MenuItem[] = [
@@ -541,7 +513,49 @@ const handleSignIn = async () => {
     }
 };
 
+const validateSignUp = () => {
+    signUpErrors.value = {};
+    const { firstName, lastName, email, password, confirmPassword, isWXTJExecutive, wxtjAccessKey } = authForm.value;
+    
+    if (containsProfanity(firstName)) {
+        signUpErrors.value.firstName = 'Inappropriate language is not allowed.';
+    } else if (!firstName) {
+        signUpErrors.value.firstName = 'First name is required.';
+    }
+
+    if (containsProfanity(lastName)) {
+        signUpErrors.value.lastName = 'Inappropriate language is not allowed.';
+    } else if (!lastName) {
+        signUpErrors.value.lastName = 'Last name is required.';
+    }
+
+    if (!email) {
+        signUpErrors.value.email = 'Email is required.';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+        signUpErrors.value.email = 'Email is invalid.';
+    }
+
+    if (!password) {
+        signUpErrors.value.password = 'Password is required.';
+    } else if (password.length < 6) {
+        signUpErrors.value.password = 'Password must be at least 6 characters.';
+    }
+
+    if (password !== confirmPassword) {
+        signUpErrors.value.confirmPassword = 'Passwords do not match.';
+    }
+
+    if (isWXTJExecutive && !wxtjAccessKey) {
+        signUpErrors.value.wxtjAccessKey = 'WXTJ Access Key is required for executives.';
+    }
+
+    return Object.keys(signUpErrors.value).length === 0;
+};
+
 const handleSignUp = async () => {
+    if (!validateSignUp()) {
+        return;
+    }
     try {
         const response = await fetch('/api/auth/register', {
             method: 'POST',
