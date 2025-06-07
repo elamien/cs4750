@@ -259,7 +259,7 @@ const baseSignedInItems: MenuItem[] = [
     {
         label: 'Bands',
         icon: 'pi pi-users',
-        route: '/bands'
+        route: '/join-create-band'
     },
     {
         label: 'Events',
@@ -276,13 +276,9 @@ const baseSignedInItems: MenuItem[] = [
 
 // Menu items specific to general users
 // Permissions: Create 1 band OR Request to join 1 band (handled by JoinCreateBandView)
+// Note: Band-related items are now included in baseSignedInItems submenu
 const generalUserExtraItems: MenuItem[] = [
-    {
-        label: 'Bands',
-        icon: 'pi pi-plus-circle',
-        route: '/join-create-band',
-        // This view should handle the logic of "OR" based on user's status (has_created_band, has_pending_band_request)
-    }
+    // General users get the base band menu from baseSignedInItems
 ];
 
 // Menu items for band members
@@ -367,11 +363,7 @@ const bandLeaderExtraItems: MenuItem[] = [
 // Menu items for WXTJ executives
 // Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
 const wxtjExecExtraItems: MenuItem[] = [
-    {
-        label: 'Bands', // Also allowed for Execs
-        icon: 'pi pi-plus-circle',
-        route: '/join-create-band',
-    },
+    // Execs get the base band menu from baseSignedInItems (Browse + Join/Create)
     {
         label: 'Admin Panel',
         icon: 'pi pi-shield',

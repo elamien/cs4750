@@ -155,4 +155,26 @@
     margin-top: 1rem;
     font-style: italic;
     color: var(--p-text-muted-color);
+}
+
+.browse-redirect-card {
+    margin-top: 1rem;
+}
+
+.browse-redirect {
+    text-align: center;
+    padding: 2rem;
+}
+
+.browse-redirect h3 {
+    color: var(--p-text-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.browse-redirect p {
+    color: var(--p-text-muted-color);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
 } 

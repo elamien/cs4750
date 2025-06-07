@@ -1,6 +1,6 @@
 <template>
     <div class="join-create-band">
-        <TabView v-if="!currentUserProfile.hasCreatedBand" v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
+        <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
             <TabPanel header="Join a Band" value="join">
                 <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
@@ -181,11 +181,6 @@
                 <BrowseBandsComponent />
             </TabPanel>
         </TabView>
-        <div v-else class="notice-message already-created-band-message">
-            <i class="pi pi-check-circle"></i>
-            You have successfully created a band! Manage your band from your dashboard.
-            <Button label="Go to My Band" @click="goToMyBand" class="p-button-sm p-button-raised p-button-primary" style="margin-top: 1rem;"/>
-        </div>
     </div>
 </template>
 
@@ -204,8 +199,8 @@ import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
-import { useReferenceData } from '@/composables/useReferenceData';
 import BrowseBandsComponent from '@/components/events/BrowseBandsComponent.vue';
+import { useReferenceData } from '@/composables/useReferenceData';
 import { containsProfanity } from '@/utils/profanityFilter';
 
 const router = useRouter();
@@ -463,9 +458,7 @@ const resetBandForm = () => {
     bandFormErrors.value = {};
 };
 
-const goToMyBand = () => {
-    router.push('/my-band');
-};
+
 
 // Update URL when tab changes
 const updateRoute = (index: number) => {
