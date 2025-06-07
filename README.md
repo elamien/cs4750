@@ -64,6 +64,7 @@ PORT=3001
 
 ### 6. Run the App
 ```bash
+# Make sure you're in the project root directory
 npm run dev  # Starts both frontend and backend
 ```
 
