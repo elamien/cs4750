@@ -22,6 +22,11 @@
                     @members-updated="handleMembersUpdated"
                 />
                 
+                <BandMemberRequests 
+                    class="member-requests-section"
+                    @requests-updated="handleRequestsUpdated"
+                />
+                
                 <BandActions 
                     class="actions-section" 
                     @leave-band="handleLeaveBand"
@@ -69,6 +74,7 @@ import BandHeader from '@/components/band/BandHeader.vue';
 import BandUpcomingEvents from '@/components/band/BandUpcomingEvents.vue';
 import BandInformation from '@/components/band/BandInformation.vue';
 import BandMembers from '@/components/band/BandMembers.vue';
+import BandMemberRequests from '@/components/band/BandMemberRequests.vue';
 import BandActions from '@/components/band/BandActions.vue';
 import LeaderPromotionDialog from '@/components/band/LeaderPromotionDialog.vue';
 import LeaveBandDialog from '@/components/band/LeaveBandDialog.vue';
@@ -458,6 +464,11 @@ const handleMembersUpdated = (updatedMembers: BandUser[]) => {
 const handlePostFillInRequest = () => {
     // Navigate to the fill-in request creation page
     router.push('/my-band/create-fill-in');
+};
+
+const handleRequestsUpdated = () => {
+    // When member requests are approved, we should refresh the band members list
+    fetchBandInfo(); // This will reload all band data including new members
 };
 
 // Lifecycle

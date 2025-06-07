@@ -21,7 +21,7 @@
         grid-template-areas: 
             "events info"
             "events actions"
-            "members members";
+            "members requests";
     }
     
     .band-sections .events-section {
@@ -36,10 +36,16 @@
         grid-area: members;
     }
     
+    .band-sections .member-requests-section {
+        grid-area: requests;
+    }
+    
     .band-sections .actions-section {
         grid-area: actions;
     }
 }
+
+
 
 @media (max-width: 767px) {
     .my-band-view {

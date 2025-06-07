@@ -293,52 +293,11 @@ const bandMemberExtraItems: MenuItem[] = [
 
 // Menu items for band leaders
 // Permissions: Create/Delete 1 band or Transfer lead, View/Accept/Deny event/member requests, Create fill-in, Remove members
-const bandLeaderExtraItems: MenuItem[] = [
-    {
-        label: 'Manage My Band',
-        icon: 'pi pi-cog', // Changed icon
-        items: [
-            {
-                label: 'Band Dashboard', // Link to MyBandView for general member actions too
-                icon: 'pi pi-desktop',
-                route: '/my-band'
-            },
-            {
-                label: 'Edit Band Info',
-                icon: 'pi pi-info-circle',
-                route: '/my-band/info'
-            },
-
-            {
-                label: 'Membership Requests',
-                icon: 'pi pi-user-plus',
-                route: '/my-band/member-requests',
-                // badge: '1'
-            }
-        ]
-    }
-];
+const bandLeaderExtraItems: MenuItem[] = [];
 
 // Menu items for WXTJ executives
 // Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
 const wxtjExecExtraItems: MenuItem[] = [
-    // TEMPORARY: Show all possible dropdowns for testing
-    {
-        label: 'Manage My Band',
-        icon: 'pi pi-cog',
-        items: [
-            {
-                label: 'Band Dashboard',
-                icon: 'pi pi-desktop',
-                route: '/my-band'
-            },
-            {
-                label: 'Membership Requests',
-                icon: 'pi pi-user-plus',
-                route: '/my-band/member-requests',
-            }
-        ]
-    },
     {
         label: 'Admin Panel',
         icon: 'pi pi-shield',
