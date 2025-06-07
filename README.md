@@ -46,10 +46,10 @@ mysql -u root -p -e "DROP DATABASE IF EXISTS hoojams; CREATE DATABASE hoojams;"
 
 # Import schema (use same method as above)
 # With local login path:
-mysql --login-path=local hoojams < core_db_structure.sql
+mysql --login-path=local hoojams < db/core_db_structure.sql
 
 # With password prompt:
-mysql -u root -p hoojams < core_db_structure.sql
+mysql -u root -p hoojams < db/core_db_structure.sql
 ```
 
 ### 5. Configure Environment
