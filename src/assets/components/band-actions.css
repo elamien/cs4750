@@ -11,6 +11,25 @@
     flex-wrap: wrap;
 }
 
+.band-actions .p-button {
+    min-width: 150px;
+    flex: 1;
+    justify-content: center;
+}
+
+/* Dark mode button text and icon colors */
+[data-theme="dark"] .band-actions .p-button:not(.p-button-outlined) {
+    color: black !important;
+}
+
+[data-theme="dark"] .band-actions .p-button:not(.p-button-outlined) .p-button-label {
+    color: black !important;
+}
+
+[data-theme="dark"] .band-actions .p-button:not(.p-button-outlined) .pi {
+    color: black !important;
+}
+
 /* Responsive design for mobile */
 @media (max-width: 768px) {
     .band-actions {

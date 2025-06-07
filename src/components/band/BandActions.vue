@@ -4,7 +4,7 @@
         <template #content>
             <div class="band-actions">
                 <Button 
-                    label="Post Fill-In Request" 
+                    label="Request Fill-in" 
                     icon="pi pi-send" 
                     severity="primary"
                     @click="$emit('postFillInRequest')"
