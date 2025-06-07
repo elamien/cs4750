@@ -85,9 +85,17 @@
                 <TabPanel header="Create a Band" value="create">
                     <div class="bands-content">
                         <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
-                     <i class="pi pi-info-circle"></i>
-                    You have already created a band. You cannot create another.
-                </div>
+                            <i class="pi pi-info-circle"></i>
+                            <div>
+                                <p>You have already created a band. You cannot create another.</p>
+                                <Button 
+                                    label="Manage My Band" 
+                                    icon="pi pi-cog" 
+                                    @click="activeTab = 3"
+                                    style="margin-top: 1rem;"
+                                />
+                            </div>
+                        </div>
                  <div v-else-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
                     <div class="pending-request-details">
@@ -187,6 +195,12 @@
                         <BrowseBandsComponent />
                     </div>
                 </TabPanel>
+
+                <TabPanel v-if="currentUserProfile.isMemberOfBand" header="My Band" value="my-band">
+                    <div class="bands-content">
+                        <MyBandComponent />
+                    </div>
+                </TabPanel>
             </TabView>
         </div>
     </div>
@@ -208,6 +222,7 @@ import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import BrowseBandsComponent from '@/components/events/BrowseBandsComponent.vue';
+import MyBandComponent from './MyBandView.vue';
 import { useReferenceData } from '@/composables/useReferenceData';
 import { containsProfanity } from '@/utils/profanityFilter';
 
@@ -216,7 +231,7 @@ const route = useRoute();
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
 
-// Active tab index (0 = Join, 1 = Create, 2 = Browse)
+// Active tab index (0 = Join, 1 = Create, 2 = Browse, 3 = My Band)
 const activeTab = ref(0);
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
@@ -470,7 +485,11 @@ const resetBandForm = () => {
 
 // Update URL when tab changes
 const updateRoute = (index: number) => {
-    const tabName = index === 2 ? 'browse' : index === 1 ? 'create' : 'join';
+    let tabName = 'join';
+    if (index === 1) tabName = 'create';
+    else if (index === 2) tabName = 'browse';
+    else if (index === 3) tabName = 'my-band';
+    
     router.replace({ query: { ...route.query, tab: tabName } });
 };
 
@@ -484,6 +503,8 @@ onMounted(async () => {
         activeTab.value = 2;
     } else if (tab === 'create') {
         activeTab.value = 1;
+    } else if (tab === 'my-band') {
+        activeTab.value = 3;
     } else {
         activeTab.value = 0; // default to join
     }

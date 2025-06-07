@@ -11,9 +11,9 @@
                 
                 <BandInformation :band-info="bandInfo" />
                 
-                <BandMembers :members="bandInfo.members" />
-                
                 <BandActions @leave-band="handleLeaveBand" />
+                
+                <BandMembers :members="bandInfo.members" />
             </div>
         </div>
 
@@ -132,16 +132,43 @@ const eligibleLeaders = computed(() => {
 // API functions
 const fetchBandInfo = async () => {
     try {
-        const response = await fetch('/api/bands/my-band', {
-            credentials: 'include'
-        });
+        // First get user's band status to find their band ID
+        const currentUserId = '2'; // TODO: Get from auth/session
+        const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
         
-        if (!response.ok) {
-            throw new Error('Failed to fetch band info');
+        if (!statusResponse.ok) {
+            throw new Error('Failed to fetch user band status');
         }
         
-        const data = await response.json();
-        bandInfo.value = data;
+        const statusData = await statusResponse.json();
+        
+        if (!statusData.memberBands || statusData.memberBands.length === 0) {
+            throw new Error('User is not a member of any band');
+        }
+        
+        // Get the first band (assuming single band per user)
+        const userBand = statusData.memberBands[0];
+        const bandId = userBand.id;
+        
+        // Get detailed band information
+        const bandResponse = await fetch(`/api/bands/${bandId}`);
+        if (!bandResponse.ok) {
+            throw new Error('Failed to fetch band details');
+        }
+        const bandData = await bandResponse.json();
+        
+        // Get band members
+        const membersResponse = await fetch(`/api/bands/${bandId}/members`);
+        if (!membersResponse.ok) {
+            throw new Error('Failed to fetch band members');
+        }
+        const membersData = await membersResponse.json();
+        
+        // Combine the data
+        bandInfo.value = {
+            ...bandData,
+            members: membersData
+        };
     } catch (error) {
         console.error('Error fetching band info:', error);
         toast.add({
@@ -155,9 +182,27 @@ const fetchBandInfo = async () => {
 
 const fetchUpcomingEvents = async () => {
     try {
-        const response = await fetch('/api/bands/my-band/events', {
-            credentials: 'include'
-        });
+        // First get user's band status to find their band ID
+        const currentUserId = '2'; // TODO: Get from auth/session
+        const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
+        
+        if (!statusResponse.ok) {
+            throw new Error('Failed to fetch user band status');
+        }
+        
+        const statusData = await statusResponse.json();
+        
+        if (!statusData.memberBands || statusData.memberBands.length === 0) {
+            upcomingEvents.value = [];
+            return;
+        }
+        
+        // Get the first band (assuming single band per user)
+        const userBand = statusData.memberBands[0];
+        const bandId = userBand.id;
+        
+        // Get band events with user's availability
+        const response = await fetch(`/api/bands/${bandId}/events?userId=${currentUserId}`);
         
         if (!response.ok) {
             throw new Error('Failed to fetch events');
@@ -179,13 +224,31 @@ const fetchUpcomingEvents = async () => {
 // Event handlers
 const setAvailability = async (eventId: string, availability: boolean) => {
     try {
-        const response = await fetch(`/api/events/${eventId}/availability`, {
-            method: 'POST',
+        // First get user's band ID
+        const currentUserId = '2'; // TODO: Get from auth/session
+        const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
+        
+        if (!statusResponse.ok) {
+            throw new Error('Failed to fetch user band status');
+        }
+        
+        const statusData = await statusResponse.json();
+        if (!statusData.memberBands || statusData.memberBands.length === 0) {
+            throw new Error('User is not a member of any band');
+        }
+        
+        const userBand = statusData.memberBands[0];
+        const bandId = userBand.id;
+        
+        const response = await fetch(`/api/bands/${bandId}/events/${eventId}/availability`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'include',
-            body: JSON.stringify({ available: availability })
+            body: JSON.stringify({ 
+                userId: currentUserId,
+                isAvailable: availability 
+            })
         });
         
         if (!response.ok) {
