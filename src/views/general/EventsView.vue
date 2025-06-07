@@ -10,7 +10,7 @@
         />
         
         <!-- Main Content Area -->
-        <div class="main-content">
+        <div class="main-content" :class="{ 'no-submenu': !isSignedIn }">
             <!-- Loading State -->
             <div v-if="loading || (isSignedIn && !activeSection)" class="content-section">
                 <div class="empty-state">
@@ -20,7 +20,7 @@
             </div>
             
             <!-- Browse Events Section -->
-            <div v-else-if="activeSection === 'browse' || !isSignedIn" class="content-section">
+            <div v-else-if="activeSection === 'browse' || !isSignedIn" class="content-section" :class="{ 'full-width': !isSignedIn }">
                 <BrowseEventsComponent />
             </div>
             
@@ -107,11 +107,24 @@ onMounted(async () => {
     overflow-x: auto; /* Handle any internal overflow gracefully */
 }
 
+/* Full width content when no submenu (anonymous users) */
+.main-content.no-submenu {
+    margin-left: 0;
+    width: 100%;
+    max-width: none;
+}
+
 .content-section {
     max-width: 1000px;
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
+}
+
+/* Full width content section for anonymous users */
+.content-section.full-width {
+    max-width: none;
+    margin: 0;
 }
 
 .empty-state {
@@ -136,6 +149,13 @@ onMounted(async () => {
         max-width: calc(100vw - 220px);
         padding: 1.5rem;
     }
+    
+    .main-content.no-submenu {
+        margin-left: 0;
+        width: 100%;
+        max-width: none;
+        padding: 1.5rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -143,6 +163,13 @@ onMounted(async () => {
         margin-left: 200px;
         width: calc(100vw - 200px);
         max-width: calc(100vw - 200px);
+        padding: 1rem;
+    }
+    
+    .main-content.no-submenu {
+        margin-left: 0;
+        width: 100%;
+        max-width: none;
         padding: 1rem;
     }
 }
