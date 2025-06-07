@@ -367,23 +367,7 @@ const wxtjExecExtraItems: MenuItem[] = [
     {
         label: 'Admin Panel',
         icon: 'pi pi-shield',
-        items: [
-            {
-                label: 'Manage Users',
-                icon: 'pi pi-users',
-                route: '/admin/users'
-            },
-            {
-                label: 'Manage Bands',
-                icon: 'pi pi-sitemap',
-                route: '/admin/bands'
-            },
-            {
-                label: 'Manage Events',
-                icon: 'pi pi-calendar',
-                route: '/admin/events'
-            }
-        ]
+        route: '/admin'
     }
 ];
 

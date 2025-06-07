@@ -1,8 +1,10 @@
 <template>
     <div class="join-create-band">
-        <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
-            <TabPanel header="Join a Band" value="join">
-                <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
+        <div class="bands-tabs-container">
+            <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
+                <TabPanel header="Join a Band" value="join">
+                    <div class="bands-content">
+                        <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
                     <div class="pending-request-details">
                         <h4>Pending Band Request</h4>
@@ -76,11 +78,13 @@
                     <h3>No bands found</h3>
                         <p>Try adjusting your search or create your own band (if eligible)</p>
                     </div>
-                </div>
-            </TabPanel>
+                    </div>
+                    </div>
+                </TabPanel>
 
-            <TabPanel header="Create a Band" value="create">
-                 <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
+                <TabPanel header="Create a Band" value="create">
+                    <div class="bands-content">
+                        <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
                      <i class="pi pi-info-circle"></i>
                     You have already created a band. You cannot create another.
                 </div>
@@ -174,13 +178,17 @@
                             />
                         </div>
                     </template>
-                </Card>
-            </TabPanel>
+                        </Card>
+                    </div>
+                </TabPanel>
 
-            <TabPanel header="Browse Bands" value="browse">
-                <BrowseBandsComponent />
-            </TabPanel>
-        </TabView>
+                <TabPanel header="Browse Bands" value="browse">
+                    <div class="bands-content">
+                        <BrowseBandsComponent />
+                    </div>
+                </TabPanel>
+            </TabView>
+        </div>
     </div>
 </template>
 

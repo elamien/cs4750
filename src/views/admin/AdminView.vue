@@ -1,25 +1,25 @@
 <template>
-    <div class="events">
-        <!-- Show tabs only for signed-in users -->
-        <div v-if="isSignedIn" class="events-tabs-container">
+    <div class="admin">
+        <div class="admin-tabs-container">
             <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
-                <TabPanel header="Browse Events" value="browse">
-                    <div class="events-content">
-                        <BrowseEventsComponent />
+                <TabPanel header="Manage Users" value="users">
+                    <div class="admin-content">
+                        <AdminUsersComponent />
                     </div>
                 </TabPanel>
                 
-                <TabPanel header="My Events" value="my-events">
-                    <div class="events-content">
-                        <MyEventsComponent />
+                <TabPanel header="Manage Bands" value="bands">
+                    <div class="admin-content">
+                        <AdminBandsComponent />
+                    </div>
+                </TabPanel>
+                
+                <TabPanel header="Manage Events" value="events">
+                    <div class="admin-content">
+                        <AdminEventsComponent />
                     </div>
                 </TabPanel>
             </TabView>
-        </div>
-
-        <!-- Show only the browser for anonymous users -->
-        <div v-else class="events-content">
-            <BrowseEventsComponent />
         </div>
     </div>
 </template>
@@ -29,56 +29,53 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
-import BrowseEventsComponent from '@/components/events/BrowseEventsComponent.vue';
-import MyEventsComponent from '@/components/events/MyEventsComponent.vue';
-import { useAuth } from '@/composables/useAuth';
+import AdminUsersComponent from './AdminUsersView.vue';
+import AdminBandsComponent from './AdminBandsView.vue';
+import AdminEventsComponent from './AdminEventsView.vue';
 
 const route = useRoute();
 const router = useRouter();
-const { isSignedIn } = useAuth();
 
-// Active tab index (0 = Browse, 1 = My Events)
+// Active tab index (0 = Users, 1 = Bands, 2 = Events)
 const activeTab = ref(0);
 
-// Set initial tab based on route query or hash
+// Set initial tab based on route query
 onMounted(() => {
-    if (isSignedIn.value) {
-        const tab = route.query.tab as string;
-        if (tab === 'my-events') {
-            activeTab.value = 1;
-        } else if (tab === 'browse') {
-            activeTab.value = 0;
-        }
+    const tab = route.query.tab as string;
+    if (tab === 'bands') {
+        activeTab.value = 1;
+    } else if (tab === 'events') {
+        activeTab.value = 2;
+    } else {
+        activeTab.value = 0; // default to users
     }
 });
 
-// Update URL when tab changes (optional, for bookmarkable URLs)
+// Update URL when tab changes
 const updateRoute = (index: number) => {
-    if (isSignedIn.value) {
-        const tabName = index === 1 ? 'my-events' : 'browse';
-        router.replace({ query: { ...route.query, tab: tabName } });
-    }
+    const tabName = index === 2 ? 'events' : index === 1 ? 'bands' : 'users';
+    router.replace({ query: { ...route.query, tab: tabName } });
 };
 </script>
 
 <style scoped>
-.events {
+.admin {
     width: 100%;
 }
 
-.events-tabs-container {
+.admin-tabs-container {
     max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 2rem 0 2rem;
 }
 
-.events-content {
+.admin-content {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     padding: 2rem;
 }
 
-/* Custom TabView styling to match the join-create-band theme */
+/* Custom TabView styling to match other pages */
 :deep(.p-tabview) {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
@@ -124,11 +121,11 @@ const updateRoute = (index: number) => {
 }
 
 @media (max-width: 768px) {
-    .events-tabs-container {
+    .admin-tabs-container {
         padding: 1rem 1rem 0 1rem;
     }
     
-    .events-content {
+    .admin-content {
         padding: 1rem;
     }
     
