@@ -1217,4 +1217,96 @@ router.post('/:bandId/event-invitations/:invitationId/decline', async (req, res,
   }
 });
 
+// POST /api/bands/:bandId/members/:memberId/remove - Remove a band member
+router.post('/:bandId/members/:memberId/remove', async (req, res, next) => {
+  const { bandId, memberId } = req.params;
+  const { currentUserId } = req.body;
+  
+  if (!currentUserId) {
+    return res.status(400).json({ message: 'Current user ID is required.' });
+  }
+  
+  try {
+    // Start transaction for data consistency
+    await pool.query('START TRANSACTION');
+    
+    try {
+      // 1. Verify current user is a band leader for this band
+      const [leaderCheck] = await pool.query(
+        `SELECT bl.user_role_id FROM band_leader bl 
+         JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+         WHERE bl.band_id = ? AND ur.user_id = ?`,
+        [bandId, currentUserId]
+      );
+      
+      if (leaderCheck.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(403).json({ message: 'Only band leaders can remove members.' });
+      }
+      
+      // 2. Verify target user is a band member (not leader) 
+      const [memberCheck] = await pool.query(
+        `SELECT bm.user_role_id FROM band_member bm 
+         JOIN user_roles ur ON bm.user_role_id = ur.user_role_id 
+         WHERE bm.band_id = ? AND ur.user_id = ?`,
+        [bandId, memberId]
+      );
+      
+      if (memberCheck.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(404).json({ message: 'User is not a member of this band or is a band leader.' });
+      }
+      
+      // 3. Prevent leader from removing themselves (they should use leave band instead)
+      if (currentUserId === memberId) {
+        await pool.query('ROLLBACK');
+        return res.status(400).json({ message: 'Band leaders cannot remove themselves. Use leave band instead.' });
+      }
+      
+      const memberUserRoleId = memberCheck[0].user_role_id;
+      
+      // 4. Remove member from band_member table
+      await pool.query(
+        'DELETE FROM band_member WHERE user_role_id = ? AND band_id = ?',
+        [memberUserRoleId, bandId]
+      );
+      
+      // 5. Update user role back to General User (role_id = 3)
+      await pool.query(
+        'UPDATE user_roles SET role_id = 3 WHERE user_role_id = ?',
+        [memberUserRoleId]
+      );
+      
+      await pool.query('COMMIT');
+      
+      // Get member details for response
+      const [memberData] = await pool.query(
+        `SELECT u.user_id, u.first_name, u.last_name, u.email, r.role_name
+         FROM user u 
+         JOIN user_roles ur ON u.user_id = ur.user_id 
+         JOIN roles r ON ur.role_id = r.role_id 
+         WHERE u.user_id = ?`,
+        [memberId]
+      );
+      
+      res.json({ 
+        message: 'Member removed successfully',
+        removedMember: memberData.length > 0 ? {
+          userId: memberData[0].user_id,
+          firstName: memberData[0].first_name,
+          lastName: memberData[0].last_name,
+          email: memberData[0].email,
+          role: 'general' // They're now a general user
+        } : null
+      });
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error('Failed to remove member:', error);
+    next(error);
+  }
+});
+
 export default router; 

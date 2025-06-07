@@ -313,26 +313,43 @@ const confirmRemoveMember = (member: BandMember) => {
 };
 
 const removeMember = async () => {
-    if (!memberToRemove.value) return;
+    if (!memberToRemove.value || !currentUserId.value || !bandInfo.value.id) return;
 
     try {
-        // TODO: Implement actual remove member API call
-        // For now, just show a placeholder message
+        const response = await fetch(`/api/bands/${bandInfo.value.id}/members/${memberToRemove.value.id}/remove`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                currentUserId: currentUserId.value
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to remove member');
+        }
+
         toast.add({
-            severity: 'info',
-            summary: 'Feature Coming Soon',
-            detail: 'Member removal functionality will be implemented soon',
+            severity: 'success',
+            summary: 'Member Removed',
+            detail: `${memberToRemove.value.firstName} ${memberToRemove.value.lastName} has been removed from the band`,
             life: 3000
         });
-        
+
         showRemoveDialog.value = false;
         memberToRemove.value = null;
+
+        // Refresh the members list
+        await fetchBandMembers();
     } catch (error) {
         console.error('Error removing member:', error);
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to remove member',
+            detail: error instanceof Error ? error.message : 'Failed to remove member',
             life: 3000
         });
     }
