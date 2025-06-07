@@ -35,3 +35,8 @@ playwright-report/
 # Backend specific
 backend/node_modules/
 backend/.env
+
+# Test files
+cookies.txt
+member_cookies.txt
+*.txt
