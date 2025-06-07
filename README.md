@@ -69,7 +69,7 @@ npm run dev  # Starts both frontend and backend
 
 | Role | Email | Password |
 |------|-------|----------|
-| **WXTJ Executive** | `wxtjexec@example.com` | `wxtjexec` |
+| **WXTJ Executive** | `wxtjexec@example.com` | `test123` |
 | **General User** | `test.user@example.com` | `test123` |
 | **Band Leader** | `alex.band@test.com` | `test123` |
 | **Band Member** | `jamie.drums@test.com` | `test123` |
