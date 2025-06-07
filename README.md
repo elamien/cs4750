@@ -35,7 +35,7 @@ mysql -u adminuser -p'HooJams2024!' -h localhost hoojams < db/core_db_structure.
 ```
 
 ### 2. Backend Setup
-Make sure your in the proejct folder "cs4750", wherever you did git clone, you can get to it by running "cd cs4750".
+Make sure your in the project folder "cs4750", wherever you did git clone, you can get to it by running "cd cs4750".
 
 Once/if in project folder, run:
 ```bash
@@ -51,23 +51,24 @@ DB_PASSWORD=HooJams2024!
 DB_NAME=hoojams
 PORT=3001
 ```
-After that, from the backend folder, (again make sure in cs4750 "cd cs4750" -> "cd backend"). Run this:
-```
-npm start
-```
 
-### 3. Frontend Setup
+### 3. Start Development Servers
 
-Now in a new in new terminal, from project root ("cd cs4750" only). Run these two commands. First:
+From the project root ("cd cs4750"), run these two commands:
+
+First install dependencies:
 ```bash
 npm install
 ```
-and the second, run:
-```
+
+Then start both backend and frontend servers:
+```bash
 npm run dev
 ```
-You should be able to see the local host link and press on it (hold (cmd on mac/ctrl on windows) while mouse click).
-Localhost should be visible in the browser now! you can go ahead and test the log ins below by signing into them (this was already set up in the db initialization)
+
+This single command will start both servers automatically! You should see both the backend and frontend starting up. The frontend will be available at http://localhost:5173
+
+You can go ahead and test the log ins below by signing into them (this was already set up in the db initialization)
 
 **Access:** Frontend at http://localhost:5173, Backend at http://localhost:3001
 
