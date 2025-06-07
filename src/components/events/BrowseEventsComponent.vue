@@ -163,21 +163,12 @@ import Tag from 'primevue/tag';
 import ToggleButton from 'primevue/togglebutton';
 import Dialog from 'primevue/dialog';
 import { useReferenceData } from '@/composables/useReferenceData';
+import { useAuth } from '@/composables/useAuth';
 
 const router = useRouter();
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
-
-// Auth state (placeholder - replace with real authentication)
-const authState = ref<{
-    isSignedIn: boolean;
-    currentUser: { id: string; name: string; email: string; role: string } | null;
-}>({
-    isSignedIn: false,
-    currentUser: null
-});
-const isSignedIn = computed(() => authState.value.isSignedIn);
-const currentUser = computed(() => authState.value.currentUser);
+const { isSignedIn, currentUser } = useAuth();
 
 interface EventListItem {
     id: string;
@@ -285,7 +276,7 @@ const confirmAcceptGig = async () => {
                 // Assuming authentication token is sent via cookies or a dedicated header
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userId: currentUser.value?.id }) // Send current user ID to identify the band
+            body: JSON.stringify({ userId: currentUser.value?.userId }) // Send current user ID to identify the band
         });
         
         if (!response.ok) {
@@ -318,12 +309,12 @@ const confirmAcceptGig = async () => {
 };
 
 const toggleFavorite = async (eventId: string) => {
-    if (!currentUser.value || !currentUser.value.id) {
+    if (!currentUser.value || !currentUser.value.userId) {
         console.error('User not signed in or invalid user ID');
         return;
     }
     
-    const currentUserId = currentUser.value.id;
+    const currentUserId = currentUser.value.userId;
     const event = events.value.find(e => e.id === eventId);
     if (!event) return;
 

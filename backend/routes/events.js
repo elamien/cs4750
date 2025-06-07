@@ -507,4 +507,100 @@ router.post('/:id/invite-band', async (req, res, next) => {
   }
 });
 
+// POST /api/events/:id/accept-gig - Accept a gig for a band (direct acceptance)
+router.post('/:id/accept-gig', async (req, res, next) => {
+  const { id: eventId } = req.params;
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
+
+  try {
+    // Start transaction for data consistency
+    await pool.query('START TRANSACTION');
+
+    try {
+      // 1. Check if event exists and is still open
+      const [eventRows] = await pool.query(
+        'SELECT * FROM event WHERE event_id = ? AND status = "open"',
+        [eventId]
+      );
+
+      if (eventRows.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(404).json({ message: 'Event not found or no longer available.' });
+      }
+
+      const event = eventRows[0];
+
+      // 2. Find the user's band and verify they are a band leader
+      const [bandLeaderRows] = await pool.query(
+        `SELECT bl.band_id, b.name AS band_name 
+         FROM band_leader bl 
+         JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+         JOIN band b ON bl.band_id = b.band_id
+         WHERE ur.user_id = ?`,
+        [userId]
+      );
+
+      if (bandLeaderRows.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(403).json({ message: 'Only band leaders can accept gigs.' });
+      }
+
+      const bandId = bandLeaderRows[0].band_id;
+      const bandName = bandLeaderRows[0].band_name;
+
+      // 3. Check if this band already has a gig at this time
+      const [conflictRows] = await pool.query(
+        `SELECT e.event_title FROM event e 
+         WHERE e.assigned_band_id = ? AND e.event_date = ? AND e.time_slot = ? AND e.event_id != ?`,
+        [bandId, event.event_date, event.time_slot, eventId]
+      );
+
+      if (conflictRows.length > 0) {
+        await pool.query('ROLLBACK');
+        return res.status(409).json({ 
+          message: `Your band already has a gig scheduled at this time: "${conflictRows[0].event_title}".` 
+        });
+      }
+
+      // 4. Update the event to assign the band
+      await pool.query(
+        'UPDATE event SET assigned_band_id = ?, status = "filled" WHERE event_id = ?',
+        [bandId, eventId]
+      );
+
+      // 5. Create an approved event_request record for tracking
+      await pool.query(
+        `INSERT INTO event_request (event_id, band_id, status, message, responded_by_user_id, time_responded) 
+         VALUES (?, ?, 'approved', 'Direct gig acceptance', ?, NOW())`,
+        [eventId, bandId, userId]
+      );
+
+      await pool.query('COMMIT');
+
+      res.json({ 
+        message: `Gig accepted successfully! ${bandName} is now scheduled to perform.`,
+        eventTitle: event.event_title,
+        bandName: bandName
+      });
+
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('Failed to accept gig:', error);
+    
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'This gig has already been taken by another band.' });
+    }
+    
+    next(error);
+  }
+});
+
 export default router; 
