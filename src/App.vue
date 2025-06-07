@@ -314,11 +314,6 @@ const bandLeaderExtraItems: MenuItem[] = [
                 icon: 'pi pi-user-plus',
                 route: '/my-band/member-requests',
                 // badge: '1'
-            },
-            {
-                label: 'Post Fill-In Request', // Leader creates a fill-in request for their band
-                icon: 'pi pi-send',
-                route: '/my-band/create-fill-in'
             }
         ]
     }
@@ -341,11 +336,6 @@ const wxtjExecExtraItems: MenuItem[] = [
                 label: 'Membership Requests',
                 icon: 'pi pi-user-plus',
                 route: '/my-band/member-requests',
-            },
-            {
-                label: 'Post Fill-In Request', // This is what you're looking for!
-                icon: 'pi pi-send',
-                route: '/my-band/create-fill-in'
             }
         ]
     },

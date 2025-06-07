@@ -1,5 +1,25 @@
 /* BandActions Component Styles */
+.actions-section {
+    margin-bottom: 2rem;
+}
+
 .band-actions {
     display: flex;
+    gap: 1rem;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .band-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .band-actions .p-button {
+        width: 100%;
+        justify-content: center;
+    }
 } 

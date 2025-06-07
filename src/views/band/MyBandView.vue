@@ -24,7 +24,8 @@
                 
                 <BandActions 
                     class="actions-section" 
-                    @leave-band="handleLeaveBand" 
+                    @leave-band="handleLeaveBand"
+                    @post-fill-in-request="handlePostFillInRequest"
                 />
             </div>
         </div>
@@ -452,6 +453,11 @@ const handleMembersUpdated = (updatedMembers: BandUser[]) => {
         ...bandInfo.value,
         members: updatedMembers
     };
+};
+
+const handlePostFillInRequest = () => {
+    // Navigate to the fill-in request creation page
+    router.push('/my-band/create-fill-in');
 };
 
 // Lifecycle

@@ -4,6 +4,12 @@
         <template #content>
             <div class="band-actions">
                 <Button 
+                    label="Post Fill-In Request" 
+                    icon="pi pi-send" 
+                    severity="primary"
+                    @click="$emit('postFillInRequest')"
+                />
+                <Button 
                     label="Leave Band" 
                     icon="pi pi-sign-out" 
                     severity="danger"
@@ -23,6 +29,7 @@ import Card from 'primevue/card';
 import Button from 'primevue/button';
 
 defineEmits<{
+    postFillInRequest: [];
     leaveBand: [];
 }>();
 </script>
