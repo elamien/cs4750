@@ -56,8 +56,8 @@ mysql -u root -p hoojams < db/core_db_structure.sql
 Create `backend/.env` file:
 ```
 DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_actual_mysql_root_password
+DB_USER=adminuser
+DB_PASSWORD=HooJams2024!
 DB_NAME=hoojams
 PORT=3001
 ```
