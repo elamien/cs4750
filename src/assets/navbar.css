@@ -209,34 +209,7 @@
     margin: 0.5rem 0;
 }
 
-/* Favorites button styling */
-.favorites-button-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    background: transparent;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.favorites-button-wrapper:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-1px);
-}
-
-.favorites-icon {
-    color: #ff6b6b !important;
-    font-size: 1.1rem !important;
-    font-weight: bold;
-}
-
-.favorites-label {
-    color: white;
-    font-weight: 500;
-    font-size: 0.95rem;
-} 
+ 
 
 /* Sign In button styling */
 .navbar-end .p-button {

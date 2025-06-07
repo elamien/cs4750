@@ -32,14 +32,27 @@
                 <template #end>
                     <div class="navbar-end">
                         <div v-if="isSignedIn" class="navbar-user-section">
-                            <div 
-                                class="favorites-button-wrapper"
-                                @click="router.push('/favorites')"
+                            <RouterLink 
+                                v-if="userRole === 'exec'"
+                                to="/admin"
+                                v-ripple 
+                                class="flex items-center nav-link"
+                                active-class="nav-link-active"
+                                title="Admin Panel"
+                            >
+                                <i class="pi pi-shield" style="margin-right: 0.5rem;"></i>
+                                <span>Admin</span>
+                            </RouterLink>
+                            <RouterLink 
+                                to="/favorites"
+                                v-ripple 
+                                class="flex items-center nav-link"
+                                active-class="nav-link-active"
                                 title="My Favorites"
                             >
-                                <i class="pi pi-heart favorites-icon"></i>
-                                <span class="favorites-label">Favorites</span>
-                            </div>
+                                <i class="pi pi-heart" style="margin-right: 0.5rem;"></i>
+                                <span>Favorites</span>
+                            </RouterLink>
                             <div class="profile-menu">
                                 <Avatar 
                                     image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" 
@@ -186,7 +199,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { RouterView, useRouter } from 'vue-router';
+import { RouterView, RouterLink, useRouter } from 'vue-router';
 import Menubar from 'primevue/menubar';
 import type { MenuItem } from 'primevue/menuitem';
 import Badge from 'primevue/badge';
@@ -297,13 +310,7 @@ const bandLeaderExtraItems: MenuItem[] = [];
 
 // Menu items for WXTJ executives
 // Permissions: Manage all users/bands/events, Create 1 band OR Request to join 1 band
-const wxtjExecExtraItems: MenuItem[] = [
-    {
-        label: 'Admin Panel',
-        icon: 'pi pi-shield',
-        route: '/admin'
-    }
-];
+const wxtjExecExtraItems: MenuItem[] = [];
 
 // Dev-only items
 const devItems: MenuItem[] = import.meta.env.DEV ? [] : [];
