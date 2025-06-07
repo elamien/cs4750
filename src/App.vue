@@ -54,14 +54,19 @@
                                 <span>Favorites</span>
                             </RouterLink>
                             <div class="profile-menu">
-                                <Avatar 
-                                    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" 
-                                    shape="circle" 
-                                    class="avatar-button"
+                                <div 
+                                    class="nav-link profile-nav-link"
                                     @click="toggleProfileMenu"
                                     title="Profile Menu"
                                     ref="avatarRef"
-                                />
+                                    v-ripple
+                                >
+                                    <Avatar 
+                                        image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" 
+                                        shape="circle" 
+                                        class="profile-avatar"
+                                    />
+                                </div>
                                 <Menu 
                                     ref="profileMenuRef" 
                                     :model="profileMenuItems" 
