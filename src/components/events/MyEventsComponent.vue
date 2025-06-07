@@ -20,12 +20,7 @@
                     <div class="empty-content">
                         <i class="pi pi-calendar" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                         <h3>No Events Yet</h3>
-                        <p>You haven't created any events yet. Create your first event to get started!</p>
-                        <Button 
-                            label="Create Event" 
-                            icon="pi pi-plus" 
-                            @click="openCreateEventDialog"
-                        />
+                        <p>You haven't created any events yet. Use the "Create New Event" button above to get started!</p>
                     </div>
                 </template>
             </Card>
