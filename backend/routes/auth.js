@@ -77,7 +77,7 @@ router.post('/register', async (req, res) => {
         // Clean profanity from user-provided fields
         firstName = filter.clean(firstName || '');
         lastName = filter.clean(lastName || '');
-
+        
         if (!firstName || !lastName || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }

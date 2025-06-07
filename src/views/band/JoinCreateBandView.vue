@@ -2,9 +2,9 @@
     <div class="join-create-band">
         <div class="bands-tabs-container">
             <TabView v-model:activeIndex="activeTab" @update:activeIndex="updateRoute">
-                <TabPanel header="Join a Band" value="join">
+            <TabPanel header="Join a Band" value="join">
                     <div class="bands-content">
-                        <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
+                <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
                     <div class="pending-request-details">
                         <h4>Pending Band Request</h4>
@@ -78,14 +78,14 @@
                     <h3>No bands found</h3>
                         <p>Try adjusting your search or create your own band (if eligible)</p>
                     </div>
+                </div>
                     </div>
-                    </div>
-                </TabPanel>
+            </TabPanel>
 
-                <TabPanel header="Create a Band" value="create">
+            <TabPanel header="Create a Band" value="create">
                     <div class="bands-content">
-                        <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
-                            <i class="pi pi-info-circle"></i>
+                 <div v-if="currentUserProfile.hasCreatedBand" class="notice-message">
+                     <i class="pi pi-info-circle"></i>
                             <div>
                                 <p>You have already created a band. You cannot create another.</p>
                                 <Button 
@@ -95,7 +95,7 @@
                                     style="margin-top: 1rem;"
                                 />
                             </div>
-                        </div>
+                </div>
                  <div v-else-if="currentUserProfile.hasPendingRequest" class="notice-message">
                     <i class="pi pi-info-circle"></i>
                     <div class="pending-request-details">
@@ -186,13 +186,13 @@
                             />
                         </div>
                     </template>
-                        </Card>
+                </Card>
                     </div>
-                </TabPanel>
+            </TabPanel>
 
-                <TabPanel header="Browse Bands" value="browse">
+            <TabPanel header="Browse Bands" value="browse">
                     <div class="bands-content">
-                        <BrowseBandsComponent />
+                <BrowseBandsComponent />
                     </div>
                 </TabPanel>
 
@@ -200,8 +200,8 @@
                     <div class="bands-content">
                         <MyBandComponent />
                     </div>
-                </TabPanel>
-            </TabView>
+            </TabPanel>
+        </TabView>
         </div>
     </div>
 </template>
