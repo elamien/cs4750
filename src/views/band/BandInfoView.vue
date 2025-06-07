@@ -560,9 +560,16 @@ onMounted(async () => {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--theme-card-border);
     border-radius: 6px;
-    background: var(--p-surface-0);
+    background: var(--theme-card-bg) !important;
+    color: var(--theme-card-text) !important;
+}
+
+/* Ensure dark mode works properly for member cards */
+[data-theme="dark"] .member-card {
+    background: var(--theme-card-bg) !important;
+    color: var(--theme-card-text) !important;
 }
 
 .member-info h4 {
