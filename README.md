@@ -65,4 +65,15 @@ npm run dev  # Starts both frontend and backend
 - Backend only: `npm run dev:backend`
 - Frontend only: `npm run dev:frontend`
 
+## Test Users
+
+| Role | Email | Password |
+|------|-------|----------|
+| **WXTJ Executive** | `wxtjexec@example.com` | `wxtjexec` |
+| **General User** | `test.user@example.com` | `test123` |
+| **Band Leader** | `alex.band@test.com` | `test123` |
+| **Band Member** | `jamie.drums@test.com` | `test123` |
+
+**WXTJ Executive Access Key:** `HooJams2024_WXTJ`
+
 

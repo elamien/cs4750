@@ -88,8 +88,8 @@
                     <h3>No bands found</h3>
                         <p>Try adjusting your search or create your own band (if eligible)</p>
                     </div>
-                </div>
                     </div>
+                </div>
             </TabPanel>
 
             <TabPanel header="Create a Band" value="create">

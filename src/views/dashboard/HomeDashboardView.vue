@@ -14,36 +14,6 @@
                             <h2>Building...</h2>
                             <p>We're working hard to bring you an amazing dashboard experience. Check back soon for updates!</p>
                         </div>
-                        
-                        <div class="quick-actions">
-                            <h3>Quick Actions</h3>
-                            <div class="action-buttons">
-                                <Button 
-                                    label="Browse Bands" 
-                                    icon="pi pi-users" 
-                                    @click="router.push('/join-create-band?tab=browse')"
-                                    outlined
-                                />
-                                <Button 
-                                    label="Browse Events" 
-                                    icon="pi pi-calendar" 
-                                    @click="router.push('/events')"
-                                    outlined
-                                />
-                                <Button 
-                                    label="Join/Create Band" 
-                                    icon="pi pi-plus-circle" 
-                                    @click="router.push('/join-create-band')"
-                                    outlined
-                                />
-                                <Button 
-                                    label="My Account" 
-                                    icon="pi pi-user" 
-                                    @click="router.push('/account')"
-                                    outlined
-                                />
-                            </div>
-                        </div>
                     </div>
                 </template>
             </Card>
@@ -52,11 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import Card from 'primevue/card';
-import Button from 'primevue/button';
-
-const router = useRouter();
 </script>
 
 <style scoped>
@@ -132,24 +98,6 @@ const router = useRouter();
     line-height: 1.6;
 }
 
-.quick-actions {
-    width: 100%;
-    max-width: 600px;
-}
-
-.quick-actions h3 {
-    color: var(--theme-main-text);
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.action-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
 @media (max-width: 768px) {
     .home-dashboard {
         padding: 1rem;
@@ -165,10 +113,6 @@ const router = useRouter();
     
     .building-message h2 {
         font-size: 1.5rem;
-    }
-    
-    .action-buttons {
-        grid-template-columns: 1fr;
     }
 }
 </style> 
