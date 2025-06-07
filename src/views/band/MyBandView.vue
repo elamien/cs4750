@@ -348,9 +348,18 @@ const forceLeave = async () => {
     leavingBand.value = true;
     
     try {
-        const response = await fetch('/api/bands/leave', {
-            method: 'POST',
-            credentials: 'include'
+        // Get current user ID and band ID
+        const currentUserId = '2'; // TODO: Get from auth/session
+        const bandId = bandInfo.value.id;
+        
+        const response = await fetch(`/api/bands/${bandId}/leave`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUserId
+            })
         });
         
         if (!response.ok) {
@@ -383,9 +392,18 @@ const confirmLeaveBand = async () => {
     leavingBand.value = true;
     
     try {
-        const response = await fetch('/api/bands/leave', {
-            method: 'POST',
-            credentials: 'include'
+        // Get current user ID and band ID
+        const currentUserId = '2'; // TODO: Get from auth/session
+        const bandId = bandInfo.value.id;
+        
+        const response = await fetch(`/api/bands/${bandId}/leave`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUserId
+            })
         });
         
         if (!response.ok) {

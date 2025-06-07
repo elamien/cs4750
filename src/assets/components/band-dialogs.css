@@ -66,6 +66,44 @@
     font-size: 1.2rem;
 }
 
+/* Leave Band Dialog - Warning Box */
+.warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    background: #fef3f2;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+    border-left: 4px solid #f56565;
+}
+
+.warning-icon {
+    color: #f56565;
+    font-size: 1.1rem;
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+.warning-content {
+    flex: 1;
+}
+
+.warning-content strong {
+    color: #c53030;
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.warning-content p {
+    color: #742a2a;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
 @media (max-width: 768px) {
     .candidate-item {
         flex-direction: column;
@@ -75,5 +113,10 @@
     
     .selected-icon {
         margin-top: 0.5rem;
+    }
+    
+    .warning-box {
+        padding: 0.75rem;
+        gap: 0.5rem;
     }
 } 

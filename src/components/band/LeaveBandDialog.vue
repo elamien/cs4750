@@ -7,10 +7,16 @@
         @update:visible="$emit('update:visible', $event)"
     >
         <p v-if="!isOnlyMember">Are you sure you want to leave {{ bandName }}? This action cannot be undone.</p>
-        <p v-else>
-            <strong>Are you sure you want to leave {{ bandName }}?</strong><br/>
-            Since you are the only member, <strong>the band will be permanently deleted</strong>. This action cannot be undone.
-        </p>
+        <div v-else>
+            <p>Are you sure you want to leave {{ bandName }}?</p>
+            <div class="warning-box">
+                <i class="pi pi-exclamation-triangle warning-icon"></i>
+                <div class="warning-content">
+                    <strong>The band will be permanently deleted</strong>
+                    <p>Since you are the only member, leaving will delete the entire band. This action cannot be undone.</p>
+                </div>
+            </div>
+        </div>
         <template #footer>
             <Button 
                 label="Cancel" 
