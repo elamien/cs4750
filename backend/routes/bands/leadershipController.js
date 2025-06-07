@@ -328,8 +328,11 @@ router.delete('/:id/leave', async (req, res, next) => {
           [userRoleId]
         );
         
-        // 5. If this was the last member, optionally delete the band
-        // For now, we'll leave the band record but it will have no members
+        // 5. Delete the band since it has no members left
+        await pool.query(
+          'DELETE FROM band WHERE band_id = ?',
+          [bandId]
+        );
         
       } else {
         // 6. Check if user is a band member

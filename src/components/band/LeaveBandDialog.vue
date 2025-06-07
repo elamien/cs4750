@@ -6,7 +6,11 @@
         :style="{ width: '25rem' }"
         @update:visible="$emit('update:visible', $event)"
     >
-        <p>Are you sure you want to leave {{ bandName }}? This action cannot be undone.</p>
+        <p v-if="!isOnlyMember">Are you sure you want to leave {{ bandName }}? This action cannot be undone.</p>
+        <p v-else>
+            <strong>Are you sure you want to leave {{ bandName }}?</strong><br/>
+            Since you are the only member, <strong>the band will be permanently deleted</strong>. This action cannot be undone.
+        </p>
         <template #footer>
             <Button 
                 label="Cancel" 
@@ -33,6 +37,7 @@ import Button from 'primevue/button';
 defineProps<{
     visible: boolean;
     bandName: string;
+    isOnlyMember: boolean;
     loading: boolean;
 }>();
 

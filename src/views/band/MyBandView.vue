@@ -44,6 +44,7 @@
         <LeaveBandDialog
             :visible="showLeaveBandDialog"
             :band-name="bandInfo.name"
+            :is-only-member="isOnlyMember"
             :loading="leavingBand"
             @update:visible="showLeaveBandDialog = $event"
             @cancel="showLeaveBandDialog = false"
@@ -137,6 +138,10 @@ const eligibleLeaders = computed(() => {
     return bandInfo.value.members.filter(
         member => member.id !== currentUser.value.id
     );
+});
+
+const isOnlyMember = computed(() => {
+    return bandInfo.value.members.length === 1;
 });
 
 // API functions
