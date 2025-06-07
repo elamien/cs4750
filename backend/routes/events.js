@@ -95,8 +95,8 @@ router.post('/', async (req, res, next) => {
     const datetime = `${eventDate} ${timeSlotMapping[timeSlot]}`;
     
     const query = `
-      INSERT INTO event (user_id, event_title, event_date, time_slot, datetime, location, genre, status, description)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO event (user_id, event_title, event_date, time_slot, datetime, location, genre, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       userId,
@@ -106,7 +106,6 @@ router.post('/', async (req, res, next) => {
       datetime,
       location || null,
       genre || null,
-      status,
       description || null
     ];
     
