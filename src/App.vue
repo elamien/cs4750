@@ -62,7 +62,7 @@
                                     v-ripple
                                 >
                                     <Avatar 
-                                        image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" 
+                                        :label="currentUser?.firstName && currentUser?.lastName ? getInitials(currentUser.firstName, currentUser.lastName) : 'U'" 
                                         shape="circle" 
                                         class="profile-avatar"
                                     />
@@ -226,7 +226,7 @@ import { containsProfanity } from '@/utils/profanityFilter';
 const router = useRouter();
 
 // Authentication state from composable
-const { isSignedIn, userRole, login, logout, checkAuthState } = useAuth();
+const { isSignedIn, userRole, currentUser, login, logout, checkAuthState } = useAuth();
 
 // Theme state
 const isDarkMode = ref(false);
@@ -536,6 +536,11 @@ const resetAuthForm = () => {
 const handleLogout = () => {
     logout(); // Use the composable's logout function
     router.push('/');
+};
+
+// Utility functions
+const getInitials = (firstName: string, lastName: string): string => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 };
 
 // Initialize theme and authentication from localStorage
