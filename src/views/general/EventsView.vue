@@ -55,7 +55,7 @@ const updateRoute = (index: number) => {
 
 <style scoped>
 .events {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem;
 }
