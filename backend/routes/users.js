@@ -106,6 +106,10 @@ router.put('/:id', async (req, res, next) => {
   lastName = filter.clean(lastName || '');
   bio = filter.clean(bio || '');
   
+  if (bio && bio.length > 255) {
+    return res.status(400).json({ message: 'Bio must be 255 characters or less.' });
+  }
+  
   try {
     const query = `
       UPDATE user 

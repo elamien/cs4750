@@ -19,8 +19,14 @@
                 rows="4"
                 :class="{ 'p-invalid': profileErrors.bio }"
                 @input="validateProfile"
+                maxlength="255"
               />
-              <small v-if="profileErrors.bio" class="p-error">{{ profileErrors.bio }}</small>
+              <div class="field-footer">
+                <small v-if="profileErrors.bio" class="p-error">{{ profileErrors.bio }}</small>
+                <small class="char-count" :class="{ 'char-limit-warning': profile.bio.length > 230 }">
+                  {{ profile.bio.length }}/255 characters
+                </small>
+              </div>
             </div>
             <div class="field">
               <label for="instruments">Instruments</label>
@@ -97,6 +103,8 @@ const validateProfile = () => {
   
   if (!profile.value.bio.trim()) {
     profileErrors.value.bio = 'Bio is required.'
+  } else if (profile.value.bio.length > 255) {
+    profileErrors.value.bio = 'Bio must be 255 characters or less.'
   } else if (containsProfanity(profile.value.bio)) {
     profileErrors.value.bio = 'Inappropriate language is not allowed in bio.'
   }
@@ -194,6 +202,25 @@ const completeOnboarding = () => {
 
 .spacer {
   flex: 1;
+}
+
+.field-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+}
+
+.char-limit-warning {
+  color: var(--p-orange-500) !important;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {

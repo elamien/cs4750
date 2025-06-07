@@ -78,6 +78,10 @@ router.post('/', async (req, res, next) => {
       message: 'User ID, event title, date, and time slot are required.' 
     });
   }
+  
+  if (description && description.length > 255) {
+    return res.status(400).json({ message: 'Description must be 255 characters or less.' });
+  }
 
   if (![1, 2, 3, 4].includes(timeSlot)) {
     return res.status(400).json({ message: 'Time Slot must be 1, 2, 3, or 4.' });
@@ -245,6 +249,10 @@ router.put('/:id', async (req, res, next) => {
     return res.status(400).json({ 
       message: 'User ID, event title, date, and time slot are required.' 
     });
+  }
+  
+  if (description && description.length > 255) {
+    return res.status(400).json({ message: 'Description must be 255 characters or less.' });
   }
 
   if (![1, 2, 3, 4].includes(timeSlot)) {

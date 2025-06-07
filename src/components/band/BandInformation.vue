@@ -66,8 +66,14 @@
                                 rows="3"
                                 :class="{'p-invalid': editErrors.description}"
                                 @input="validateForm"
+                                maxlength="255"
                             />
-                            <small v-if="editErrors.description" class="p-error">{{ editErrors.description }}</small>
+                            <div class="field-footer">
+                                <small v-if="editErrors.description" class="p-error">{{ editErrors.description }}</small>
+                                <small class="char-count" :class="{ 'char-limit-warning': editForm.description.length > 230 }">
+                                    {{ editForm.description.length }}/255 characters
+                                </small>
+                            </div>
                         </div>
                     </div>
                     <div class="form-actions">
@@ -174,7 +180,9 @@ const validateForm = () => {
         editErrors.value.name = 'Inappropriate language is not allowed.';
     }
 
-    if (containsProfanity(description)) {
+    if (description.length > 255) {
+        editErrors.value.description = 'Description must be 255 characters or less.';
+    } else if (containsProfanity(description)) {
         editErrors.value.description = 'Inappropriate language is not allowed.';
     }
 };

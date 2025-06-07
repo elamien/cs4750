@@ -166,8 +166,14 @@
                         @input="validateEventForm('create')"
                         rows="4" 
                         placeholder="Describe your event..."
+                        maxlength="255"
                     />
-                    <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
+                    <div class="field-footer">
+                        <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
+                        <small class="char-count" :class="{ 'char-limit-warning': (createForm.description?.length || 0) > 230 }">
+                            {{ createForm.description?.length || 0 }}/255 characters
+                        </small>
+                    </div>
                 </div>
             </div>
             
@@ -265,8 +271,14 @@
                         @input="validateEventForm('edit')"
                         rows="4" 
                         placeholder="Describe your event..."
+                        maxlength="255"
                     />
-                    <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
+                    <div class="field-footer">
+                        <small v-if="formErrors.description" class="p-error">{{ formErrors.description }}</small>
+                        <small class="char-count" :class="{ 'char-limit-warning': (editForm.description?.length || 0) > 230 }">
+                            {{ editForm.description?.length || 0 }}/255 characters
+                        </small>
+                    </div>
                 </div>
             </div>
             
@@ -583,7 +595,9 @@ const validateEventForm = (formType: 'create' | 'edit') => {
         formErrors.value.location = 'Inappropriate language is not allowed.';
     }
     
-    if (containsProfanity(form.description)) {
+    if (form.description && form.description.length > 255) {
+        formErrors.value.description = 'Description must be 255 characters or less.';
+    } else if (containsProfanity(form.description)) {
         formErrors.value.description = 'Inappropriate language is not allowed.';
     }
 
@@ -845,6 +859,25 @@ onMounted(async () => {
 .field label {
     font-weight: 600;
     color: var(--theme-main-text);
+}
+
+.field-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0.25rem;
+}
+
+.char-count {
+    font-size: 0.75rem;
+    color: var(--p-text-muted-color);
+    white-space: nowrap;
+}
+
+.char-limit-warning {
+    color: var(--p-orange-500) !important;
+    font-weight: 500;
 }
 
 .delete-content {

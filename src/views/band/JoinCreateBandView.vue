@@ -200,8 +200,14 @@
                                     placeholder="Describe your band's style and goals..."
                                     :class="{ 'p-invalid': bandFormErrors.description }"
                                     @input="validateBandForm"
+                                    maxlength="255"
                                 />
-                                <small v-if="bandFormErrors.description" class="p-error">{{ bandFormErrors.description }}</small>
+                                <div class="field-footer">
+                                    <small v-if="bandFormErrors.description" class="p-error">{{ bandFormErrors.description }}</small>
+                                    <small class="char-count" :class="{ 'char-limit-warning': bandForm.description.length > 230 }">
+                                        {{ bandForm.description.length }}/255 characters
+                                    </small>
+                                </div>
                             </div>
                         </div>
                         
@@ -486,6 +492,8 @@ const validateBandForm = () => {
     
     if (!bandForm.value.description.trim()) {
         bandFormErrors.value.description = 'Description is required.';
+    } else if (bandForm.value.description.length > 255) {
+        bandFormErrors.value.description = 'Description must be 255 characters or less.';
     } else if (containsProfanity(bandForm.value.description)) {
         bandFormErrors.value.description = 'Inappropriate language is not allowed.';
     }

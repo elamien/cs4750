@@ -40,6 +40,25 @@
     font-size: 0.9rem;
 }
 
+.field-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0.25rem;
+}
+
+.char-count {
+    font-size: 0.75rem;
+    color: var(--p-text-muted-color);
+    white-space: nowrap;
+}
+
+.char-limit-warning {
+    color: var(--p-orange-500) !important;
+    font-weight: 500;
+}
+
 .form-actions {
     display: flex;
     gap: 0.75rem;

@@ -257,6 +257,10 @@ router.put('/:id', async (req, res, next) => {
     return res.status(400).json({ message: 'Band name is required.' });
   }
   
+  if (description && description.length > 255) {
+    return res.status(400).json({ message: 'Description must be 255 characters or less.' });
+  }
+  
   try {
     const query = `
       UPDATE band 
@@ -363,6 +367,10 @@ router.post('/', async (req, res, next) => {
   // Clean profanity from inputs
   name = filter.clean(name || '');
   description = filter.clean(description || '');
+  
+  if (description && description.length > 255) {
+    return res.status(400).json({ message: 'Description must be 255 characters or less.' });
+  }
   
   const connection = await pool.getConnection();
   try {

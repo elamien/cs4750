@@ -160,8 +160,14 @@
                                     class="w-full"
                                     :class="{ 'p-invalid': editErrors.bio }"
                                     @input="validateForm"
+                                    maxlength="255"
                                 />
-                                <small v-if="editErrors.bio" class="p-error">{{ editErrors.bio }}</small>
+                                <div class="field-footer">
+                                    <small v-if="editErrors.bio" class="p-error">{{ editErrors.bio }}</small>
+                                    <small class="char-count" :class="{ 'char-limit-warning': (editForm.bio?.length || 0) > 230 }">
+                                        {{ editForm.bio?.length || 0 }}/255 characters
+                                    </small>
+                                </div>
                             </div>
                         </div>
                         
@@ -328,7 +334,9 @@ const validateForm = () => {
         editErrors.value.email = 'Please enter a valid email.';
     }
     
-    if (containsProfanity(editForm.value.bio)) {
+    if (editForm.value.bio && editForm.value.bio.length > 255) {
+        editErrors.value.bio = 'Bio must be 255 characters or less.';
+    } else if (containsProfanity(editForm.value.bio)) {
         editErrors.value.bio = 'Inappropriate language is not allowed in bio.';
     }
 };
@@ -621,6 +629,25 @@ onBeforeUnmount(() => {
     content: ' •';
     color: var(--hoojams-orange);
     font-weight: bold;
+}
+
+.field-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0.25rem;
+}
+
+.char-count {
+    font-size: 0.75rem;
+    color: var(--p-text-muted-color);
+    white-space: nowrap;
+}
+
+.char-limit-warning {
+    color: var(--p-orange-500) !important;
+    font-weight: 500;
 }
 
 .changes-summary {
