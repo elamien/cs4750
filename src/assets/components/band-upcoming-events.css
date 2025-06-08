@@ -7,9 +7,16 @@
 
 .event-item {
     padding: 1rem;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--theme-card-border);
     border-radius: 6px;
-    background: var(--p-surface-0);
+    background: var(--theme-card-bg);
+    color: var(--theme-card-text);
+    transition: box-shadow 0.2s ease;
+}
+
+.event-item:hover {
+    background: var(--theme-card-hover-bg);
+    border-color: var(--hoojams-orange);
 }
 
 .event-info h4 {
