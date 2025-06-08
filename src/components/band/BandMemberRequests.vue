@@ -373,9 +373,16 @@ defineExpose({
     align-items: flex-start;
     gap: 1rem;
     padding: 1rem;
-    background: var(--p-surface-50);
-    border-radius: var(--p-border-radius);
-    border: 1px solid var(--p-surface-200);
+    background: var(--theme-card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--theme-card-border);
+    color: var(--theme-card-text);
+    transition: box-shadow 0.2s ease;
+}
+
+.request-item:hover {
+    background: var(--theme-card-hover-bg);
+    border-color: var(--hoojams-orange);
 }
 
 .request-info {
@@ -432,7 +439,7 @@ defineExpose({
     text-align: center;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--p-surface-200);
+    border-top: 1px solid var(--theme-card-border);
 }
 
 /* Compact layout for side-by-side display */
