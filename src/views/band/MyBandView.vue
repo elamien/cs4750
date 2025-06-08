@@ -141,7 +141,7 @@ const currentUser = computed(() => {
 
 const isLeader = computed(() => {
     return bandInfo.value.members.some(
-        member => member.id === currentUser.value.id && member.role === 'leader'
+        member => member.id === currentUser.value.id && member.role === 'Band Leader'
     );
 });
 

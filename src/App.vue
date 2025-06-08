@@ -33,7 +33,7 @@
                     <div class="navbar-end">
                         <div v-if="isAuthenticated" class="navbar-user-section">
                             <RouterLink 
-                                v-if="currentUser?.role === 'exec'"
+                                v-if="isWXTJExecutive()"
                                 to="/admin"
                                 v-ripple 
                                 class="flex items-center nav-link"
@@ -240,7 +240,7 @@ import { containsProfanity } from '@/utils/profanityFilter';
 const router = useRouter();
 
 // Authentication state from composable
-const { isAuthenticated, currentUser, login, logout, refreshUser, getInitials } = useAuth();
+const { isAuthenticated, currentUser, login, logout, refreshUser, getInitials, isWXTJExecutive } = useAuth();
 
 // Theme state
 const isDarkMode = ref(false);
@@ -347,24 +347,20 @@ const menuItems = computed<MenuItem[]>(() => {
     
     let items = [...baseSignedInItems]; // Start with items all signed-in users get
     
-    switch (currentUser.value?.role) {
-        case 'general':
-            items = [...items, ...generalUserExtraItems];
-            break;
-        case 'band_member':
-            // Band members might also have general user capabilities if not exclusively a band member
-            // For now, assume roles are somewhat exclusive for menu generation.
-            // If a band member can also create/join *another* band, that needs clarification.
-            // Based on current permissions, MyBand is their primary band-related action.
-            items = [...items, ...bandMemberExtraItems];
-            break;
-        case 'band_leader':
-            items = [...items, ...bandLeaderExtraItems];
-            break;
-        case 'exec':
-            // Execs get their specific items. "Join or Create Band" is part of execItems.
-            items = [...items, ...wxtjExecExtraItems];
-            break;
+    // ADDITIVE ROLE SYSTEM: Check for each role and add corresponding menu items
+    const userRoles = currentUser.value?.roles || [];
+    
+    if (userRoles.includes('General User')) {
+        items = [...items, ...generalUserExtraItems];
+    }
+    if (userRoles.includes('Band Member')) {
+        items = [...items, ...bandMemberExtraItems];
+    }
+    if (userRoles.includes('Band Leader')) {
+        items = [...items, ...bandLeaderExtraItems];
+    }
+    if (userRoles.includes('WXTJ Executive')) {
+        items = [...items, ...wxtjExecExtraItems];
     }
     
     return [...items, ...devItems];

@@ -81,14 +81,14 @@
                 <template #footer>
                     <div class="event-actions">
                         <Button 
-                            v-if="isSignedIn" 
+                            v-if="isAuthenticated" 
                             :label="event.isFavorite ? 'Unfavorite' : 'Favorite'" 
                             :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
                             severity="secondary"
                             @click="toggleFavorite(event.id)" 
                         />
                         <Button 
-                            v-if="isSignedIn && currentUser?.role === 'band_leader' && event.status === 'open'"
+                            v-if="isAuthenticated && isBandLeader() && event.status === 'open'"
                             label="Accept Gig" 
                             icon="pi pi-check-circle" 
                             severity="success"
@@ -168,7 +168,7 @@ import { useAuth } from '@/composables/useAuth';
 const router = useRouter();
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
-const { isSignedIn, currentUser } = useAuth();
+const { isAuthenticated, currentUser, isBandLeader } = useAuth();
 
 interface EventListItem {
     id: string;

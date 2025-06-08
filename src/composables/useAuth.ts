@@ -5,7 +5,7 @@ interface User {
   email: string
   firstName: string
   lastName: string
-  role?: string
+  roles?: string[]
 }
 
 // Global reactive state
@@ -23,7 +23,7 @@ const initializeAuth = () => {
         email: userData.email,
         firstName: userData.firstName,
         lastName: userData.lastName,
-        role: userData.role
+        roles: userData.roles || (userData.role ? [userData.role] : [])
       }
       console.log('Auth initialized with user:', currentUser.value)
     } catch (error) {
@@ -67,6 +67,21 @@ export const useAuth = () => {
     return `${currentUser.value.firstName.charAt(0)}${currentUser.value.lastName.charAt(0)}`.toUpperCase()
   }
 
+  const hasRole = (roleName: string) => {
+    return currentUser.value?.roles?.includes(roleName) || false
+  }
+
+  const isBandLeader = () => hasRole('Band Leader')
+  const isBandMember = () => hasRole('Band Member')
+  const isWXTJExecutive = () => hasRole('WXTJ Executive')
+  const isGeneralUser = () => hasRole('General User')
+
+  const getPrimaryRole = () => {
+    if (!currentUser.value?.roles?.length) return null
+    // Return first role alphabetically for consistency
+    return currentUser.value.roles[0]
+  }
+
   return {
     currentUser: computed(() => currentUser.value),
     isAuthenticated,
@@ -75,6 +90,12 @@ export const useAuth = () => {
     refreshUser,
     getUserId,
     getUserName,
-    getInitials
+    getInitials,
+    hasRole,
+    isBandLeader,
+    isBandMember,
+    isWXTJExecutive,
+    isGeneralUser,
+    getPrimaryRole
   }
 }
