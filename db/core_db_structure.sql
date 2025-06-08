@@ -1,11 +1,11 @@
 -- This File is for only core intialization and no select like commands
 
 -- COMPLETED DB STRUCT BASED ON TIME SLOT SYSTEM
--- Event Structure: Daily events run 8AM-12PM with 4 time slots:
--- Slot 1: 8:00 AM - 9:00 AM
--- Slot 2: 9:00 AM - 10:00 AM  
--- Slot 3: 10:00 AM - 11:00 AM
--- Slot 4: 11:00 AM - 12:00 PM
+-- Event Structure: Daily events run 8PM-12AM with 4 time slots:
+-- Slot 1: 8:00 PM - 9:00 PM
+-- Slot 2: 9:00 PM - 10:00 PM  
+-- Slot 3: 10:00 PM - 11:00 PM
+-- Slot 4: 11:00 PM - 12:00 AM
 -- Rules: 1 event per time slot per day, 1 band per event, no overlaps
 
 -- COMPLETED DB STRUCT BASED ON
@@ -133,7 +133,7 @@ CREATE TABLE band (
 
 -- Create event table with time slot system
 -- Each event represents one time slot (1-4) on a specific date
--- Time slots: 1=8-9am, 2=9-10am, 3=10-11am, 4=11am-12pm
+-- Time slots: 1=8-9pm, 2=9-10pm, 3=10-11pm, 4=11pm-12am
 CREATE TABLE event (
     event_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
