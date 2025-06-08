@@ -272,3 +272,9 @@ AND e.datetime > NOW();
     FROM FillInRequest
     WHERE FillInMemberID IS NULL;
    
+-- DB SQL statements for second progress report
+-- Add to your SQL section the following:
+
+-- SQL select statements that join tables for meaningful results for the users of your system.
+-- A SQL select statement for each of your associative entities that shows the contents of your associative entities.  These SQL statements must join the related tables and include some information from each table directly related to the associative entity.
+-- Consider creating views for the SQL selects that involve joins.
