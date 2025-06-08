@@ -508,15 +508,6 @@ const createBand = async () => {
         return;
     }
     
-    // Debug: Log the values being sent
-    console.log('Creating band with data:', {
-        name: bandForm.value.name,
-        genre: bandForm.value.genre,
-        description: bandForm.value.description,
-        location: bandForm.value.location || null,
-        creatorUserId: currentUserId.value,
-        currentUserId: currentUserId.value
-    });
     
     try {
         const response = await fetch('/api/bands', {

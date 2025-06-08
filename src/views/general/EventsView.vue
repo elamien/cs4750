@@ -2,7 +2,7 @@
     <div class="events">
         <!-- Glass Submenu for signed-in users -->
         <GlassSubmenu 
-            v-if="isSignedIn && !loading && activeSection"
+            v-if="isAuthenticated && !loading && activeSection"
             title="Event Management"
             :menu-items="submenuItems"
             :active-item="activeSection"
@@ -10,9 +10,9 @@
         />
         
         <!-- Main Content Area -->
-        <div class="main-content" :class="{ 'no-submenu': !isSignedIn }">
+        <div class="main-content" :class="{ 'no-submenu': !isAuthenticated }">
             <!-- Loading State -->
-            <div v-if="loading || (isSignedIn && !activeSection)" class="content-section">
+            <div v-if="loading || (isAuthenticated && !activeSection)" class="content-section">
                 <div class="empty-state">
                     <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--p-primary-color);"></i>
                     <h3>Loading...</h3>
@@ -20,7 +20,7 @@
             </div>
             
             <!-- Browse Events Section -->
-            <div v-else-if="activeSection === 'browse' || !isSignedIn" class="content-section" :class="{ 'full-width': !isSignedIn }">
+            <div v-else-if="activeSection === 'browse' || !isAuthenticated" class="content-section" :class="{ 'full-width': !isAuthenticated }">
                 <BrowseEventsComponent />
             </div>
             
@@ -42,7 +42,7 @@ import { useAuth } from '@/composables/useAuth';
 
 const route = useRoute();
 const router = useRouter();
-const { isSignedIn } = useAuth();
+const { isAuthenticated } = useAuth();
 
 // Active section for glass submenu
 const activeSection = ref('');
@@ -69,7 +69,7 @@ const handleSectionChange = (section: string) => {
 onMounted(async () => {
     loading.value = true;
     
-    if (isSignedIn.value) {
+    if (isAuthenticated.value) {
         // Set initial section from URL or default to first item
         const sectionFromUrl = route.query.tab as string;
         if (sectionFromUrl && ['browse', 'my-events'].includes(sectionFromUrl)) {
