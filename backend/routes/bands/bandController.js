@@ -386,44 +386,41 @@ router.post('/', async (req, res, next) => {
       
       const bandId = bandResult.insertId;
       
-      // Check if user has existing role entry
-      const [userRoleCheck] = await pool.query(
-        'SELECT user_role_id FROM user_roles WHERE user_id = ?',
+      // ADDITIVE ROLE SYSTEM: Check if user already has Band Leader role
+      const [existingBandLeaderRole] = await pool.query(
+        'SELECT user_role_id FROM user_roles WHERE user_id = ? AND role_id = 1',
         [creatorUserId]
       );
       
-      let userRoleId;
-      if (userRoleCheck.length > 0) {
-        userRoleId = userRoleCheck[0].user_role_id;
-        
-        // Update their role to Band Leader (role_id = 1)
-        await pool.query(
-          'UPDATE user_roles SET role_id = 1 WHERE user_role_id = ?',
-          [userRoleId]
-        );
+      let bandLeaderRoleId;
+      if (existingBandLeaderRole.length > 0) {
+        // User already has Band Leader role
+        bandLeaderRoleId = existingBandLeaderRole[0].user_role_id;
       } else {
-        // Create new user_role entry for Band Leader
+        // ADD Band Leader role (don't replace existing roles)
         const [roleResult] = await pool.query(
           'INSERT INTO user_roles (user_id, role_id) VALUES (?, 1)',
           [creatorUserId]
         );
-        userRoleId = roleResult.insertId;
+        bandLeaderRoleId = roleResult.insertId;
       }
       
       // Add to band_leader table
       await pool.query(
         'INSERT INTO band_leader (user_role_id, band_id) VALUES (?, ?)',
-        [userRoleId, bandId]
+        [bandLeaderRoleId, bandId]
       );
       
-      // Get updated user info to return
+      // Get updated user info to return (with all roles)
       const [userInfo] = await pool.query(
         `SELECT u.user_id AS userId, u.first_name AS firstName, u.last_name AS lastName, 
-                u.email, u.instrument, u.genre, u.bio, r.role_name AS role
+                u.email, u.instrument, u.genre, u.bio,
+                GROUP_CONCAT(r.role_name ORDER BY r.role_name) AS roles
          FROM user u 
          JOIN user_roles ur ON u.user_id = ur.user_id 
          JOIN roles r ON ur.role_id = r.role_id 
-         WHERE u.user_id = ?`,
+         WHERE u.user_id = ?
+         GROUP BY u.user_id`,
         [creatorUserId]
       );
       

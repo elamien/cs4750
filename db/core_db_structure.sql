@@ -11,43 +11,58 @@
 -- COMPLETED DB STRUCT BASED ON
 
 /*
-ROLE-BASED PERMISSIONS SYSTEM:
+ADDITIVE ROLE-BASED PERMISSIONS SYSTEM:
+UPDATED: Changed from exclusive roles to additive/cumulative roles for consistency and flexibility.
 
-Only Anon ROLE (not signed in) can:
+DESIGN PRINCIPLES:
+-- Users can have MULTIPLE roles simultaneously (additive system)
+-- Base roles: "General User", "WXTJ Executive" 
+-- Activity roles: "Band Leader", "Band Member"
+-- Examples: "General User + Band Leader", "WXTJ Executive + Band Member", etc.
+-- This allows natural progression while maintaining admin privileges for WXTJ
+
+ROLE DEFINITIONS:
+
+Anonymous (not signed in):
 -- ONLY Browse/filter bands/events by genre/slot
 
-Only All users ROLE (except anon) can:
--- Edit account info (everything from sql table)
+All Authenticated Users (base permissions):
+-- Edit account info (everything from user table)
 -- Browse/filter bands/events by genre/slot
 -- Save bands/events in favorites
 -- Create events, request bands to play
 -- Accept any pending fill in requests
 
-Only Band leader ROLE can:
--- Create/Delete 1 band or Transfer lead
--- View and Accept/deny event requests
--- View and Accept/deny band member requests
+General User (base role):
+-- Create 1 band (becomes General User + Band Leader)
+-- Request to join 1 band (becomes General User + Band Member)
+-- Standard user with no special privileges
+
+Band Leader (activity role, additive):
+-- Create/Delete 1 band or Transfer leadership
+-- View and Accept/deny event requests for their band
+-- View and Accept/deny band member requests for their band
 -- Create fill-in requests (leader only)
--- Ability to remove existing members
+-- Remove band members
+-- Accept gigs for their band (first-come-first-served)
 
-Only Band member ROLE can:
+Band Member (activity role, additive):
 -- Leave band
--- View band approved event(s) and select (available vs not)
+-- View band approved event(s) and select availability (available vs not)
+-- Cannot have Band Leader role for same band simultaneously
 
-Only General ROLE can:
--- Create 1 band OR Request to join 1 band
-
-Only WXTJ Exec ROLE can:
+WXTJ Executive (base role):
 -- Manage all/any users (delete/change role)
--- Manage all/any bands/events (all already possible actions, all CRUD operations, etc)
--- Create 1 band OR Request to join 1 band
+-- Manage all/any bands/events (all CRUD operations, admin access)
+-- Can also become Band Leader or Band Member while retaining admin privileges
+-- Create 1 band OR Request to join 1 band (same as General User)
 
 REGISTRATION SYSTEM:
--- General Users: Register normally → assigned General User role automatically
--- WXTJ Executives: Must provide valid access key during registration
+-- General Users: Register normally → assigned "General User" role automatically
+-- WXTJ Executives: Must provide valid access key during registration → assigned "WXTJ Executive" role
+-- Role transitions: When creating/joining bands, users gain additional roles rather than replacing existing ones
 -- Access key is stored in app_settings table for flexibility and rotation
 -- Invalid access key → registration denied
--- This prevents unauthorized users from claiming executive privileges
 */
 
 -- Music Band Database Schema
@@ -211,10 +226,13 @@ CREATE TABLE band_member (
 );
 
 -- Create general_user table
+-- UPDATED: In additive role system, this tracks users who have ONLY General User role
+-- Once a user becomes Band Leader or Band Member, they are no longer "general only"
 CREATE TABLE general_user (
     user_role_id INT PRIMARY KEY,
     looking_for_a_band TINYINT(1) DEFAULT 0,
-    -- NEW: Track if general user has created/joined a band (they can only do ONE of: create 1 band OR request to join 1 band)
+    -- Track if general user has created/joined a band (they can only do ONE of: create 1 band OR request to join 1 band)
+    -- NOTE: These become deprecated in additive system - use role checks instead
     has_created_band TINYINT(1) DEFAULT 0,
     has_pending_band_request TINYINT(1) DEFAULT 0,
     FOREIGN KEY (user_role_id) REFERENCES user_roles(user_role_id) ON DELETE CASCADE
@@ -371,3 +389,54 @@ INSERT INTO wxtj_exec (user_role_id, exec_title) VALUES
 -- Create general user record
 INSERT INTO general_user (user_role_id, looking_for_a_band, has_created_band, has_pending_band_request) VALUES
     (2, 0, 0, 0);  -- Test User - general user status
+
+-- ===============================================
+-- ADDITIVE ROLE SYSTEM IMPLEMENTATION NOTES
+-- ===============================================
+
+/*
+CHANGES MADE FOR ADDITIVE ROLE SYSTEM:
+
+1. UPDATED ROLE PERMISSIONS DOCUMENTATION:
+   - Changed from exclusive roles to additive/cumulative roles
+   - Users can now have multiple roles simultaneously
+   - Base roles: "General User", "WXTJ Executive"
+   - Activity roles: "Band Leader", "Band Member"
+   - Examples: "General User + Band Leader", "WXTJ Executive + Band Member"
+
+2. DATABASE STRUCTURE (NO CHANGES NEEDED):
+   - The user_roles junction table already supports multiple roles per user
+   - UNIQUE(role_id, user_id) prevents duplicate role assignments but allows different roles
+   - Role-specific tables (band_leader, band_member, etc.) are keyed by user_role_id
+
+3. APPLICATION LOGIC CHANGES REQUIRED:
+   - Backend: Remove role mapping that converts "Band Leader" to "band_leader" 
+   - Frontend: Check for actual database role names ("Band Leader" not "band_leader")
+   - Band creation: Add Band Leader role instead of replacing existing role
+   - Band joining: Add Band Member role instead of replacing existing role
+   - Role checking: Use OR logic for multiple roles (hasRole('Band Leader') OR hasRole('WXTJ Executive'))
+
+4. TEST DATA REPRESENTS OLD EXCLUSIVE SYSTEM:
+   - User 1 (WXTJ): Only WXTJ Executive role → Should become "WXTJ Executive + Band Leader" when creating band
+   - User 2 (Test): Only General User role → Should become "General User + Band Leader/Member" when joining/creating
+   - User 3 (Alex): Only Band Leader role → Should have "General User + Band Leader" 
+   - User 4 (Jamie): Only Band Member role → Should have "General User + Band Member"
+
+5. MIGRATION CONSIDERATIONS:
+   - Existing users may need role additions for consistency
+   - general_user table becomes less relevant (users keep General User role even when joining bands)
+   - Business logic should check for role combinations rather than single roles
+
+6. ROLE TRANSITION EXAMPLES:
+   - General User creates band → Gets Band Leader role (becomes "General User + Band Leader")
+   - General User joins band → Gets Band Member role (becomes "General User + Band Member") 
+   - WXTJ Executive creates band → Gets Band Leader role (becomes "WXTJ Executive + Band Leader")
+   - Band Leader leaves band → Loses Band Leader role (reverts to base role)
+   - WXTJ Executive always retains admin privileges regardless of other roles
+
+7. BUSINESS RULES:
+   - Users cannot be Band Leader AND Band Member of the SAME band
+   - Users can be Band Leader of one band and Band Member of another (if system allows multiple bands)
+   - WXTJ Executives retain admin privileges when gaining other roles
+   - General Users retain their base status when gaining activity roles
+*/

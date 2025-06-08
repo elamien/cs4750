@@ -14,13 +14,15 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         
-        // Find user by email with role information
+        // Find user by email with ALL role information
         const [users] = await pool.execute(`
-            SELECT u.user_id, u.first_name, u.last_name, u.email, u.password, r.role_name
+            SELECT u.user_id, u.first_name, u.last_name, u.email, u.password,
+                   GROUP_CONCAT(r.role_name ORDER BY r.role_name) AS roles
             FROM user u 
             JOIN user_roles ur ON u.user_id = ur.user_id 
             JOIN roles r ON ur.role_id = r.role_id 
             WHERE u.email = ?
+            GROUP BY u.user_id
         `, [email]);
         
         if (users.length === 0) {
@@ -35,21 +37,13 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         
-        // Map database role names to frontend role names
-        const roleMapping = {
-            'Band Leader': 'band_leader',
-            'Band Member': 'band_member', 
-            'General User': 'general',
-            'WXTJ Executive': 'exec'
-        };
-        
         // Create user session (simplified - in production use proper session management)
         const userSession = {
             userId: user.user_id,
             firstName: user.first_name,
             lastName: user.last_name,
             email: user.email,
-            role: roleMapping[user.role_name] || 'general'
+            roles: user.roles ? user.roles.split(',') : []
         };
         
         res.json({
@@ -154,17 +148,12 @@ router.post('/register', async (req, res) => {
         }
         
         // Return user session data
-        const roleMapping = {
-            'General User': 'general',
-            'WXTJ Executive': 'exec'
-        };
-        
         const userSession = {
             userId: userId,
             firstName: firstName,
             lastName: lastName,
             email: email,
-            role: roleMapping[targetRole] || 'general'
+            roles: [targetRole]
         };
         
         res.status(201).json({
