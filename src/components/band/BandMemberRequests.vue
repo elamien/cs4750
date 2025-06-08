@@ -3,7 +3,10 @@
         <template #title>
             <div class="requests-header">
                 <span>Membership Requests</span>
-                <Badge v-if="pendingRequests.length > 0" :value="pendingRequests.length" severity="warning" />
+                <div v-if="pendingRequests.length > 0" class="pending-info">
+                    <Badge value="Pending" severity="warning" />
+                    <Badge :value="pendingRequests.length" />
+                </div>
             </div>
         </template>
         <template #content>
@@ -19,16 +22,14 @@
             
             <div v-else class="requests-list">
                 <div v-for="request in pendingRequests" :key="request.id" class="request-item">
-                    <Avatar 
-                        :label="getInitials(request.firstName, request.lastName)" 
-                        size="large"
-                        shape="circle"
-                    />
-                    
                     <div class="request-info">
                         <div class="applicant-name">
+                            <Avatar 
+                                :label="getInitials(request.firstName, request.lastName)" 
+                                size="large"
+                                shape="circle"
+                            />
                             <strong>{{ request.firstName }} {{ request.lastName }}</strong>
-                            <Badge value="Pending" severity="warning" />
                         </div>
                         
                         <div class="applicant-details">
@@ -339,6 +340,13 @@ defineExpose({
 .requests-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.pending-info {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
 }
 
@@ -390,17 +398,28 @@ defineExpose({
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
 }
 
 .applicant-name {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.applicant-name .p-avatar {
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
 }
 
 .applicant-name strong {
     color: var(--theme-main-text);
     font-size: 1rem;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .applicant-details {
