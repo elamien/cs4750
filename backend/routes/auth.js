@@ -5,6 +5,26 @@ import { Filter } from 'bad-words';
 const router = express.Router();
 const filter = new Filter();
 
+// Test endpoint to debug the role query
+router.get('/test-roles/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        
+        const [roleRows] = await pool.execute(`
+            SELECT r.role_name, ur.role_context_type, ur.role_context_id
+            FROM user_roles ur 
+            JOIN roles r ON ur.role_id = r.role_id 
+            WHERE ur.user_id = ?
+            ORDER BY r.role_name
+        `, [userId]);
+        
+        res.json({ success: true, roles: roleRows });
+    } catch (error) {
+        console.error('Test roles error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Login endpoint
 router.post('/login', async (req, res) => {
     try {
@@ -14,15 +34,11 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         
-        // Find user by email with ALL role information
+        // Find user by email
         const [users] = await pool.execute(`
-            SELECT u.user_id, u.first_name, u.last_name, u.email, u.password,
-                   GROUP_CONCAT(r.role_name ORDER BY r.role_name) AS roles
+            SELECT u.user_id, u.first_name, u.last_name, u.email, u.password
             FROM user u 
-            JOIN user_roles ur ON u.user_id = ur.user_id 
-            JOIN roles r ON ur.role_id = r.role_id 
             WHERE u.email = ?
-            GROUP BY u.user_id
         `, [email]);
         
         if (users.length === 0) {
@@ -37,13 +53,26 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         
+        // Get user roles separately
+        const [roleRows] = await pool.execute(`
+            SELECT r.role_name, ur.role_context_type, ur.role_context_id
+            FROM user_roles ur 
+            JOIN roles r ON ur.role_id = r.role_id 
+            WHERE ur.user_id = ?
+            ORDER BY r.role_name
+        `, [user.user_id]);
+        
         // Create user session (simplified - in production use proper session management)
         const userSession = {
             userId: user.user_id,
             firstName: user.first_name,
             lastName: user.last_name,
             email: user.email,
-            roles: user.roles ? user.roles.split(',') : []
+            roles: roleRows.map(row => ({
+                role_name: row.role_name,
+                context_type: row.role_context_type || 'general',
+                context_id: row.role_context_id || null
+            }))
         };
         
         res.json({
@@ -53,7 +82,9 @@ router.post('/login', async (req, res) => {
         
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 });
 
@@ -153,7 +184,11 @@ router.post('/register', async (req, res) => {
             firstName: firstName,
             lastName: lastName,
             email: email,
-            roles: [targetRole]
+            roles: [{
+                role_name: targetRole,
+                context_type: 'general',
+                context_id: null
+            }]
         };
         
         res.status(201).json({
