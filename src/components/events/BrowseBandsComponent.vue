@@ -29,9 +29,6 @@
 
         <div class="bands-grid">
             <Card v-for="band in filteredBands" :key="band.id" class="band-card">
-                <template #header>
-                    <img src="https://via.placeholder.com/400x200/cccccc/969696?text=Band+Image" :alt="band.name" class="band-image" />
-                </template>
                 <template #title>{{ band.name }}</template>
                 <template #subtitle>{{ band.genre }}</template>
                 <template #content>
@@ -229,12 +226,6 @@ onMounted(async () => {
 
 .band-card {
     height: fit-content;
-}
-
-.band-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
 }
 
 .band-description {

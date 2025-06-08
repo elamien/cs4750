@@ -375,44 +375,32 @@ router.post('/', async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
     // Start transaction for data consistency
-    await pool.query('START TRANSACTION');
+    await connection.query('START TRANSACTION');
     
     try {
       // Insert new band
-      const [bandResult] = await pool.query(
+      const [bandResult] = await connection.query(
         `INSERT INTO band (name, genre, description) VALUES (?, ?, ?)`,
         [name, genre || null, description || null]
       );
       
       const bandId = bandResult.insertId;
       
-      // ADDITIVE ROLE SYSTEM: Check if user already has Band Leader role
-      const [existingBandLeaderRole] = await pool.query(
-        'SELECT user_role_id FROM user_roles WHERE user_id = ? AND role_id = 1',
-        [creatorUserId]
+      // ADDITIVE ROLE SYSTEM: Create a new Band Leader role instance for this specific band
+      const [roleResult] = await connection.query(
+        'INSERT INTO user_roles (user_id, role_id, role_context_type, role_context_id) VALUES (?, 1, ?, ?)',
+        [creatorUserId, 'band', bandId]
       );
-      
-      let bandLeaderRoleId;
-      if (existingBandLeaderRole.length > 0) {
-        // User already has Band Leader role
-        bandLeaderRoleId = existingBandLeaderRole[0].user_role_id;
-      } else {
-        // ADD Band Leader role (don't replace existing roles)
-        const [roleResult] = await pool.query(
-          'INSERT INTO user_roles (user_id, role_id) VALUES (?, 1)',
-          [creatorUserId]
-        );
-        bandLeaderRoleId = roleResult.insertId;
-      }
+      const bandLeaderRoleId = roleResult.insertId;
       
       // Add to band_leader table
-      await pool.query(
+      await connection.query(
         'INSERT INTO band_leader (user_role_id, band_id) VALUES (?, ?)',
         [bandLeaderRoleId, bandId]
       );
       
       // Get updated user info to return (with all roles)
-      const [userInfo] = await pool.query(
+      const [userInfo] = await connection.query(
         `SELECT u.user_id AS userId, u.first_name AS firstName, u.last_name AS lastName, 
                 u.email, u.instrument, u.genre, u.bio,
                 GROUP_CONCAT(r.role_name ORDER BY r.role_name) AS roles
@@ -424,7 +412,7 @@ router.post('/', async (req, res, next) => {
         [creatorUserId]
       );
       
-      await pool.query('COMMIT');
+      await connection.query('COMMIT');
       
       const createdBand = {
         id: String(bandId),
@@ -439,15 +427,25 @@ router.post('/', async (req, res, next) => {
         updatedUser: userInfo[0] || null
       });
     } catch (error) {
-      await pool.query('ROLLBACK');
+      await connection.query('ROLLBACK');
       throw error;
     }
   } catch (error) {
     console.error('Failed to create band:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+    console.error('Error SQL:', error.sql);
     if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ message: 'Band name already exists.' });
+      return res.status(409).json({ 
+        message: 'Duplicate entry error', 
+        error: error.message,
+        sql: error.sql,
+        code: error.code 
+      });
     }
-    next(error);
+    res.status(500).json({ message: 'Failed to create band', error: error.message, code: error.code });
+  } finally {
+    connection.release();
   }
 });
 

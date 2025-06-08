@@ -3,13 +3,50 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    max-height: 600px; /* Set maximum height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding-right: 0.5rem; /* Space for scrollbar */
+}
+
+/* Custom scrollbar styling for the events list */
+.events-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.events-list::-webkit-scrollbar-track {
+    background: var(--theme-card-bg);
+    border-radius: 4px;
+}
+
+.events-list::-webkit-scrollbar-thumb {
+    background: var(--theme-secondary-text);
+    border-radius: 4px;
+    opacity: 0.5;
+}
+
+.events-list::-webkit-scrollbar-thumb:hover {
+    background: var(--hoojams-orange);
+    opacity: 1;
+}
+
+/* Firefox scrollbar styling */
+.events-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-secondary-text) var(--theme-card-bg);
 }
 
 .event-item {
     padding: 1rem;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid var(--theme-card-border);
     border-radius: 6px;
-    background: var(--p-surface-0);
+    background: var(--theme-card-bg);
+    color: var(--theme-card-text);
+    transition: box-shadow 0.2s ease;
+}
+
+.event-item:hover {
+    background: var(--theme-card-hover-bg);
+    border-color: var(--hoojams-orange);
 }
 
 .event-info h4 {
@@ -50,6 +87,11 @@
 }
 
 @media (max-width: 768px) {
+    .events-list {
+        max-height: 400px; /* Smaller max-height for mobile */
+        padding-right: 0.25rem; /* Less padding on mobile */
+    }
+    
     .event-meta {
         flex-direction: column;
         gap: 0.5rem;

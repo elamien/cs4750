@@ -114,9 +114,11 @@ CREATE TABLE user_roles (
     user_role_id INT PRIMARY KEY AUTO_INCREMENT,
     role_id INT NOT NULL,
     user_id INT NOT NULL,
+    role_context_type ENUM('general', 'band', 'event') DEFAULT 'general',
+    role_context_id INT DEFAULT NULL,
     FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
-    UNIQUE(role_id, user_id)
+    UNIQUE KEY unique_user_role_context (user_id, role_id, role_context_type, role_context_id)
 );
 
 -- Create band table
@@ -363,12 +365,14 @@ INSERT INTO user (first_name, last_name, bio, email, phone_number, genre, instru
     ('Alex', 'Rockstar', 'Passionate guitarist with 10 years experience in rock and indie music.', 'alex.band@test.com', '434-555-0101', 'Alternative', 'Guitar', 'test123'),
     ('Jamie', 'Beats', 'Professional drummer specializing in rock, jazz, and fusion styles.', 'jamie.drums@test.com', '434-555-0202', 'Jazz', 'Drums', 'test123');
 
--- Create user roles for test users
-INSERT INTO user_roles (user_id, role_id) VALUES
-    (1, 4),  -- wxtj exec -> WXTJ Executive
-    (2, 3),  -- Test User -> General User  
-    (3, 1),  -- Alex Rockstar -> Band Leader
-    (4, 2);  -- Jamie Beats -> Band Member
+-- Create user roles for test users (with proper context)
+INSERT INTO user_roles (user_id, role_id, role_context_type, role_context_id) VALUES
+    (1, 4, 'general', NULL),  -- wxtj exec -> WXTJ Executive (general context)
+    (2, 3, 'general', NULL),  -- Test User -> General User (general context)
+    (3, 3, 'general', NULL),  -- Alex Rockstar -> General User (general context)
+    (3, 1, 'band', 1),        -- Alex Rockstar -> Band Leader (band context for band_id 1)
+    (4, 3, 'general', NULL),  -- Jamie Beats -> General User (general context)
+    (4, 2, 'band', 1);        -- Jamie Beats -> Band Member (band context for band_id 1)
 
 -- Create a test band for the band leader
 INSERT INTO band (name, email, phone_number, genre, total_events_played, events_played_ytd, description) VALUES
@@ -376,19 +380,21 @@ INSERT INTO band (name, email, phone_number, genre, total_events_played, events_
 
 -- Create band leadership relationship
 INSERT INTO band_leader (user_role_id, band_id) VALUES
-    (3, 1);  -- Alex (user_role_id 3) leads Electric Vibes (band_id 1)
+    (4, 1);  -- Alex's Band Leader role (user_role_id 4) for Electric Vibes (band_id 1)
 
 -- Create band membership relationship  
 INSERT INTO band_member (user_role_id, band_id) VALUES
-    (4, 1);  -- Jamie (user_role_id 4) is member of Electric Vibes (band_id 1)
+    (6, 1);  -- Jamie's Band Member role (user_role_id 6) for Electric Vibes (band_id 1)
 
 -- Create WXTJ executive record
 INSERT INTO wxtj_exec (user_role_id, exec_title) VALUES
-    (1, 'Executive');  -- wxtj exec with title
+    (1, 'Executive');  -- wxtj exec with title (user_role_id 1)
 
--- Create general user record
+-- Create general user records (all users with General User role)
 INSERT INTO general_user (user_role_id, looking_for_a_band, has_created_band, has_pending_band_request) VALUES
-    (2, 0, 0, 0);  -- Test User - general user status
+    (2, 0, 0, 0),  -- Test User - general user status (user_role_id 2)
+    (3, 0, 1, 0),  -- Alex - general user who created a band (user_role_id 3)
+    (5, 0, 0, 0);  -- Jamie - general user who joined a band (user_role_id 5)
 
 -- ===============================================
 -- ADDITIVE ROLE SYSTEM IMPLEMENTATION NOTES

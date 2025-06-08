@@ -24,11 +24,23 @@ router.get('/', async (req, res, next) => {
         b.name AS bandName,
         u.first_name AS creatorFirstName,
         u.last_name AS creatorLastName,
-        r.role_name AS creatorRole
+        (
+          SELECT r.role_name 
+          FROM user_roles ur 
+          JOIN roles r ON ur.role_id = r.role_id 
+          WHERE ur.user_id = u.user_id 
+          ORDER BY 
+            CASE r.role_name 
+              WHEN 'WXTJ Executive' THEN 1
+              WHEN 'Band Leader' THEN 2  
+              WHEN 'Band Member' THEN 3
+              WHEN 'General User' THEN 4
+              ELSE 5
+            END
+          LIMIT 1
+        ) AS creatorRole
       FROM event e
       JOIN user u ON e.user_id = u.user_id
-      JOIN user_roles ur ON u.user_id = ur.user_id
-      JOIN roles r ON ur.role_id = r.role_id
       LEFT JOIN band b ON e.assigned_band_id = b.band_id
       ORDER BY e.event_date DESC, e.time_slot ASC;
     `;
