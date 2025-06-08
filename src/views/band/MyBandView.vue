@@ -66,6 +66,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import { useAuth } from '@/composables/useAuth';
 
 // Import dedicated CSS file
 import '@/assets/views/my-band-view.css';
@@ -110,6 +111,7 @@ interface BandEvent {
 // Composables
 const router = useRouter();
 const toast = useToast();
+const { getUserId } = useAuth();
 
 // Reactive state
 const bandInfo = ref<BandInfo>({
@@ -134,8 +136,7 @@ const leavingBand = ref(false);
 
 // Computed properties
 const currentUser = computed(() => {
-    // This would come from your auth store/composable
-    return { id: 'current-user-id' }; // Replace with actual user data
+    return { id: getUserId() || '' };
 });
 
 const isLeader = computed(() => {
@@ -158,7 +159,10 @@ const isOnlyMember = computed(() => {
 const fetchBandInfo = async () => {
     try {
         // First get user's band status to find their band ID
-        const currentUserId = '2'; // TODO: Get from auth/session
+        const currentUserId = getUserId();
+        if (!currentUserId) {
+            throw new Error('User not authenticated');
+        }
         console.log('MyBandView: Using currentUserId:', currentUserId);
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
         
@@ -211,7 +215,10 @@ const fetchBandInfo = async () => {
 const fetchUpcomingEvents = async () => {
     try {
         // First get user's band status to find their band ID
-        const currentUserId = '2'; // TODO: Get from auth/session
+        const currentUserId = getUserId();
+        if (!currentUserId) {
+            throw new Error('User not authenticated');
+        }
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
         
         if (!statusResponse.ok) {
@@ -253,7 +260,10 @@ const fetchUpcomingEvents = async () => {
 const setAvailability = async (eventId: string, availability: boolean) => {
     try {
         // First get user's band ID
-        const currentUserId = '2'; // TODO: Get from auth/session
+        const currentUserId = getUserId();
+        if (!currentUserId) {
+            throw new Error('User not authenticated');
+        }
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
         
         if (!statusResponse.ok) {
@@ -362,7 +372,10 @@ const forceLeave = async () => {
     
     try {
         // Get current user ID and band ID
-        const currentUserId = '2'; // TODO: Get from auth/session
+        const currentUserId = getUserId();
+        if (!currentUserId) {
+            throw new Error('User not authenticated');
+        }
         const bandId = bandInfo.value.id;
         
         const response = await fetch(`/api/bands/${bandId}/leave`, {
@@ -406,7 +419,10 @@ const confirmLeaveBand = async () => {
     
     try {
         // Get current user ID and band ID
-        const currentUserId = '2'; // TODO: Get from auth/session
+        const currentUserId = getUserId();
+        if (!currentUserId) {
+            throw new Error('User not authenticated');
+        }
         const bandId = bandInfo.value.id;
         
         const response = await fetch(`/api/bands/${bandId}/leave`, {

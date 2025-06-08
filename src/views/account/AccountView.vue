@@ -228,6 +228,7 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { useReferenceData } from '@/composables/useReferenceData';
 import { containsProfanity } from '@/utils/profanityFilter';
+import { useAuth } from '@/composables/useAuth';
 
 // Aligned with `user` table from core_db_structure.sql
 interface UserProfile {
@@ -241,22 +242,9 @@ interface UserProfile {
     genre: string | null;
 }
 
-// Get current authenticated user ID from localStorage
-const getCurrentUserId = () => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            const user = JSON.parse(savedUser);
-            return String(user.userId);
-        } catch (error) {
-            console.error('Error parsing saved user:', error);
-            return null;
-        }
-    }
-    return null;
-};
-
-const currentUserId = ref(getCurrentUserId());
+// Get current authenticated user ID from auth system
+const { getUserId } = useAuth();
+const currentUserId = computed(() => getUserId());
 
 // Reference data (fetched from API)
 const { genres, instruments, initializeGenres, initializeInstruments } = useReferenceData();

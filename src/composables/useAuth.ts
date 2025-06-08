@@ -1,73 +1,80 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue'
 
-// Define the User interface based on what's stored in localStorage
 interface User {
-  userId: number;
-  role: 'anonymous' | 'general' | 'band_member' | 'band_leader' | 'exec';
-  // Add other user properties if they exist in the stored object
-  firstName?: string;
-  lastName?: string;
-  email?: string;
+  userId: string
+  email: string
+  firstName: string
+  lastName: string
+  role?: string
 }
 
-// Reactive state for the current user
-const currentUser = ref<User | null>(null);
+// Global reactive state
+const currentUser = ref<User | null>(null)
+const isAuthenticated = computed(() => !!currentUser.value)
 
-export function useAuth() {
-
-  // Computed property to easily check if a user is signed in
-  const isSignedIn = computed(() => !!currentUser.value);
-
-  // Computed property to get the user's role
-  const userRole = computed(() => currentUser.value?.role || 'anonymous');
-  
-  // Function to check and initialize the user state from localStorage
-  const checkAuthState = () => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      try {
-        currentUser.value = JSON.parse(savedUser);
-      } catch (e) {
-        console.error('Failed to parse user from localStorage:', e);
-        localStorage.removeItem('currentUser');
-        currentUser.value = null;
+// Initialize from localStorage on module load
+const initializeAuth = () => {
+  const savedUser = localStorage.getItem('currentUser')
+  if (savedUser) {
+    try {
+      const userData = JSON.parse(savedUser)
+      currentUser.value = {
+        userId: String(userData.userId),
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role
       }
-    } else {
-      currentUser.value = null;
+      console.log('Auth initialized with user:', currentUser.value)
+    } catch (error) {
+      console.error('Error parsing saved user from localStorage:', error)
+      localStorage.removeItem('currentUser')
     }
-  };
+  }
+}
 
-  // Function to handle login
-  const login = (user: User) => {
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    currentUser.value = user;
-  };
-  
-  // Function to handle logout
+// Initialize immediately
+initializeAuth()
+
+export const useAuth = () => {
+  const login = (userData: User) => {
+    currentUser.value = userData
+    localStorage.setItem('currentUser', JSON.stringify(userData))
+    console.log('User logged in:', userData)
+  }
+
   const logout = () => {
-    localStorage.removeItem('currentUser');
-    currentUser.value = null;
-    // Optionally, redirect to home page after logout
-    // This should be handled in the component calling logout
-  };
-  
-  // On component mount, check the auth state
-  // This ensures the state is reactive to changes in other tabs
-  onMounted(checkAuthState);
-  
-  // Also add a listener for storage events to sync across tabs
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'currentUser') {
-      checkAuthState();
-    }
-  });
+    currentUser.value = null
+    localStorage.removeItem('currentUser')
+    console.log('User logged out')
+  }
+
+  const refreshUser = () => {
+    initializeAuth()
+  }
+
+  const getUserId = () => {
+    return currentUser.value?.userId || null
+  }
+
+  const getUserName = () => {
+    if (!currentUser.value) return null
+    return `${currentUser.value.firstName} ${currentUser.value.lastName}`
+  }
+
+  const getInitials = () => {
+    if (!currentUser.value) return ''
+    return `${currentUser.value.firstName.charAt(0)}${currentUser.value.lastName.charAt(0)}`.toUpperCase()
+  }
 
   return {
-    currentUser,
-    isSignedIn,
-    userRole,
+    currentUser: computed(() => currentUser.value),
+    isAuthenticated,
     login,
     logout,
-    checkAuthState
-  };
-} 
+    refreshUser,
+    getUserId,
+    getUserName,
+    getInitials
+  }
+}

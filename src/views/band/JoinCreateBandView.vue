@@ -246,6 +246,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import { useAuth } from '@/composables/useAuth';
 
 // Import dedicated CSS file
 import '@/assets/views/join-create-band.css';
@@ -265,6 +266,7 @@ const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const { genres, initializeGenres } = useReferenceData();
+const { getUserId } = useAuth();
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 interface BandListItem {
@@ -296,7 +298,7 @@ interface UserBandStatus {
 }
 
 // --- Reactive Data ---
-const currentUserId = ref('2'); // TODO: Get from auth/session - using test user
+const currentUserId = computed(() => getUserId());
 const currentUserProfile = ref<UserBandStatus>({
     isMemberOfBand: false,
     hasCreatedBand: false, 
@@ -506,6 +508,16 @@ const createBand = async () => {
         return;
     }
     
+    // Debug: Log the values being sent
+    console.log('Creating band with data:', {
+        name: bandForm.value.name,
+        genre: bandForm.value.genre,
+        description: bandForm.value.description,
+        location: bandForm.value.location || null,
+        creatorUserId: currentUserId.value,
+        currentUserId: currentUserId.value
+    });
+    
     try {
         const response = await fetch('/api/bands', {
             method: 'POST',
@@ -517,7 +529,7 @@ const createBand = async () => {
                 genre: bandForm.value.genre,
                 description: bandForm.value.description,
                 location: bandForm.value.location || null,
-                leaderId: currentUserId.value
+                creatorUserId: currentUserId.value
             })
         });
         

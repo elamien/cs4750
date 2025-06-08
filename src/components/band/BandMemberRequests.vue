@@ -96,9 +96,11 @@ import Avatar from 'primevue/avatar';
 import Badge from 'primevue/badge';
 import Button from 'primevue/button';
 import { useToast } from 'primevue/usetoast';
+import { useAuth } from '@/composables/useAuth';
 
 const router = useRouter();
 const toast = useToast();
+const { getUserId } = useAuth();
 
 interface MembershipRequest {
     id: string;
@@ -128,22 +130,9 @@ const membershipRequests = ref<MembershipRequest[]>([]);
 // Computed - show only first 3 requests to keep dashboard clean
 const pendingRequests = ref<MembershipRequest[]>([]);
 
-// Get current user ID
-const getCurrentUserId = () => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            const user = JSON.parse(savedUser);
-            return String(user.userId);
-        } catch (error) {
-            console.error('Error parsing saved user:', error);
-            return null;
-        }
-    }
-    return null;
-};
-
-const currentUserId = getCurrentUserId();
+// Get current user ID from auth system
+const currentUserId = getUserId();
+console.log('BandMemberRequests: Using currentUserId:', currentUserId);
 
 // Get current band ID
 const getCurrentBandId = () => {
@@ -216,21 +205,43 @@ const fetchMembershipRequests = async () => {
 };
 
 const approveRequest = async (request: MembershipRequest) => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+        console.error('BandMemberRequests: No currentUserId available for approval');
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'User session not found. Please refresh the page.',
+            life: 3000
+        });
+        return;
+    }
     
     processingRequest.value = request.id;
     
     try {
         const bandId = getCurrentBandId();
+        const requestBody = {
+            respondedByUserId: currentUserId
+        };
+        
+        console.log('BandMemberRequests: Approving request with:', {
+            bandId,
+            requestId: request.id,
+            requestBody,
+            currentUserId,
+            currentUserIdType: typeof currentUserId
+        });
+        
         const response = await fetch(`/api/bands/${bandId}/membership-requests/${request.id}/approve`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                respondedByUserId: currentUserId
-            })
+            body: JSON.stringify(requestBody)
         });
+        
+        console.log('BandMemberRequests: Response status:', response.status);
+        console.log('BandMemberRequests: Response headers:', [...response.headers.entries()]);
         
         if (!response.ok) {
             const errorData = await response.json();

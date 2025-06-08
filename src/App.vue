@@ -31,9 +31,9 @@
                 </template>
                 <template #end>
                     <div class="navbar-end">
-                        <div v-if="isSignedIn" class="navbar-user-section">
+                        <div v-if="isAuthenticated" class="navbar-user-section">
                             <RouterLink 
-                                v-if="userRole === 'exec'"
+                                v-if="currentUser?.role === 'exec'"
                                 to="/admin"
                                 v-ripple 
                                 class="flex items-center nav-link"
@@ -62,7 +62,7 @@
                                     v-ripple
                                 >
                                     <Avatar 
-                                        :label="currentUser?.firstName && currentUser?.lastName ? getInitials(currentUser.firstName, currentUser.lastName) : 'U'" 
+                                        :label="currentUser?.firstName && currentUser?.lastName ? getInitials() : 'U'" 
                                         shape="circle" 
                                         class="profile-avatar"
                                     />
@@ -240,7 +240,7 @@ import { containsProfanity } from '@/utils/profanityFilter';
 const router = useRouter();
 
 // Authentication state from composable
-const { isSignedIn, userRole, currentUser, login, logout, checkAuthState } = useAuth();
+const { isAuthenticated, currentUser, login, logout, refreshUser, getInitials } = useAuth();
 
 // Theme state
 const isDarkMode = ref(false);
@@ -341,13 +341,13 @@ const devItems: MenuItem[] = import.meta.env.DEV ? [] : [];
 
 // Computed menu items based on user role
 const menuItems = computed<MenuItem[]>(() => {
-    if (!isSignedIn.value) {
+    if (!isAuthenticated.value) {
         return [...anonymousItems, ...devItems];
     }
     
     let items = [...baseSignedInItems]; // Start with items all signed-in users get
     
-    switch (userRole.value) {
+    switch (currentUser.value?.role) {
         case 'general':
             items = [...items, ...generalUserExtraItems];
             break;
@@ -627,10 +627,7 @@ watch([showAuthModal, authMode], async ([modalVisible, mode]) => {
     }
 });
 
-// Utility functions
-const getInitials = (firstName: string, lastName: string): string => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-};
+// Utility functions - getInitials is now provided by useAuth composable
 
 // Initialize theme and authentication from localStorage
 onMounted(() => {
@@ -642,7 +639,7 @@ onMounted(() => {
     }
     
     // Initialize authentication state via composable
-    checkAuthState();
+    refreshUser();
     
     // Dynamically calculate navbar height for toast positioning
     const navbarElement = document.querySelector('.navbar');
