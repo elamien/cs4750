@@ -236,3 +236,72 @@ ul#genre_list.p-select-list li:focus {
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.05) !important;
 }
+
+/* Glassmorphism for BrowseBandsComponent filters and cards */
+.browse-bands-content .filters {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(5px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.browse-bands-content .band-card {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(5px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Dark mode for browse bands */
+[data-theme="dark"] .browse-bands-content .filters,
+[data-theme="dark"] .browse-bands-content .band-card {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Glassmorphism for filter input fields */
+.browse-bands-content .filters .p-inputtext,
+.browse-bands-content .filters .p-dropdown,
+div#genre.p-select.p-component.p-inputwrapper.w-full {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(5px) !important;
+    transition: all 0.2s ease !important;
+}
+
+.browse-bands-content .filters .p-inputtext:hover,
+.browse-bands-content .filters .p-dropdown:hover,
+div#genre.p-select.p-component.p-inputwrapper.w-full:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.browse-bands-content .filters .p-inputtext:focus,
+.browse-bands-content .filters .p-dropdown:focus,
+div#genre.p-select.p-component.p-inputwrapper.w-full:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .browse-bands-content .filters .p-inputtext,
+[data-theme="dark"] .browse-bands-content .filters .p-dropdown,
+[data-theme="dark"] div#genre.p-select.p-component.p-inputwrapper.w-full {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+[data-theme="dark"] .browse-bands-content .filters .p-inputtext:hover,
+[data-theme="dark"] .browse-bands-content .filters .p-dropdown:hover,
+[data-theme="dark"] div#genre.p-select.p-component.p-inputwrapper.w-full:hover {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="dark"] .browse-bands-content .filters .p-inputtext:focus,
+[data-theme="dark"] .browse-bands-content .filters .p-dropdown:focus,
+[data-theme="dark"] div#genre.p-select.p-component.p-inputwrapper.w-full:focus {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.05) !important;
+}
