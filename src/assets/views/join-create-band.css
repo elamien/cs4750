@@ -167,6 +167,15 @@ div.p-card.p-component.fill-in-requests-section.glass-card {
     padding: 0 !important;
 }
 
+/* Remove background from member requests card (same as events) */
+div.p-card.p-component.member-requests-section.glass-card {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
 /* Dark mode override for upcoming events card */
 [data-theme="dark"] div.p-card.p-component.events-section.glass-card {
     background: transparent !important;
@@ -257,15 +266,57 @@ div.upcoming-events-header {
 }
 
 /* Background for fill-in requests header (same as upcoming events) */
-div.fill-in-requests-header {
+div.fill-in-requests-header-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+div.fill-in-requests-header,
+button.fill-in-requests-header {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
     display: inline-block;
+    width: fit-content;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+button.fill-in-requests-header.request-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+button.fill-in-requests-header:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Wrapper for member requests title and badge */
+div.member-requests-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Background for member requests header (same as upcoming events) */
+div.member-requests-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1rem;
+    display: inline-flex;
+    align-items: center;
     width: fit-content;
 }
 
@@ -276,9 +327,46 @@ div.fill-in-requests-header {
 }
 
 /* Dark mode for fill-in requests header */
-[data-theme="dark"] div.fill-in-requests-header {
+[data-theme="dark"] div.fill-in-requests-header,
+[data-theme="dark"] button.fill-in-requests-header {
     background: rgba(0, 0, 0, 0.2);
     border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] button.fill-in-requests-header:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark mode for member requests header */
+[data-theme="dark"] div.member-requests-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Style the membership requests badge to match the manage button */
+.member-requests-badge.p-badge {
+    background: rgba(255, 193, 7, 0.3) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 193, 7, 0.4) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    height: 32px !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.875rem !important;
+}
+
+/* Dark mode for membership requests badge */
+[data-theme="dark"] .member-requests-badge.p-badge {
+    background: rgba(255, 193, 7, 0.4) !important;
+    border-color: rgba(255, 193, 7, 0.5) !important;
 }
 
 /* Remove padding from card body in upcoming events section */
@@ -288,6 +376,11 @@ div.fill-in-requests-header {
 
 /* Remove padding from card body in fill-in requests section */
 .fill-in-requests-section div.p-card-body {
+    padding: 0 !important;
+}
+
+/* Remove padding from card body in member requests section */
+.member-requests-section div.p-card-body {
     padding: 0 !important;
 }
 

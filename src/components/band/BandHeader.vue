@@ -7,25 +7,19 @@
             </div>
             <div v-if="bandInfo.name" class="header-actions">
                 <Button
-                    label="Actions"
-                    icon="pi pi-ellipsis-h"
-                    severity="secondary"
+                    label="Leave"
+                    icon="pi pi-sign-out"
+                    severity="danger"
                     outlined
-                    @click="toggleActionsMenu"
-                    ref="actionsButton"
+                    @click="emit('leaveBand')"
                 />
                 <Button
+                    v-if="isCurrentUserLeader"
                     label="Edit"
                     icon="pi pi-cog"
                     severity="secondary"
                     outlined
                     @click="showBandInfoModal"
-                    ref="infoButton"
-                />
-                <Menu
-                    ref="actionsMenu"
-                    :model="actionMenuItems"
-                    :popup="true"
                 />
             </div>
         </div>
@@ -51,10 +45,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import Button from 'primevue/button';
-import Menu from 'primevue/menu';
 import Dialog from 'primevue/dialog';
 import BandInformation from './BandInformation.vue';
-import type { MenuItem } from 'primevue/menuitem';
 
 // Import dedicated CSS file
 import '@/assets/components/band-header.css';
@@ -76,46 +68,44 @@ interface BandInfo {
     members: BandUser[];
 }
 
-defineProps<{
+const props = defineProps<{
     bandInfo: BandInfo;
 }>();
 
 const emit = defineEmits<{
-    postFillInRequest: [];
     leaveBand: [];
     bandUpdated: [bandInfo: BandInfo];
 }>();
 
-// Refs for menu and modal
-const actionsMenu = ref();
-const actionsButton = ref();
-const infoButton = ref();
-
 // Modal state
 const showBandInfoDialog = ref(false);
 
-// Menu items
-const actionMenuItems = computed<MenuItem[]>(() => [
-    {
-        label: 'Request Fill-in',
-        icon: 'pi pi-send',
-        command: () => emit('postFillInRequest')
-    },
-    {
-        separator: true
-    },
-    {
-        label: 'Leave Band',
-        icon: 'pi pi-sign-out',
-        command: () => emit('leaveBand'),
-        class: 'text-red-500'
+// Get current user ID
+const getCurrentUserId = () => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            return String(user.userId);
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            return null;
+        }
     }
-]);
-
-// Toggle actions menu
-const toggleActionsMenu = (event: Event) => {
-    actionsMenu.value.toggle(event);
+    return null;
 };
+
+const currentUserId = getCurrentUserId();
+
+// Check if current user is a band leader
+const isCurrentUserLeader = computed(() => {
+    if (!currentUserId) return false;
+    return props.bandInfo.members.some(member =>
+        member.id === currentUserId && member.role === 'Band Leader'
+    );
+});
+
+
 
 // Show band info modal
 const showBandInfoModal = () => {

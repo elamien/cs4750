@@ -6,7 +6,7 @@
                 <div class="members-title">
                     <span>Band Members</span>
                 </div>
-                <div class="members-actions">
+                <div class="members-actions" v-if="isCurrentUserLeader">
                     <Button
                         v-if="selectedMembers.length > 0"
                         :label="`Remove ${selectedMembers.length} Member${selectedMembers.length !== 1 ? 's' : ''}`"
@@ -145,7 +145,7 @@
 // Import dedicated CSS file
 import '@/assets/components/band-members.css';
 
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import Card from 'primevue/card';
 import Avatar from 'primevue/avatar';
 import Tag from 'primevue/tag';
@@ -200,6 +200,14 @@ const getCurrentUserId = () => {
 };
 
 const currentUserId = getCurrentUserId();
+
+// Check if current user is a band leader
+const isCurrentUserLeader = computed(() => {
+    if (!currentUserId) return false;
+    return props.members.some(member =>
+        member.id === currentUserId && member.role === 'Band Leader'
+    );
+});
 
 // Get current band ID
 const getCurrentBandId = () => {

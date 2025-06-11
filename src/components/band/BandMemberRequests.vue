@@ -1,12 +1,11 @@
 <template>
     <Card class="member-requests-section glass-card">
         <template #title>
-            <div class="requests-header">
-                <span>Membership Requests</span>
-                <div v-if="pendingRequests.length > 0" class="pending-info">
-                    <Badge value="Pending" severity="warning" />
-                    <Badge :value="pendingRequests.length" />
+            <div class="member-requests-title-wrapper">
+                <div class="member-requests-header">
+                    <span>Membership Requests</span>
                 </div>
+                <Badge v-if="pendingRequests.length > 0" :value="pendingRequests.length" severity="warning" class="member-requests-badge" />
             </div>
         </template>
         <template #content>
@@ -221,7 +220,7 @@ const approveRequest = async (request: MembershipRequest) => {
     try {
         const bandId = getCurrentBandId();
         const requestBody = {
-            respondedByUserId: currentUserId
+            userId: currentUserId
         };
 
         console.log('BandMemberRequests: Approving request with:', {
@@ -285,7 +284,7 @@ const rejectRequest = async (request: MembershipRequest) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                respondedByUserId: currentUserId
+                userId: currentUserId
             })
         });
 

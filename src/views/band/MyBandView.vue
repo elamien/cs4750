@@ -30,6 +30,7 @@
                 <BandFillInRequests
                     class="fill-in-requests-section"
                     :band-id="bandInfo.id"
+                    :band-members="bandInfo.members"
                     @create-fill-in-request="handlePostFillInRequest"
                 />
             </div>

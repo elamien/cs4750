@@ -89,6 +89,7 @@
                                     :class="{ 'p-invalid': !form.unavailableMemberId && formSubmitted }"
                                 />
                                 <small v-if="!form.unavailableMemberId && formSubmitted" class="p-error">Please select the unavailable member</small>
+                                <small v-if="bandMembers.length === 1" class="p-info">As a band member, you can only create fill-in requests for yourself</small>
                             </div>
 
 
@@ -363,13 +364,28 @@ const fetchBandMembers = async (bandId: string) => {
         if (!response.ok) throw new Error('Failed to fetch band members');
 
         const members = await response.json();
-        bandMembers.value = members.map((member: { id: string; firstName: string; lastName: string; instrument?: string }) => ({
+        const allMembers = members.map((member: { id: string; firstName: string; lastName: string; instrument?: string; role?: string }) => ({
             id: member.id,
             firstName: member.firstName,
             lastName: member.lastName,
             fullName: `${member.firstName} ${member.lastName}`,
-            instrument: member.instrument || 'Not specified'
+            instrument: member.instrument || 'Not specified',
+            role: member.role
         }));
+
+        // Check if current user is a band leader
+        const currentUser = allMembers.find(member => member.id === currentUserId.value);
+        const isLeader = currentUser?.role === 'Band Leader';
+
+        // If user is a leader, they can select any member
+        // If user is a regular member, they can only select themselves
+        if (isLeader) {
+            bandMembers.value = allMembers;
+        } else {
+            // Only show the current user in the dropdown
+            bandMembers.value = allMembers.filter(member => member.id === currentUserId.value);
+        }
+
     } catch (error) {
         console.error('Error fetching band members:', error);
         bandMembers.value = [];
