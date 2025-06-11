@@ -27,7 +27,7 @@
                             <img src="https://via.placeholder.com/400x200/cccccc/969696?text=Band+Image" :alt="band.name" class="favorite-image" />
                         </template>
                         <template #title>{{ band.name }}</template>
-                        <template #subtitle>{{ band.genre }}</template>
+                                                <template #subtitle>{{ band.genre }}</template>
                         <template #content>
                             <p class="band-description">{{ band.description || 'No description available.' }}</p>
                             <div class="band-contact">
@@ -38,12 +38,10 @@
                         <template #footer>
                             <div class="card-actions">
                                 <Button label="View Band" icon="pi pi-eye" @click="viewBandDetails(band.id)" />
-                                <Button
-                                    label="Remove Favorite"
-                                    icon="pi pi-heart-fill"
-                                    severity="danger"
-                                    outlined
-                                    @click="removeFavoriteBand(band.id)"
+                                <BrokenHeart
+                                    @broken="removeFavoriteBand(band.id)"
+                                    tooltip="Remove from favorites"
+                                    size="small"
                                 />
                             </div>
                         </template>
@@ -421,7 +419,7 @@ onMounted(async () => {
     gap: 0.5rem;
 }
 
-.event-details {
+.event-details, .band-details {
     margin: 1rem 0;
     display: flex;
     flex-direction: column;
@@ -441,6 +439,8 @@ onMounted(async () => {
 
 .card-actions {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
     margin-top: auto; /* Push actions to bottom */
