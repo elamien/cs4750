@@ -125,6 +125,8 @@
     text-align: center;
     padding: 2rem;
     color: var(--theme-secondary-text);
+    border: 1px dashed var(--p-surface-border) !important;
+    border-radius: 8px !important;
 }
 
 @media (max-width: 768px) {
