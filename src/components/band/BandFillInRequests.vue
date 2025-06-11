@@ -2,10 +2,10 @@
     <Card class="fill-in-requests-section glass-card">
         <template #title>
             <div class="fill-in-requests-header-row">
-                <div class="fill-in-requests-header">Fill-In Requests</div>
+                <div class="fill-in-requests-header">Fill-ins</div>
                 <button class="fill-in-requests-header request-button" @click="$emit('createFillInRequest')">
                     <i class="pi pi-plus"></i>
-                    Request Fill-In
+                    Request
                 </button>
             </div>
         </template>
@@ -19,13 +19,6 @@
                 <div class="empty-content">
                     <i class="pi pi-calendar-times"></i>
                     <p>Your band hasn't posted any fill-in requests yet.</p>
-                    <Button
-                        label="Create Fill-In Request"
-                        icon="pi pi-plus"
-                        @click="$emit('createFillInRequest')"
-                        severity="primary"
-                        size="small"
-                    />
                 </div>
             </div>
 
@@ -118,30 +111,9 @@ defineEmits<{
 const loading = ref(true);
 const fillInRequests = ref<FillInRequest[]>([]);
 
-// Get current user ID
-const getCurrentUserId = () => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            const user = JSON.parse(savedUser);
-            return String(user.userId);
-        } catch (error) {
-            console.error('Error parsing saved user:', error);
-            return null;
-        }
-    }
-    return null;
-};
 
-const currentUserId = getCurrentUserId();
 
-// Check if current user is a band leader
-const isCurrentUserLeader = computed(() => {
-    if (!currentUserId || !props.bandMembers) return false;
-    return props.bandMembers.some(member =>
-        member.id === currentUserId && member.role === 'Band Leader'
-    );
-});
+
 
 // Computed
 const displayRequests = computed(() => {

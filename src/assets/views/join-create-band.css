@@ -106,7 +106,7 @@ div.members-actions .p-button {
     background: rgba(34, 197, 94, 0.3) !important;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(34, 197, 94, 0.4) !important;
-    border-radius: 12px !important;
+    border-radius: 30px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
     color: white !important;
     padding: 0.75rem 1rem !important;
@@ -272,12 +272,22 @@ div.fill-in-requests-header-row {
     margin-bottom: 1rem;
 }
 
-div.fill-in-requests-header,
-button.fill-in-requests-header {
+div.fill-in-requests-header {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+button.fill-in-requests-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     padding: 0.75rem 1rem;
     display: inline-block;
@@ -292,11 +302,27 @@ button.fill-in-requests-header.request-button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    background: rgba(34, 197, 94, 0.3) !important;
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    color: white !important;
+}
+
+/* White text and icon for Request Fill-In button */
+button.fill-in-requests-header.request-button .p-button-label,
+button.fill-in-requests-header.request-button .p-button-icon,
+button.fill-in-requests-header.request-button i {
+    color: white !important;
 }
 
 button.fill-in-requests-header:hover {
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Specific hover state for Request Fill-In button */
+button.fill-in-requests-header.request-button:hover {
+    background: rgba(34, 197, 94, 0.4) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
 }
 
 /* Wrapper for member requests title and badge */
@@ -336,6 +362,17 @@ div.member-requests-header {
 [data-theme="dark"] button.fill-in-requests-header:hover {
     background: rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark mode for Request Fill-In button specifically */
+[data-theme="dark"] button.fill-in-requests-header.request-button {
+    background: rgba(34, 197, 94, 0.4) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+[data-theme="dark"] button.fill-in-requests-header.request-button:hover {
+    background: rgba(34, 197, 94, 0.5) !important;
+    border-color: rgba(34, 197, 94, 0.6) !important;
 }
 
 /* Dark mode for member requests header */
@@ -391,28 +428,7 @@ div.p-card.p-component.member-requests-section.glass-card {
 
 
 
-/* Glass morphism effect for Create Fill-In Request button */
-div.fill-in-requests-section .empty-content .p-button {
-    background: rgba(34, 197, 94, 0.3) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(34, 197, 94, 0.4) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-    color: white !important;
-    font-weight: 600 !important;
-}
 
-/* White text and icon for Create Fill-In Request button */
-div.fill-in-requests-section .empty-content .p-button .p-button-label,
-div.fill-in-requests-section .empty-content .p-button .p-button-icon {
-    color: white !important;
-}
-
-/* Dark mode for Create Fill-In Request button */
-[data-theme="dark"] div.fill-in-requests-section .empty-content .p-button {
-    background: rgba(34, 197, 94, 0.4) !important;
-    border-color: rgba(34, 197, 94, 0.5) !important;
-}
 
 /* Dotted outline for Fill-In Requests empty state */
 div.fill-in-requests-section .empty-state {

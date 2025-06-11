@@ -3,7 +3,7 @@
         <template #title>
             <div class="member-requests-title-wrapper">
                 <div class="member-requests-header">
-                    <span>Membership Requests</span>
+                <span>Membership Requests</span>
                 </div>
                 <Badge v-if="pendingRequests.length > 0" :value="pendingRequests.length" severity="warning" class="member-requests-badge" />
             </div>

@@ -4,7 +4,7 @@
         <template #title>
             <div class="members-header">
                 <div class="members-title">
-                    <span>Band Members</span>
+                <span>Band Members</span>
                 </div>
                 <div class="members-actions" v-if="isCurrentUserLeader">
                     <Button
