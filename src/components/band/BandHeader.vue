@@ -7,20 +7,20 @@
             </div>
             <div v-if="bandInfo.name" class="header-actions">
                 <Button
-                    label="Edit"
-                    icon="pi pi-cog"
-                    severity="secondary"
-                    outlined
-                    @click="showBandInfoModal"
-                    ref="infoButton"
-                />
-                <Button
                     label="Actions"
                     icon="pi pi-ellipsis-h"
                     severity="secondary"
                     outlined
                     @click="toggleActionsMenu"
                     ref="actionsButton"
+                />
+                <Button
+                    label="Edit"
+                    icon="pi pi-cog"
+                    severity="secondary"
+                    outlined
+                    @click="showBandInfoModal"
+                    ref="infoButton"
                 />
                 <Menu
                     ref="actionsMenu"
