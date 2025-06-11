@@ -74,11 +74,6 @@ const router = createRouter({
     },
     // Band leader routes
     {
-      path: '/my-band/info',
-      name: 'band-info',
-      component: () => import('../views/band/BandInfoView.vue'),
-    },
-    {
       path: '/my-band/members',
       name: 'band-members',
       component: () => import('../views/band/BandMembersView.vue'),

@@ -7,8 +7,8 @@
             </div>
             <div v-if="bandInfo.name" class="header-actions">
                 <Button
-                    label="Band Info"
-                    icon="pi pi-info-circle"
+                    label="Edit"
+                    icon="pi pi-cog"
                     severity="secondary"
                     outlined
                     @click="showBandInfoModal"
@@ -16,7 +16,7 @@
                 />
                 <Button
                     label="Actions"
-                    icon="pi pi-cog"
+                    icon="pi pi-ellipsis-h"
                     severity="secondary"
                     outlined
                     @click="toggleActionsMenu"
@@ -35,43 +35,15 @@
             v-model:visible="showBandInfoDialog"
             modal
             header="Band Information"
-            :style="{ width: '500px' }"
+            :style="{ width: '600px' }"
             class="band-info-modal"
         >
             <div class="modal-content">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <label><i class="pi pi-tag"></i> Genre:</label>
-                        <span>{{ bandInfo.genre || 'Not specified' }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label><i class="pi pi-map-marker"></i> Location:</label>
-                        <span>{{ bandInfo.location || 'Not specified' }}</span>
-                    </div>
-                    <div class="info-item description-item">
-                        <label><i class="pi pi-file-text"></i> Description:</label>
-                        <span>{{ bandInfo.description || 'No description provided' }}</span>
-                    </div>
-                </div>
+                <BandInformation
+                    :bandInfo="bandInfo"
+                    @band-updated="handleBandUpdated"
+                />
             </div>
-
-            <template #footer>
-                <div class="modal-actions">
-                    <Button
-                        label="Edit Band Info"
-                        icon="pi pi-pencil"
-                        @click="handleEditBandInfo"
-                        outlined
-                    />
-                    <Button
-                        label="Close"
-                        icon="pi pi-times"
-                        severity="secondary"
-                        @click="showBandInfoDialog = false"
-                        outlined
-                    />
-                </div>
-            </template>
         </Dialog>
     </div>
 </template>
@@ -81,6 +53,7 @@ import { ref, computed } from 'vue';
 import Button from 'primevue/button';
 import Menu from 'primevue/menu';
 import Dialog from 'primevue/dialog';
+import BandInformation from './BandInformation.vue';
 import type { MenuItem } from 'primevue/menuitem';
 
 // Import dedicated CSS file
@@ -110,7 +83,7 @@ defineProps<{
 const emit = defineEmits<{
     postFillInRequest: [];
     leaveBand: [];
-    editBandInfo: [];
+    bandUpdated: [bandInfo: BandInfo];
 }>();
 
 // Refs for menu and modal
@@ -149,10 +122,9 @@ const showBandInfoModal = () => {
     showBandInfoDialog.value = true;
 };
 
-// Handle edit band info
-const handleEditBandInfo = () => {
-    showBandInfoDialog.value = false;
-    emit('editBandInfo');
+// Handle band information updated
+const handleBandUpdated = (updatedBandInfo: BandInfo) => {
+    emit('bandUpdated', updatedBandInfo);
 };
 </script>
 

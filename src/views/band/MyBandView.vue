@@ -4,7 +4,7 @@
             :band-info="bandInfo"
             @leave-band="handleLeaveBand"
             @post-fill-in-request="handlePostFillInRequest"
-            @edit-band-info="handleEditBandInfo"
+            @band-updated="handleBandUpdated"
         />
 
         <div class="band-content">
@@ -459,9 +459,12 @@ const confirmLeaveBand = async () => {
     }
 };
 
-const handleEditBandInfo = () => {
-    // Navigate to the band info edit page
-    router.push('/my-band/info');
+const handleBandUpdated = (updatedBandInfo: BandInfo) => {
+    // Update the local band info state with the new band information
+    bandInfo.value = {
+        ...bandInfo.value,
+        ...updatedBandInfo
+    };
 };
 
 const handleMembersUpdated = (updatedMembers: BandUser[]) => {
