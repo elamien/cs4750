@@ -158,6 +158,15 @@ div.p-card.p-component.events-section.glass-card {
     padding: 0 !important;
 }
 
+/* Remove background from fill-in requests card (same as events) */
+div.p-card.p-component.fill-in-requests-section.glass-card {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
 /* Dark mode override for upcoming events card */
 [data-theme="dark"] div.p-card.p-component.events-section.glass-card {
     background: transparent !important;
@@ -247,8 +256,27 @@ div.upcoming-events-header {
     width: fit-content;
 }
 
+/* Background for fill-in requests header (same as upcoming events) */
+div.fill-in-requests-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    width: fit-content;
+}
+
 /* Dark mode for upcoming events header */
 [data-theme="dark"] div.upcoming-events-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode for fill-in requests header */
+[data-theme="dark"] div.fill-in-requests-header {
     background: rgba(0, 0, 0, 0.2);
     border-color: rgba(255, 255, 255, 0.1);
 }
@@ -257,6 +285,18 @@ div.upcoming-events-header {
 .events-section div.p-card-body {
     padding: 0;
 }
+
+/* Remove padding from card body in fill-in requests section */
+.fill-in-requests-section div.p-card-body {
+    padding: 0 !important;
+}
+
+/* Remove padding from member requests section card */
+div.p-card.p-component.member-requests-section.glass-card {
+    padding: 0 !important;
+}
+
+
 
 /* Glass morphism effect for Create Fill-In Request button */
 div.fill-in-requests-section .empty-content .p-button {

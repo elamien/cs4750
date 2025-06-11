@@ -1,6 +1,8 @@
 <template>
     <Card class="fill-in-requests-section glass-card">
-        <template #title>Fill-In Requests</template>
+        <template #title>
+            <div class="fill-in-requests-header">Fill-In Requests</div>
+        </template>
         <template #content>
             <div v-if="loading" class="loading-state">
                 <i class="pi pi-spinner pi-spin"></i>
