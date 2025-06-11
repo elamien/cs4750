@@ -1,37 +1,41 @@
 <template>
     <div class="my-band-view">
-        <BandHeader :band-info="bandInfo" />
-        
+        <BandHeader
+            :band-info="bandInfo"
+            @leave-band="handleLeaveBand"
+            @post-fill-in-request="handlePostFillInRequest"
+        />
+
         <div class="band-content">
             <div class="band-sections">
-                <BandUpcomingEvents 
+                <BandUpcomingEvents
                     class="events-section"
-                    :upcoming-events="upcomingEvents" 
+                    :upcoming-events="upcomingEvents"
                     @set-availability="setAvailability"
                 />
-                
-                <BandInformation 
-                    class="band-info-section" 
-                    :band-info="bandInfo" 
+
+                <BandInformation
+                    class="band-info-section"
+                    :band-info="bandInfo"
                     @band-updated="handleBandUpdated"
                 />
-                
-                <BandMembers 
-                    class="members-section" 
-                    :members="bandInfo.members" 
+
+                <BandMembers
+                    class="members-section"
+                    :members="bandInfo.members"
                     @members-updated="handleMembersUpdated"
                 />
-                
-                <BandMemberRequests 
+
+                <BandMemberRequests
                     class="member-requests-section"
                     :band-id="bandInfo.id"
                     @requests-updated="handleRequestsUpdated"
                 />
-                
-                <BandActions 
-                    class="actions-section" 
-                    @leave-band="handleLeaveBand"
-                    @post-fill-in-request="handlePostFillInRequest"
+
+                <BandFillInRequests
+                    class="fill-in-requests-section"
+                    :band-id="bandInfo.id"
+                    @create-fill-in-request="handlePostFillInRequest"
                 />
             </div>
         </div>
@@ -77,7 +81,7 @@ import BandUpcomingEvents from '@/components/band/BandUpcomingEvents.vue';
 import BandInformation from '@/components/band/BandInformation.vue';
 import BandMembers from '@/components/band/BandMembers.vue';
 import BandMemberRequests from '@/components/band/BandMemberRequests.vue';
-import BandActions from '@/components/band/BandActions.vue';
+import BandFillInRequests from '@/components/band/BandFillInRequests.vue';
 import LeaderPromotionDialog from '@/components/band/LeaderPromotionDialog.vue';
 import LeaveBandDialog from '@/components/band/LeaveBandDialog.vue';
 
@@ -165,41 +169,41 @@ const fetchBandInfo = async () => {
         }
         console.log('MyBandView: Using currentUserId:', currentUserId);
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
-        
+
         if (!statusResponse.ok) {
             throw new Error('Failed to fetch user band status');
         }
-        
+
         const statusData = await statusResponse.json();
-        
+
         if (!statusData.memberBands || statusData.memberBands.length === 0) {
             throw new Error('User is not a member of any band');
         }
-        
+
         // Get the first band (assuming single band per user)
         const userBand = statusData.memberBands[0];
         const bandId = userBand.id;
-        
+
         // Get detailed band information
         const bandResponse = await fetch(`/api/bands/${bandId}`);
         if (!bandResponse.ok) {
             throw new Error('Failed to fetch band details');
         }
         const bandData = await bandResponse.json();
-        
+
         // Get band members
         const membersResponse = await fetch(`/api/bands/${bandId}/members`);
         if (!membersResponse.ok) {
             throw new Error('Failed to fetch band members');
         }
         const membersData = await membersResponse.json();
-        
+
         // Combine the data
         bandInfo.value = {
             ...bandData,
             members: membersData
         };
-        
+
         console.log('MyBandView: Band info loaded:', bandInfo.value);
     } catch (error) {
         console.error('Error fetching band info:', error);
@@ -220,29 +224,29 @@ const fetchUpcomingEvents = async () => {
             throw new Error('User not authenticated');
         }
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
-        
+
         if (!statusResponse.ok) {
             throw new Error('Failed to fetch user band status');
         }
-        
+
         const statusData = await statusResponse.json();
-        
+
         if (!statusData.memberBands || statusData.memberBands.length === 0) {
             upcomingEvents.value = [];
             return;
         }
-        
+
         // Get the first band (assuming single band per user)
         const userBand = statusData.memberBands[0];
         const bandId = userBand.id;
-        
+
         // Get band events with user's availability
         const response = await fetch(`/api/bands/${bandId}/events?userId=${currentUserId}`);
-        
+
         if (!response.ok) {
             throw new Error('Failed to fetch events');
         }
-        
+
         const data = await response.json();
         upcomingEvents.value = data;
     } catch (error) {
@@ -265,40 +269,40 @@ const setAvailability = async (eventId: string, availability: boolean) => {
             throw new Error('User not authenticated');
         }
         const statusResponse = await fetch(`/api/users/${currentUserId}/band-status`);
-        
+
         if (!statusResponse.ok) {
             throw new Error('Failed to fetch user band status');
         }
-        
+
         const statusData = await statusResponse.json();
         if (!statusData.memberBands || statusData.memberBands.length === 0) {
             throw new Error('User is not a member of any band');
         }
-        
+
         const userBand = statusData.memberBands[0];
         const bandId = userBand.id;
-        
+
         const response = await fetch(`/api/bands/${bandId}/events/${eventId}/availability`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 userId: currentUserId,
-                isAvailable: availability 
+                isAvailable: availability
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to set availability');
         }
-        
+
         // Update local state
         const eventIndex = upcomingEvents.value.findIndex(e => e.id === eventId);
         if (eventIndex !== -1) {
             upcomingEvents.value[eventIndex].myAvailability = availability;
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
@@ -326,9 +330,9 @@ const handleLeaveBand = () => {
 
 const promoteAndLeave = async () => {
     if (!selectedNewLeader.value) return;
-    
+
     promotingLeader.value = true;
-    
+
     try {
         const response = await fetch('/api/bands/promote-and-leave', {
             method: 'POST',
@@ -340,18 +344,18 @@ const promoteAndLeave = async () => {
                 newLeaderId: selectedNewLeader.value
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to promote new leader');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'New leader promoted successfully. You have left the band.',
             life: 3000
         });
-        
+
         router.push('/');
     } catch (error) {
         console.error('Error promoting leader:', error);
@@ -369,7 +373,7 @@ const promoteAndLeave = async () => {
 
 const forceLeave = async () => {
     leavingBand.value = true;
-    
+
     try {
         // Get current user ID and band ID
         const currentUserId = getUserId();
@@ -377,7 +381,7 @@ const forceLeave = async () => {
             throw new Error('User not authenticated');
         }
         const bandId = bandInfo.value.id;
-        
+
         const response = await fetch(`/api/bands/${bandId}/leave`, {
             method: 'DELETE',
             headers: {
@@ -387,18 +391,18 @@ const forceLeave = async () => {
                 userId: currentUserId
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to leave band');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'You have left the band. The band has been disbanded.',
             life: 3000
         });
-        
+
         router.push('/');
     } catch (error) {
         console.error('Error leaving band:', error);
@@ -416,7 +420,7 @@ const forceLeave = async () => {
 
 const confirmLeaveBand = async () => {
     leavingBand.value = true;
-    
+
     try {
         // Get current user ID and band ID
         const currentUserId = getUserId();
@@ -424,7 +428,7 @@ const confirmLeaveBand = async () => {
             throw new Error('User not authenticated');
         }
         const bandId = bandInfo.value.id;
-        
+
         const response = await fetch(`/api/bands/${bandId}/leave`, {
             method: 'DELETE',
             headers: {
@@ -434,18 +438,18 @@ const confirmLeaveBand = async () => {
                 userId: currentUserId
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to leave band');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'You have successfully left the band.',
             life: 3000
         });
-        
+
         router.push('/');
     } catch (error) {
         console.error('Error leaving band:', error);
@@ -498,4 +502,4 @@ onMounted(() => {
 });
 </script>
 
-<!-- Styles moved to dedicated CSS file: src/assets/views/my-band-view.css --> 
+<!-- Styles moved to dedicated CSS file: src/assets/views/my-band-view.css -->

@@ -9,7 +9,7 @@ const filter = new Filter();
 router.get('/', async (req, res, next) => {
   try {
     const query = `
-      SELECT 
+      SELECT
         fir.fill_in_request_id AS id,
         fir.band_id AS bandId,
         b.name AS bandName,
@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
       ORDER BY fir.time_created DESC;
     `;
     const [rows] = await pool.query(query);
-    
+
     // Format dates to ISO strings if they aren't already
     const formattedRows = rows.map(row => ({
       ...row,
@@ -48,7 +48,7 @@ router.get('/', async (req, res, next) => {
       fillInMemberId: String(row.fillInMemberId),
       acceptedByUserId: row.acceptedByUserId ? String(row.acceptedByUserId) : null
     }));
-    
+
     res.json(formattedRows);
   } catch (error) {
     console.error('Failed to fetch fill-in requests:', error);
@@ -73,14 +73,36 @@ router.post('/:id/accept', async (req, res, next) => {
     }
 
     const originalRequest = requestRows[0];
+
     // Check if the user accepting is the original member who posted it
     if (String(originalRequest.fill_in_member_id) === String(acceptedByUserId)) {
       return res.status(400).json({ message: 'You cannot accept your own fill-in request.' });
     }
 
+        // NEW: Check if the user accepting is from the same band (either as member or leader)
+    const [bandMemberCheck] = await pool.query(
+      `SELECT bm.user_role_id
+       FROM band_member bm
+       JOIN user_roles ur ON bm.user_role_id = ur.user_role_id
+       WHERE bm.band_id = ? AND ur.user_id = ?`,
+      [originalRequest.band_id, acceptedByUserId]
+    );
+
+    const [bandLeaderCheck] = await pool.query(
+      `SELECT bl.user_role_id
+       FROM band_leader bl
+       JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+       WHERE bl.band_id = ? AND ur.user_id = ?`,
+      [originalRequest.band_id, acceptedByUserId]
+    );
+
+    if (bandMemberCheck.length > 0 || bandLeaderCheck.length > 0) {
+      return res.status(400).json({ message: 'Members of the same band cannot accept their own band\'s fill-in requests.' });
+    }
+
     const currentTime = new Date();
     const query = `
-      UPDATE fill_in_request 
+      UPDATE fill_in_request
       SET status = 'accepted', accepted_by_user_id = ?, time_responded = ?
       WHERE fill_in_request_id = ?;
     `;
@@ -89,7 +111,7 @@ router.post('/:id/accept', async (req, res, next) => {
     if (result.affectedRows > 0) {
       // Fetch the updated request details to return
       const [updatedRows] = await pool.query(`
-        SELECT 
+        SELECT
           fir.fill_in_request_id AS id,
           fir.band_id AS bandId,
           b.name AS bandName,
@@ -113,7 +135,7 @@ router.post('/:id/accept', async (req, res, next) => {
         LEFT JOIN user au ON fir.accepted_by_user_id = au.user_id
         WHERE fir.fill_in_request_id = ?;
       `, [fillInRequestId]);
-      
+
       if (updatedRows.length > 0) {
         const updatedRequest = {
             ...updatedRows[0],
@@ -147,15 +169,15 @@ router.post('/', async (req, res, next) => {
   fillInDescription = filter.clean(fillInDescription || '');
 
   if (!bandId || !eventId || !slotNumber || !fillInDescription) {
-    return res.status(400).json({ 
-      message: 'Band ID, event ID, slot number, and description are required.' 
+    return res.status(400).json({
+      message: 'Band ID, event ID, slot number, and description are required.'
     });
   }
 
   // Validate slot number
   if (![1, 2, 3, 4].includes(parseInt(slotNumber))) {
-    return res.status(400).json({ 
-      message: 'Slot number must be 1, 2, 3, or 4.' 
+    return res.status(400).json({
+      message: 'Slot number must be 1, 2, 3, or 4.'
     });
   }
 
@@ -177,23 +199,23 @@ router.post('/', async (req, res, next) => {
 
     // Insert the new fill-in request
     const query = `
-      INSERT INTO fill_in_request 
-      (band_id, event_id, slot_number, fill_in_member_id, fill_in_description, status, time_created) 
+      INSERT INTO fill_in_request
+      (band_id, event_id, slot_number, fill_in_member_id, fill_in_description, status, time_created)
       VALUES (?, ?, ?, ?, ?, 'pending', NOW())
     `;
-    
+
     const [result] = await pool.query(query, [
-      bandId, 
-      eventId, 
-      slotNumber, 
-      fillInMemberId, 
+      bandId,
+      eventId,
+      slotNumber,
+      fillInMemberId,
       fillInDescription
     ]);
 
     if (result.affectedRows > 0) {
       // Return the created request details
       const [newRequest] = await pool.query(`
-        SELECT 
+        SELECT
           fir.fill_in_request_id AS id,
           fir.band_id AS bandId,
           b.name AS bandName,
@@ -213,7 +235,7 @@ router.post('/', async (req, res, next) => {
         JOIN user om ON fir.fill_in_member_id = om.user_id
         WHERE fir.fill_in_request_id = ?;
       `, [result.insertId]);
-      
+
       if (newRequest.length > 0) {
         const createdRequest = {
           ...newRequest[0],
@@ -225,10 +247,10 @@ router.post('/', async (req, res, next) => {
           fillInMemberId: String(newRequest[0].fillInMemberId),
           slotNumber: Number(newRequest[0].slotNumber)
         };
-        
-        res.status(201).json({ 
-          message: 'Fill-in request created successfully.', 
-          request: createdRequest 
+
+        res.status(201).json({
+          message: 'Fill-in request created successfully.',
+          request: createdRequest
         });
       } else {
         res.status(500).json({ message: 'Failed to retrieve created request details.' });
@@ -242,4 +264,4 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-export default router; 
+export default router;

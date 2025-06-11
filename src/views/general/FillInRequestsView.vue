@@ -6,10 +6,10 @@
         </div>
 
         <div class="requests-table-container">
-            <DataTable 
+            <DataTable
                 :value="displayRequests"
                 responsiveLayout="scroll"
-                paginator 
+                paginator
                 :rows="10"
                 :rowsPerPageOptions="[5, 10, 20]"
                 v-if="displayRequests.length > 0"
@@ -41,18 +41,18 @@
                         </div>
                     </template>
                 </Column>
-                
+
                 <Column field="originalMemberName" header="Original Member" sortable style="width: 12%; min-width: 110px;" />
 
-                <Column header="Desc." style="width: 5%; min-width: 50px; text-align: center;"> 
+                <Column header="Desc." style="width: 5%; min-width: 50px; text-align: center;">
                     <template #body="slotProps">
-                        <i class="pi pi-info-circle description-tooltip-icon" 
+                        <i class="pi pi-info-circle description-tooltip-icon"
                            v-tooltip.top="{ value: slotProps.data.fillInDescription, showDelay: 300, hideDelay: 0 }"
-                           tabindex="0" 
+                           tabindex="0"
                         />
                     </template>
                 </Column>
-                
+
                 <Column field="postedDateFormatted" header="Posted On" sortable style="width: 10%; min-width: 90px;"/>
 
                 <Column field="status" header="Status" sortable style="width: 8%; min-width: 70px; text-align: center;">
@@ -64,13 +64,13 @@
                 <Column header="Action" style="width: 18%; min-width: 150px; text-align: center;">
                     <template #body="slotProps">
                         <div v-if="slotProps.data.status === 'pending'">
-                            <Button 
+                                                        <Button
                                 label="Offer to Fill In"
                                 icon="pi pi-user-plus"
                                 size="small"
                                 @click="handleOfferToFillIn(slotProps.data)"
-                                :disabled="slotProps.data.fillInMemberId === currentUser.id" /> 
-                                <small v-if="slotProps.data.fillInMemberId === currentUser.id" class="text-muted-color">This is your request</small>
+                                :disabled="slotProps.data.fillInMemberId === currentUser?.userId" />
+                                <small v-if="slotProps.data.fillInMemberId === currentUser?.userId" class="text-muted-color">This is your request</small>
                         </div>
                         <div v-else-if="slotProps.data.status === 'accepted'">
                             <span>Filled by: <strong>{{ slotProps.data.acceptedByUserName }}</strong></span>
@@ -88,7 +88,7 @@
                     </div>
                 </template>
             </DataTable>
-            
+
             <div v-else class="empty-state-full-page">
                 <i class="pi pi-megaphone" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                 <h3>No Fill-In Requests Available</h3>
@@ -106,11 +106,12 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
-
-// TODO: Replace with actual logged-in user from auth store or context
-const currentUser = ref({ id: '2', firstName: 'Charles', lastName: 'Mingus' }); 
+const { currentUser } = useAuth();
+const toast = useToast();
 
 // --- Data Interfaces (aligned with core_db_structure.sql) ---
 // Note: IDs are INT in DB but often string in APIs/frontend. Kept as string for now.
@@ -161,10 +162,10 @@ interface FillInRequest { // From fill_in_request table
 
 // --- Data State ---
 // This will be populated by an API call, e.g., in onMounted
-const allFillInRequests = ref<FillInRequest[]>([]); 
+const allFillInRequests = ref<FillInRequest[]>([]);
 
 // --- Helper Functions ---
-// TODO: These helper functions for resolving names/details might become obsolete 
+// TODO: These helper functions for resolving names/details might become obsolete
 // if the API provides fully populated FillInRequest objects.
 
 /*
@@ -210,10 +211,15 @@ const fetchFillInRequests = async () => {
 onMounted(() => {
   fetchFillInRequests();
 });
-  
+
 // Update handleOfferToFillIn to call the API
 const handleOfferToFillIn = async (request: FillInRequest) => {
-  const offeringUserId = currentUser.value.id;
+  const offeringUserId = currentUser.value?.userId;
+
+  if (!offeringUserId) {
+    console.warn('User not authenticated');
+    return;
+  }
 
   if (request.status !== 'pending' || request.fillInMemberId === offeringUserId) {
     console.warn('Cannot offer for this request or already handled.');
@@ -243,12 +249,22 @@ const handleOfferToFillIn = async (request: FillInRequest) => {
   if (reqIndex > -1) {
       allFillInRequests.value[reqIndex] = result.request;
     }
-    // TODO: Show success toast message
+
+    toast.add({
+      severity: 'success',
+      summary: 'Success!',
+      detail: 'Fill-in request accepted successfully!',
+      life: 4000
+    });
 
   } catch (error) {
     console.error('Failed to accept fill-in request:', error);
-    // TODO: Show user-friendly error message in UI (e.g., using a toast)
-    // alert(`Error: ${error.message}`); // Temporary alert
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error instanceof Error ? error.message : 'Failed to accept fill-in request',
+      life: 5000
+    });
   }
 };
 
@@ -259,7 +275,7 @@ const viewBandDetails = (bandId: string) => {
 
 
 
-// Computed property for display. 
+// Computed property for display.
 // Assumes API will provide most of this data pre-joined or additional fetches are made.
 const displayRequests = computed(() => {
   // TODO: This mapping will change significantly based on how data is fetched from the API.
@@ -402,4 +418,4 @@ const displayRequests = computed(() => {
         font-size: 0.8rem;
     }
 }
-</style> 
+</style>

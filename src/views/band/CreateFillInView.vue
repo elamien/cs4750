@@ -1,12 +1,12 @@
 <template>
     <div class="create-fill-in">
         <div class="header">
-            <h1>Post a Fill-In Request</h1>
+            <h1>Fill-In Request</h1>
             <p>Need a substitute musician for an upcoming event? Post a request here.</p>
         </div>
 
         <div v-if="loading" class="loading-state">
-            <Card>
+            <Card class="glass-card">
                 <template #content>
                     <div class="loading-content">
                         <i class="pi pi-spinner pi-spin"></i>
@@ -17,7 +17,7 @@
         </div>
 
         <div v-else-if="!userBand.id" class="no-band-state">
-        <Card>
+        <Card class="glass-card">
             <template #content>
                     <div class="empty-content">
                         <i class="pi pi-exclamation-triangle"></i>
@@ -34,7 +34,7 @@
         </div>
 
         <div v-else class="fill-in-form-container">
-            <Card>
+            <Card class="glass-card">
                 <template #title>Create Fill-In Request for {{ userBand.name }}</template>
                 <template #content>
                     <form @submit.prevent="createFillInRequest" class="fill-in-form">
@@ -48,7 +48,7 @@
                                     optionLabel="displayName"
                                     optionValue="id"
                                     placeholder="Select the event that needs coverage"
-                                    class="w-full"
+                                    class="w-full glass-item"
                                     :class="{ 'p-invalid': !form.eventId && formSubmitted }"
                                 />
                                 <small v-if="!form.eventId && formSubmitted" class="p-error">Please select an event</small>
@@ -66,7 +66,7 @@
                                     optionLabel="name"
                                     optionValue="value"
                                     placeholder="Select the slot"
-                                    class="w-full"
+                                    class="w-full glass-item"
                                     :class="{ 'p-invalid': !form.slotNumber && formSubmitted }"
                                     :disabled="!form.eventId || availableSlotOptions.length === 0"
                                 />
@@ -85,27 +85,13 @@
                                     optionLabel="fullName"
                                     optionValue="id"
                                     placeholder="Who is unavailable?"
-                                    class="w-full"
+                                    class="w-full glass-item"
                                     :class="{ 'p-invalid': !form.unavailableMemberId && formSubmitted }"
                                 />
                                 <small v-if="!form.unavailableMemberId && formSubmitted" class="p-error">Please select the unavailable member</small>
                             </div>
 
-                            <div class="field">
-                                <label for="instrument">Instrument/Role Needed *</label>
-                                <Dropdown
-                                    id="instrument"
-                                    v-model="form.instrumentNeeded"
-                                    :options="instruments"
-                                    optionLabel="name"
-                                    optionValue="value"
-                                    placeholder="What instrument is needed?"
-                                    class="w-full"
-                                    :class="{ 'p-invalid': !form.instrumentNeeded && formSubmitted }"
-                                    editable
-                                />
-                                <small v-if="!form.instrumentNeeded && formSubmitted" class="p-error">Please specify the instrument needed</small>
-                            </div>
+
 
                             <div class="field span-2">
                                 <label for="description">Requirements & Description *</label>
@@ -114,7 +100,7 @@
                                     v-model="form.description"
                                     rows="4"
                                     placeholder="Describe the requirements, skill level needed, any special notes..."
-                                    class="w-full"
+                                    class="w-full glass-item"
                                     :class="{ 'p-invalid': formErrors.description }"
                                     @input="validateForm"
                                 />
@@ -142,7 +128,7 @@
             </Card>
 
             <!-- Preview Section -->
-            <Card v-if="hasFormData" class="preview-card">
+            <Card v-if="hasFormData" class="preview-card glass-card">
                 <template #title>
                     <div class="preview-header">
                         <i class="pi pi-eye"></i>
@@ -167,9 +153,6 @@
                         <div v-if="selectedMember" class="preview-item">
                             <strong>Unavailable Member:</strong> {{ selectedMember.fullName }}
                         </div>
-                        <div v-if="form.instrumentNeeded" class="preview-item">
-                            <strong>Instrument Needed:</strong> {{ form.instrumentNeeded }}
-                        </div>
                         <div v-if="form.description" class="preview-item">
                             <strong>Description:</strong>
                             <p class="description-preview">{{ form.description }}</p>
@@ -184,15 +167,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
-import { useReferenceData } from '@/composables/useReferenceData';
 import { containsProfanity } from '@/utils/profanityFilter';
 
 const router = useRouter();
-const { instruments, initializeInstruments } = useReferenceData();
+const toast = useToast();
 
 // Interfaces
 interface BandInfo {
@@ -228,7 +211,6 @@ interface FillInForm {
     eventId: string;
     slotNumber: number;
     unavailableMemberId: string;
-    instrumentNeeded: string;
     description: string;
 }
 
@@ -267,7 +249,6 @@ const form = ref<FillInForm>({
     eventId: '',
     slotNumber: 1,
     unavailableMemberId: '',
-    instrumentNeeded: '',
     description: ''
 });
 
@@ -286,7 +267,7 @@ const API_BASE_URL = 'http://localhost:3001/api';
 // Computed properties
 const hasFormData = computed(() => {
     return form.value.eventId || form.value.slotNumber || form.value.unavailableMemberId ||
-           form.value.instrumentNeeded || form.value.description;
+           form.value.description;
 });
 
 const selectedEvent = computed(() => {
@@ -303,7 +284,6 @@ const validateForm = () => {
     if (!form.value.eventId) formErrors.value.eventId = 'Please select an event.';
     if (!form.value.slotNumber) formErrors.value.slotNumber = 'Please select a slot.';
     if (!form.value.unavailableMemberId) formErrors.value.unavailableMemberId = 'Please select the unavailable member.';
-    if (!form.value.instrumentNeeded) formErrors.value.instrumentNeeded = 'Please specify the instrument needed.';
 
     if (!form.value.description.trim()) {
         formErrors.value.description = 'Please provide a description.';
@@ -468,12 +448,22 @@ const createFillInRequest = async () => {
         const result = await response.json();
         console.log('Fill-in request created successfully:', result);
 
-        alert('Fill-in request posted successfully!');
+        toast.add({
+            severity: 'success',
+            summary: 'Success!',
+            detail: 'Fill-in request posted successfully!',
+            life: 4000
+        });
         router.push('/fill-in-requests');
 
     } catch (error) {
         console.error('Failed to create fill-in request:', error);
-        alert('Error creating fill-in request: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error creating fill-in request: ' + (error instanceof Error ? error.message : 'Unknown error'),
+            life: 5000
+        });
     } finally {
         submitting.value = false;
     }
@@ -490,11 +480,15 @@ onMounted(async () => {
     loading.value = true;
 
     try {
-        await initializeInstruments();
         await fetchUserBandInfo();
     } catch (error) {
         console.error('Error during component initialization:', error);
-        alert('Failed to initialize component');
+        toast.add({
+            severity: 'error',
+            summary: 'Initialization Error',
+            detail: 'Failed to initialize component',
+            life: 4000
+        });
     } finally {
         loading.value = false;
     }
