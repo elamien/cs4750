@@ -9,7 +9,7 @@
                         <div class="event-meta">
                             <span><i class="pi pi-calendar"></i> {{ formatDate(event.datetime) }}</span>
                             <span><i class="pi pi-map-marker"></i> {{ event.location }}</span>
-                            <span><i class="pi pi-user"></i> Posted by {{ event.creatorName }} ({{ event.creatorRole }})</span>
+                            <span><i class="pi pi-user"></i> {{ event.creatorName }}</span>
                         </div>
                         <p>{{ event.description }}</p>
                     </div>

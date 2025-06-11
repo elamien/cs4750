@@ -100,19 +100,25 @@
 }
 
 .commitment-info {
-    background: var(--p-surface-50);
-    border: 1px solid var(--p-surface-200);
-    border-radius: 8px;
     padding: 1rem;
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-card-border);
+    border-radius: 8px;
+    border-left: 4px solid var(--hoojams-orange);
 }
 
 .commitment-info p {
     margin: 0 0 0.75rem 0;
     line-height: 1.5;
+    color: var(--theme-main-text);
 }
 
 .commitment-info p:last-child {
     margin-bottom: 0;
+}
+
+.commitment-info strong {
+    color: var(--theme-main-text);
 }
 
 .no-events {
