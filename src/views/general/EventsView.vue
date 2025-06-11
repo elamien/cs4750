@@ -97,14 +97,15 @@ onMounted(async () => {
     position: relative;
 }
 
-/* Main content area - positioned to account for fixed glass submenu */
+/* Main content area - positioned to account for dynamic glass submenu */
 .main-content {
-    margin-left: 280px; /* Space for the glass submenu */
-    width: calc(100vw - 280px); /* Ensure it doesn't overflow */
-    max-width: calc(100vw - 280px);
+    margin-left: var(--submenu-content-margin, 280px); /* Dynamic space based on actual submenu width */
+    width: calc(100vw - var(--submenu-content-margin, 280px)); /* Ensure it doesn't overflow */
+    max-width: calc(100vw - var(--submenu-content-margin, 280px));
     padding: 2rem;
     box-sizing: border-box;
     overflow-x: auto; /* Handle any internal overflow gracefully */
+    transition: margin-left 0.2s ease, width 0.2s ease; /* Smooth transition when submenu resizes */
 
     /* Glass morphism background matching the submenu */
     background: rgba(255, 255, 255, 0.1);

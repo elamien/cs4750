@@ -1,5 +1,5 @@
 <template>
-    <div class="glass-submenu">
+    <div class="glass-submenu" ref="submenuRef">
         <div class="submenu-header" v-if="title">
             <h3>{{ title }}</h3>
         </div>
@@ -19,6 +19,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUpdated, nextTick } from 'vue';
+
 interface MenuItem {
     label: string;
     value: string;
@@ -36,6 +38,35 @@ defineProps<Props>();
 defineEmits<{
     itemSelected: [value: string];
 }>();
+
+const submenuRef = ref<HTMLElement>();
+
+const updateContentMargin = () => {
+    if (submenuRef.value) {
+        const submenuRect = submenuRef.value.getBoundingClientRect();
+        const viewportLeft = submenuRef.value.offsetLeft;
+        const totalWidth = submenuRect.width + viewportLeft;
+        const marginOffset = 20; // 20px offset from the submenu
+
+        // Set CSS custom property for the content margin
+        document.documentElement.style.setProperty('--submenu-content-margin', `${totalWidth + marginOffset}px`);
+    }
+};
+
+onMounted(() => {
+    nextTick(() => {
+        updateContentMargin();
+
+        // Update on window resize
+        window.addEventListener('resize', updateContentMargin);
+    });
+});
+
+onUpdated(() => {
+    nextTick(() => {
+        updateContentMargin();
+    });
+});
 </script>
 
 <style scoped>
@@ -43,7 +74,9 @@ defineEmits<{
     position: fixed;
     top: calc(var(--navbar-height, 80px) + 2rem);
     left: 1rem;
-    width: 250px;
+    width: fit-content;
+    min-width: 180px;
+    max-width: 300px;
     height: fit-content;
     max-height: calc(100vh - var(--navbar-height, 80px) - 4rem);
     background: rgba(255, 255, 255, 0.1);
@@ -109,6 +142,7 @@ defineEmits<{
 
 .submenu-label {
     font-size: 0.95rem;
+    white-space: nowrap;
 }
 
 /* Dark mode adjustments */
@@ -128,7 +162,9 @@ defineEmits<{
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .glass-submenu {
-        width: 200px;
+        width: fit-content;
+        min-width: 160px;
+        max-width: 220px;
         padding: 1rem;
         left: 0.5rem;
         top: calc(var(--navbar-height, 80px) + 1rem);
@@ -145,7 +181,9 @@ defineEmits<{
 
 @media (max-width: 480px) {
     .glass-submenu {
-        width: 180px;
+        width: fit-content;
+        min-width: 140px;
+        max-width: 200px;
     }
 }
 </style>

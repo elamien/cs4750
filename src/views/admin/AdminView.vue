@@ -1,14 +1,14 @@
 <template>
     <div class="admin">
         <!-- Glass Submenu -->
-        <GlassSubmenu 
+        <GlassSubmenu
             v-if="!loading && activeSection"
             title="Admin Panel"
             :menu-items="submenuItems"
             :active-item="activeSection"
             @item-selected="handleSectionChange"
         />
-        
+
         <!-- Main Content Area -->
         <div class="main-content">
             <!-- Loading State -->
@@ -18,17 +18,17 @@
                     <h3>Loading...</h3>
                 </div>
             </div>
-            
+
             <!-- Manage Users Section -->
             <div v-else-if="activeSection === 'users'" class="content-section">
                 <AdminUsersComponent />
             </div>
-            
+
             <!-- Manage Bands Section -->
             <div v-else-if="activeSection === 'bands'" class="content-section">
                 <AdminBandsComponent />
             </div>
-            
+
             <!-- Manage Events Section -->
             <div v-else-if="activeSection === 'events'" class="content-section">
                 <AdminEventsComponent />
@@ -59,7 +59,7 @@ const submenuItems = computed(() => {
         { label: 'Manage Bands', value: 'bands', icon: 'pi pi-users' },
         { label: 'Manage Events', value: 'events', icon: 'pi pi-calendar' }
     ];
-    
+
     return items;
 });
 
@@ -73,7 +73,7 @@ const handleSectionChange = (section: string) => {
 // Lifecycle
 onMounted(async () => {
     loading.value = true;
-    
+
     // Set initial section from URL or default to first item
     const sectionFromUrl = route.query.tab as string;
     if (sectionFromUrl && ['users', 'bands', 'events'].includes(sectionFromUrl)) {
@@ -85,7 +85,7 @@ onMounted(async () => {
             activeSection.value = firstItem.value;
         }
     }
-    
+
     loading.value = false;
 });
 </script>
@@ -97,14 +97,15 @@ onMounted(async () => {
     position: relative;
 }
 
-/* Main content area - positioned to account for fixed glass submenu */
+/* Main content area - positioned to account for dynamic glass submenu */
 .main-content {
-    margin-left: 280px; /* Space for the glass submenu */
-    width: calc(100vw - 280px); /* Ensure it doesn't overflow */
-    max-width: calc(100vw - 280px);
+    margin-left: var(--submenu-content-margin, 280px); /* Dynamic space based on actual submenu width */
+    width: calc(100vw - var(--submenu-content-margin, 280px)); /* Ensure it doesn't overflow */
+    max-width: calc(100vw - var(--submenu-content-margin, 280px));
     padding: 2rem;
     box-sizing: border-box;
     overflow-x: auto; /* Handle any internal overflow gracefully */
+    transition: margin-left 0.2s ease, width 0.2s ease; /* Smooth transition when submenu resizes */
 }
 
 .content-section {
@@ -146,4 +147,4 @@ onMounted(async () => {
         padding: 1rem;
     }
 }
-</style> 
+</style>

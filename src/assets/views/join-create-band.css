@@ -13,14 +13,15 @@
     max-height: none;
 }
 
-/* Main content area - positioned to account for fixed glass submenu */
+/* Main content area - positioned to account for dynamic glass submenu */
 .main-content {
-    margin-left: 280px; /* Space for the glass submenu */
-    width: calc(100vw - 280px); /* Ensure it doesn't overflow */
-    max-width: calc(100vw - 280px);
+    margin-left: var(--submenu-content-margin, 350px); /* Dynamic space based on actual submenu width */
+    width: calc(100vw - var(--submenu-content-margin, 350px)); /* Ensure it doesn't overflow */
+    max-width: calc(100vw - var(--submenu-content-margin, 350px));
     padding: 2rem;
     box-sizing: border-box;
     overflow-x: auto; /* Handle any internal overflow gracefully */
+    transition: margin-left 0.2s ease, width 0.2s ease; /* Smooth transition when submenu resizes */
 
     /* Glass morphism background matching the submenu */
     background: rgba(255, 255, 255, 0.1);
@@ -246,9 +247,9 @@
 /* Responsive adjustments for glass submenu layout */
 @media (max-width: 768px) {
     .main-content {
-        margin-left: 220px; /* Adjust for smaller submenu */
-        width: calc(100vw - 220px);
-        max-width: calc(100vw - 220px);
+        margin-left: var(--submenu-content-margin, 250px); /* Dynamic space with mobile fallback */
+        width: calc(100vw - var(--submenu-content-margin, 250px));
+        max-width: calc(100vw - var(--submenu-content-margin, 250px));
         padding: 1rem;
     }
 
@@ -270,9 +271,9 @@
 
 @media (max-width: 480px) {
     .main-content {
-        margin-left: 200px; /* Adjust for mobile submenu */
-        width: calc(100vw - 200px);
-        max-width: calc(100vw - 200px);
+        margin-left: var(--submenu-content-margin, 230px); /* Dynamic space with mobile fallback */
+        width: calc(100vw - var(--submenu-content-margin, 230px));
+        max-width: calc(100vw - var(--submenu-content-margin, 230px));
         padding: 0.5rem;
     }
 

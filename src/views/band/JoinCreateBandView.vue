@@ -1,14 +1,13 @@
 <template>
     <div class="join-create-band">
         <!-- Glass Submenu -->
-        <GlassSubmenu 
+        <GlassSubmenu
             v-if="!loading && activeSection"
-            title="Band Management"
             :menu-items="submenuItems"
             :active-item="activeSection"
             @item-selected="handleSectionChange"
         />
-        
+
         <!-- Main Content Area -->
         <div class="main-content">
             <!-- Loading State -->
@@ -18,7 +17,7 @@
                     <h3>Loading...</h3>
                 </div>
             </div>
-            
+
             <!-- Join a Band Section -->
             <div v-if="activeSection === 'join'" class="content-section">
                 <div v-if="currentUserProfile.hasPendingRequest" class="notice-message">
@@ -26,8 +25,8 @@
                     <div class="pending-request-details">
                         <h4>Pending Band Request</h4>
                         <template v-if="(currentUserProfile as any).pendingRequests && (currentUserProfile as any).pendingRequests.length > 0">
-                            <div v-for="request in (currentUserProfile as any).pendingRequests" 
-                                 :key="request.id" 
+                            <div v-for="request in (currentUserProfile as any).pendingRequests"
+                                 :key="request.id"
                                  class="request-card">
                                 <div class="request-info">
                                     <strong>{{ request.bandName }}</strong>
@@ -40,10 +39,10 @@
                                     Submitted: {{ new Date(request.timeCreated).toLocaleDateString() }}
                                 </div>
                                 <div class="request-actions">
-                                    <Button 
-                                        label="Cancel Request" 
-                                        icon="pi pi-times" 
-                                        severity="secondary" 
+                                    <Button
+                                        label="Cancel Request"
+                                        icon="pi pi-times"
+                                        severity="secondary"
                                         size="small"
                                         @click="cancelRequest(request.id, request.bandId)"
                                         :loading="cancellingRequestId === request.id"
@@ -61,15 +60,15 @@
                 <div v-else>
                     <div class="search-section">
                         <div class="search-filters">
-                            <InputText 
-                                v-model="searchTerm" 
-                                placeholder="Search bands by name or genre..." 
+                            <InputText
+                                v-model="searchTerm"
+                                placeholder="Search bands by name or genre..."
                                 class="search-input"
                             />
-                            <Dropdown 
-                                v-model="selectedGenre" 
-                                :options="genres" 
-                                optionLabel="name" 
+                            <Dropdown
+                                v-model="selectedGenre"
+                                :options="genres"
+                                optionLabel="name"
                                 optionValue="value"
                                 placeholder="All Genres"
                             />
@@ -90,9 +89,9 @@
                                 </div>
                             </template>
                             <template #footer>
-                                <Button 
-                                    label="Request to Join" 
-                                    icon="pi pi-user-plus" 
+                                <Button
+                                    label="Request to Join"
+                                    icon="pi pi-user-plus"
                                     @click="requestToJoin(band.id)"
                                     :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand"
                                 />
@@ -114,9 +113,9 @@
                      <i class="pi pi-info-circle"></i>
                     <div>
                         <p>You have already created a band. You cannot create another.</p>
-                        <Button 
-                            label="Manage My Band" 
-                            icon="pi pi-cog" 
+                        <Button
+                            label="Manage My Band"
+                            icon="pi pi-cog"
                             @click="activeSection = 'my-band'"
                             style="margin-top: 1rem;"
                         />
@@ -127,8 +126,8 @@
                     <div class="pending-request-details">
                         <h4>Pending Band Request</h4>
                         <template v-if="(currentUserProfile as any).pendingRequests && (currentUserProfile as any).pendingRequests.length > 0">
-                            <div v-for="request in (currentUserProfile as any).pendingRequests" 
-                                 :key="request.id" 
+                            <div v-for="request in (currentUserProfile as any).pendingRequests"
+                                 :key="request.id"
                                  class="request-card">
                                 <div class="request-info">
                                     <strong>{{ request.bandName }}</strong>
@@ -141,10 +140,10 @@
                                     Submitted: {{ new Date(request.timeCreated).toLocaleDateString() }}
                                 </div>
                                 <div class="request-actions">
-                                    <Button 
-                                        label="Cancel Request" 
-                                        icon="pi pi-times" 
-                                        severity="secondary" 
+                                    <Button
+                                        label="Cancel Request"
+                                        icon="pi pi-times"
+                                        severity="secondary"
                                         size="small"
                                         @click="cancelRequest(request.id, request.bandId)"
                                         :loading="cancellingRequestId === request.id"
@@ -160,42 +159,42 @@
                         <div class="form-grid">
                             <div class="field">
                                 <label for="bandName">Band Name</label>
-                                <InputText 
-                                    id="bandName" 
-                                    v-model="bandForm.name" 
+                                <InputText
+                                    id="bandName"
+                                    v-model="bandForm.name"
                                     placeholder="Enter band name"
                                     :class="{ 'p-invalid': bandFormErrors.name }"
                                     @input="validateBandForm"
                                 />
                                 <small v-if="bandFormErrors.name" class="p-error">{{ bandFormErrors.name }}</small>
                             </div>
-                            
+
                             <div class="field">
                                 <label for="bandGenre">Primary Genre</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="bandGenre"
-                                    v-model="bandForm.genre" 
+                                    v-model="bandForm.genre"
                                     :options="genres"
                                     optionLabel="name"
-                                    optionValue="value" 
+                                    optionValue="value"
                                     placeholder="Select genre"
                                 />
                             </div>
 
                             <div class="field">
                                 <label for="bandLocation">Location (Optional)</label>
-                                <InputText 
-                                    id="bandLocation" 
-                                    v-model="bandForm.location" 
+                                <InputText
+                                    id="bandLocation"
+                                    v-model="bandForm.location"
                                     placeholder="City, State"
                                 />
                             </div>
-                            
+
                             <div class="field span-2">
                                 <label for="bandDescription">Description</label>
-                                <Textarea 
+                                <Textarea
                                     id="bandDescription"
-                                    v-model="bandForm.description" 
+                                    v-model="bandForm.description"
                                     rows="4"
                                     placeholder="Describe your band's style and goals..."
                                     :class="{ 'p-invalid': bandFormErrors.description }"
@@ -210,18 +209,18 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-actions">
-                            <Button 
-                                label="Create Band" 
-                                icon="pi pi-plus" 
+                            <Button
+                                label="Create Band"
+                                icon="pi pi-plus"
                                 @click="createBand"
                                 :disabled="currentUserProfile.hasCreatedBand || currentUserProfile.hasPendingRequest"
                             />
-                            <Button 
-                                label="Reset" 
-                                severity="secondary" 
-                                outlined 
+                            <Button
+                                label="Reset"
+                                severity="secondary"
+                                outlined
                                 @click="resetBandForm"
                             />
                         </div>
@@ -301,7 +300,7 @@ interface UserBandStatus {
 const currentUserId = computed(() => getUserId());
 const currentUserProfile = ref<UserBandStatus>({
     isMemberOfBand: false,
-    hasCreatedBand: false, 
+    hasCreatedBand: false,
     hasPendingRequest: false,
     memberBands: []
 });
@@ -312,19 +311,19 @@ const activeSection = ref('');
 // Submenu items
 const submenuItems = computed(() => {
     const items = [];
-    
+
     // Add "My Band" item first if user is member of a band
     if (currentUserProfile.value.isMemberOfBand) {
         items.push({ label: 'My Band', value: 'my-band', icon: 'pi pi-users' });
     }
-    
+
     // Add remaining items in order
     items.push(
-        { label: 'Browse Bands', value: 'browse', icon: 'pi pi-search' },
-        { label: 'Join a Band', value: 'join', icon: 'pi pi-user-plus' },
-        { label: 'Create a Band', value: 'create', icon: 'pi pi-plus' }
+        { label: 'Browse', value: 'browse', icon: 'pi pi-search' },
+        { label: 'Join', value: 'join', icon: 'pi pi-user-plus' },
+        { label: 'Create', value: 'create', icon: 'pi pi-plus' }
     );
-    
+
     return items;
 });
 
@@ -345,11 +344,11 @@ const cancellingRequestId = ref<string | null>(null);
 // --- Computed Properties ---
 const filteredBands = computed(() => {
     return bands.value.filter(band => {
-        const matchesSearch = !searchTerm.value || 
+        const matchesSearch = !searchTerm.value ||
             band.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
             band.description.toLowerCase().includes(searchTerm.value.toLowerCase());
         const matchesGenre = !selectedGenre.value || band.genre === selectedGenre.value;
-        
+
         return matchesSearch && matchesGenre;
     });
 });
@@ -366,7 +365,7 @@ const fetchUserBandStatus = async () => {
     try {
         const response = await fetch(`/api/users/${currentUserId.value}/band-status`);
         if (!response.ok) throw new Error('Failed to fetch user band status');
-        
+
         const status: UserBandStatus = await response.json();
         currentUserProfile.value = status;
     } catch (error) {
@@ -384,7 +383,7 @@ const fetchBands = async () => {
     try {
         const response = await fetch('/api/bands');
         if (!response.ok) throw new Error('Failed to fetch bands');
-        
+
         const bandsData: BandListItem[] = await response.json();
         bands.value = bandsData.map(band => ({
             id: band.id,
@@ -408,7 +407,7 @@ const fetchBands = async () => {
 
 const requestToJoin = async (bandId: string) => {
     if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) return;
-    
+
     try {
         const response = await fetch(`/api/bands/${bandId}/join-requests`, {
             method: 'POST',
@@ -420,22 +419,22 @@ const requestToJoin = async (bandId: string) => {
                 message: 'I would like to join your band.'
             })
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to send join request');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Join request sent successfully!',
             life: 3000
         });
-        
+
         // Refresh user status
         await fetchUserBandStatus();
-        
+
     } catch (error) {
         console.error('Error requesting to join band:', error);
         toast.add({
@@ -449,32 +448,32 @@ const requestToJoin = async (bandId: string) => {
 
 const cancelRequest = async (requestId: string, bandId: string) => {
     cancellingRequestId.value = requestId;
-    
+
     try {
         const response = await fetch(`/api/bands/${bandId}/join-requests/${requestId}`, {
             method: 'DELETE'
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to cancel request');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Join request cancelled successfully!',
             life: 3000
         });
-        
+
         // Refresh user status
         await fetchUserBandStatus();
-        
+
     } catch (error) {
         console.error('Error cancelling request:', error);
         toast.add({
             severity: 'error',
-            summary: 'Error', 
+            summary: 'Error',
             detail: 'Failed to cancel join request',
             life: 3000
         });
@@ -485,13 +484,13 @@ const cancelRequest = async (requestId: string, bandId: string) => {
 
 const validateBandForm = () => {
     bandFormErrors.value = {};
-    
+
     if (!bandForm.value.name.trim()) {
         bandFormErrors.value.name = 'Band name is required.';
     } else if (containsProfanity(bandForm.value.name)) {
         bandFormErrors.value.name = 'Inappropriate language is not allowed.';
     }
-    
+
     if (!bandForm.value.description.trim()) {
         bandFormErrors.value.description = 'Description is required.';
     } else if (bandForm.value.description.length > 255) {
@@ -499,7 +498,7 @@ const validateBandForm = () => {
     } else if (containsProfanity(bandForm.value.description)) {
         bandFormErrors.value.description = 'Inappropriate language is not allowed.';
     }
-    
+
     return Object.keys(bandFormErrors.value).length === 0;
 };
 
@@ -507,8 +506,8 @@ const createBand = async () => {
     if (!validateBandForm() || currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) {
         return;
     }
-    
-    
+
+
     try {
         const response = await fetch('/api/bands', {
             method: 'POST',
@@ -523,26 +522,26 @@ const createBand = async () => {
                 creatorUserId: currentUserId.value
             })
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to create band');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Band created successfully!',
             life: 3000
         });
-        
+
         // Reset form and refresh data
         resetBandForm();
         await fetchUserBandStatus();
-        
+
         // Switch to My Band tab
         activeSection.value = 'my-band';
-        
+
     } catch (error) {
         console.error('Error creating band:', error);
         toast.add({
@@ -567,16 +566,16 @@ const resetBandForm = () => {
 // --- Lifecycle ---
 onMounted(async () => {
     loading.value = true;
-    
+
     // Initialize reference data
     await initializeGenres();
-    
+
     // Load initial data
     await Promise.all([
         fetchUserBandStatus(),
         fetchBands()
     ]);
-    
+
     // Set initial section from URL or default to first item
     const sectionFromUrl = route.query.section as string;
     if (sectionFromUrl && ['join', 'create', 'browse', 'my-band'].includes(sectionFromUrl)) {
@@ -588,7 +587,7 @@ onMounted(async () => {
             activeSection.value = firstItem.value;
         }
     }
-    
+
     loading.value = false;
 });
 
@@ -598,4 +597,4 @@ watch(() => currentUserProfile.value.isMemberOfBand, () => {
 }, { deep: true });
 </script>
 
-<!-- Styles handled in dedicated CSS file: src/assets/views/join-create-band.css --> 
+<!-- Styles handled in dedicated CSS file: src/assets/views/join-create-band.css -->
