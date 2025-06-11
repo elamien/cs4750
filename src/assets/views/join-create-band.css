@@ -291,26 +291,8 @@
     }
 }
 
-/* Glass morphism styling for My Band section cards */
-.main-content .p-card.events-section,
-.main-content .p-card.band-info-section,
-.main-content .p-card.members-section,
-.main-content .p-card.member-requests-section,
-.main-content .p-card.actions-section {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* Glass morphism styling for individual items within cards - slightly less opacity */
-.main-content .event-item,
-.main-content .member-item {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    backdrop-filter: blur(5px);
-    border-radius: 8px;
-}
+/* Note: My Band section cards should use .glass-card class in the template */
+/* Note: Individual items should use .glass-item class in the template */
 
 /* Dark mode adjustments for main-content */
 [data-theme="dark"] .main-content {
@@ -318,19 +300,4 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Dark mode adjustments for My Band section cards */
-[data-theme="dark"] .main-content .p-card.events-section,
-[data-theme="dark"] .main-content .p-card.band-info-section,
-[data-theme="dark"] .main-content .p-card.members-section,
-[data-theme="dark"] .main-content .p-card.member-requests-section,
-[data-theme="dark"] .main-content .p-card.actions-section {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-}
-
-/* Dark mode adjustments for individual items within cards */
-[data-theme="dark"] .main-content .event-item,
-[data-theme="dark"] .main-content .member-item {
-    background: rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-}
+/* Note: Dark mode styling is now handled by .glass-card and .glass-item global classes */

@@ -1,9 +1,9 @@
 <template>
-    <Card class="band-info-section">
+    <Card class="band-info-section glass-card">
         <template #title>
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span>Band Information</span>
-                <Button 
+                <Button
                     :label="editMode ? 'Cancel' : 'Edit'"
                     :icon="editMode ? 'pi pi-times' : 'pi pi-pencil'"
                     :severity="editMode ? 'secondary' : 'primary'"
@@ -32,9 +32,9 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="band-name">Band Name *</label>
-                            <InputText 
+                            <InputText
                                 id="band-name"
-                                v-model="editForm.name" 
+                                v-model="editForm.name"
                                 placeholder="Enter band name"
                                 :class="{'p-invalid': editErrors.name}"
                                 @input="validateForm"
@@ -43,25 +43,25 @@
                         </div>
                         <div class="form-group">
                             <label for="band-genre">Genre</label>
-                            <InputText 
+                            <InputText
                                 id="band-genre"
-                                v-model="editForm.genre" 
+                                v-model="editForm.genre"
                                 placeholder="e.g., Rock, Jazz, Classical"
                             />
                         </div>
                         <div class="form-group">
                             <label for="band-location">Location</label>
-                            <InputText 
+                            <InputText
                                 id="band-location"
-                                v-model="editForm.location" 
+                                v-model="editForm.location"
                                 placeholder="e.g., Charlottesville, VA"
                             />
                         </div>
                         <div class="form-group full-width">
                             <label for="band-description">Description</label>
-                            <Textarea 
+                            <Textarea
                                 id="band-description"
-                                v-model="editForm.description" 
+                                v-model="editForm.description"
                                 placeholder="Tell people about your band..."
                                 rows="3"
                                 :class="{'p-invalid': editErrors.description}"
@@ -77,16 +77,16 @@
                         </div>
                     </div>
                     <div class="form-actions">
-                        <Button 
-                            type="submit" 
-                            label="Save Changes" 
+                        <Button
+                            type="submit"
+                            label="Save Changes"
                             icon="pi pi-check"
                             :loading="saving"
                             size="small"
                         />
-                        <Button 
+                        <Button
                             type="button"
-                            label="Cancel" 
+                            label="Cancel"
                             icon="pi pi-times"
                             severity="secondary"
                             outlined
@@ -229,7 +229,7 @@ const saveBandInfo = async () => {
         emit('band-updated', updatedBandInfo);
 
         editMode.value = false;
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
@@ -250,4 +250,4 @@ const saveBandInfo = async () => {
 };
 </script>
 
-<!-- Styles moved to dedicated CSS file: src/assets/components/band-information.css --> 
+<!-- Styles moved to dedicated CSS file: src/assets/components/band-information.css -->

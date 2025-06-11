@@ -1,9 +1,9 @@
 <template>
-    <Card class="events-section">
+    <Card class="events-section glass-card">
         <template #title>Upcoming Events</template>
         <template #content>
             <div v-if="upcomingEvents.length > 0" class="events-list">
-                <div v-for="event in upcomingEvents" :key="event.id" class="event-item">
+                <div v-for="event in upcomingEvents" :key="event.id" class="event-item glass-item">
                     <div class="event-info">
                         <h4>{{ event.eventTitle }}</h4>
                         <div class="event-meta">

@@ -1,14 +1,14 @@
 <template>
     <div class="events">
         <!-- Glass Submenu for signed-in users -->
-        <GlassSubmenu 
+        <GlassSubmenu
             v-if="isAuthenticated && !loading && activeSection"
             title="Event Management"
             :menu-items="submenuItems"
             :active-item="activeSection"
             @item-selected="handleSectionChange"
         />
-        
+
         <!-- Main Content Area -->
         <div class="main-content" :class="{ 'no-submenu': !isAuthenticated }">
             <!-- Loading State -->
@@ -18,12 +18,12 @@
                     <h3>Loading...</h3>
                 </div>
             </div>
-            
+
             <!-- Browse Events Section -->
             <div v-else-if="activeSection === 'browse' || !isAuthenticated" class="content-section" :class="{ 'full-width': !isAuthenticated }">
                 <BrowseEventsComponent />
             </div>
-            
+
             <!-- My Events Section -->
             <div v-else-if="activeSection === 'my-events'" class="content-section">
                 <MyEventsComponent />
@@ -54,7 +54,7 @@ const submenuItems = computed(() => {
         { label: 'Browse Events', value: 'browse', icon: 'pi pi-search' },
         { label: 'My Events', value: 'my-events', icon: 'pi pi-calendar' }
     ];
-    
+
     return items;
 });
 
@@ -68,7 +68,7 @@ const handleSectionChange = (section: string) => {
 // Lifecycle
 onMounted(async () => {
     loading.value = true;
-    
+
     if (isAuthenticated.value) {
         // Set initial section from URL or default to first item
         const sectionFromUrl = route.query.tab as string;
@@ -85,7 +85,7 @@ onMounted(async () => {
         // For anonymous users, always show browse
         activeSection.value = 'browse';
     }
-    
+
     loading.value = false;
 });
 </script>
@@ -105,6 +105,13 @@ onMounted(async () => {
     padding: 2rem;
     box-sizing: border-box;
     overflow-x: auto; /* Handle any internal overflow gracefully */
+
+    /* Glass morphism background matching the submenu */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 /* Full width content when no submenu (anonymous users) */
@@ -149,7 +156,7 @@ onMounted(async () => {
         max-width: calc(100vw - 220px);
         padding: 1.5rem;
     }
-    
+
     .main-content.no-submenu {
         margin-left: 0;
         width: 100%;
@@ -165,7 +172,7 @@ onMounted(async () => {
         max-width: calc(100vw - 200px);
         padding: 1rem;
     }
-    
+
     .main-content.no-submenu {
         margin-left: 0;
         width: 100%;
@@ -173,4 +180,10 @@ onMounted(async () => {
         padding: 1rem;
     }
 }
-</style> 
+
+/* Dark mode adjustments for main-content */
+[data-theme="dark"] .main-content {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+</style>

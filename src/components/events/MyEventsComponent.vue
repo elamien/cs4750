@@ -2,10 +2,10 @@
     <div class="my-events-content">
         <div class="my-events-header">
             <h3>My Events</h3>
-            <Button 
-                label="Create New Event" 
-                icon="pi pi-plus" 
-                @click="openCreateEventDialog" 
+            <Button
+                label="Create New Event"
+                icon="pi pi-plus"
+                @click="openCreateEventDialog"
             />
         </div>
 
@@ -27,12 +27,12 @@
         </div>
 
         <div v-else class="events-grid">
-            <Card v-for="event in events" :key="event.id" class="event-card">
+            <Card v-for="event in events" :key="event.id" class="event-card glass-card">
                 <template #title>
                     <div class="event-header">
                         <span>{{ event.eventTitle }}</span>
-                        <Badge 
-                            :value="event.status" 
+                        <Badge
+                            :value="event.status"
                             :severity="getStatusSeverity(event.status)"
                         />
                     </div>
@@ -46,23 +46,23 @@
                 </template>
                 <template #content>
                     <p>{{ event.description || 'No description provided.' }}</p>
-                    
+
                     <div class="event-details">
                         <div v-if="event.genre" class="detail-item">
                             <strong>Genre:</strong> {{ event.genre }}
                         </div>
-                        
+
                         <div class="detail-item">
                             <strong>Status:</strong>
                             <span v-if="event.status === 'open'">Looking for bands</span>
                             <span v-else-if="event.status === 'filled'">Band assigned</span>
                             <span v-else>{{ event.status }}</span>
                         </div>
-                        
+
                         <div v-if="event.bandName" class="detail-item">
                             <strong>Performing:</strong> {{ event.bandName }}
                         </div>
-                        
+
                         <div v-if="event.pendingInvitations > 0" class="detail-item">
                             <strong>Pending Invitations:</strong> {{ event.pendingInvitations }}
                         </div>
@@ -70,15 +70,15 @@
                 </template>
                 <template #footer>
                     <div class="event-actions">
-                        <Button 
-                            label="Edit" 
-                            icon="pi pi-pencil" 
+                        <Button
+                            label="Edit"
+                            icon="pi pi-pencil"
                             severity="secondary"
                             @click="editEvent(event)"
                         />
-                        <Button 
-                            label="Delete" 
-                            icon="pi pi-trash" 
+                        <Button
+                            label="Delete"
+                            icon="pi pi-trash"
                             severity="danger"
                             outlined
                             @click="confirmDelete(event)"
@@ -90,8 +90,8 @@
 
         <!-- All dialogs (create, edit, delete) -->
         <!-- Create Event Dialog -->
-        <Dialog 
-            v-model:visible="createDialog" 
+        <Dialog
+            v-model:visible="createDialog"
             header="Create Event"
             :style="{ width: '600px' }"
             :modal="true"
@@ -99,72 +99,72 @@
             <div class="create-form">
                 <div class="field">
                     <label for="create-title">Event Title *</label>
-                    <InputText 
-                        id="create-title" 
-                        v-model="createForm.eventTitle" 
+                    <InputText
+                        id="create-title"
+                        v-model="createForm.eventTitle"
                         :class="{'p-invalid': formErrors.eventTitle}"
                         @input="validateEventForm('create')"
                         placeholder="Enter event title"
                     />
                     <small v-if="formErrors.eventTitle" class="p-error">{{ formErrors.eventTitle }}</small>
                 </div>
-                
+
                 <div class="field">
                     <label for="create-location">Location</label>
-                    <InputText 
-                        id="create-location" 
-                        v-model="createForm.location" 
+                    <InputText
+                        id="create-location"
+                        v-model="createForm.location"
                         :class="{'p-invalid': formErrors.location}"
                         @input="validateEventForm('create')"
                         placeholder="Event location"
                     />
                     <small v-if="formErrors.location" class="p-error">{{ formErrors.location }}</small>
                 </div>
-                
+
                 <div class="field">
                     <label for="create-genre">Genre</label>
-                    <Dropdown 
-                        id="create-genre" 
-                        v-model="createForm.genre" 
-                        :options="genres" 
-                        optionLabel="name" 
+                    <Dropdown
+                        id="create-genre"
+                        v-model="createForm.genre"
+                        :options="genres"
+                        optionLabel="name"
                         optionValue="value"
                         placeholder="Select event genre"
                     />
                 </div>
-                
+
                 <div class="field">
                     <label for="create-date">Date *</label>
-                    <Calendar 
-                        id="create-date" 
-                        v-model="createForm.eventDate" 
+                    <Calendar
+                        id="create-date"
+                        v-model="createForm.eventDate"
                         placeholder="Select event date"
                         dateFormat="yy-mm-dd"
                         :minDate="new Date()"
                         @date-select="onCreateDateSelect"
                     />
                 </div>
-                
+
                 <div class="field">
                     <label for="create-timeSlot">Time Slot *</label>
-                    <Dropdown 
-                        id="create-timeSlot" 
-                        v-model="createForm.timeSlot" 
-                        :options="createTimeSlotOptions" 
-                        optionLabel="label" 
+                    <Dropdown
+                        id="create-timeSlot"
+                        v-model="createForm.timeSlot"
+                        :options="createTimeSlotOptions"
+                        optionLabel="label"
                         optionValue="value"
                         placeholder="Select time slot"
                     />
                 </div>
-                
+
                 <div class="field">
                     <label for="create-description">Description</label>
-                    <Textarea 
-                        id="create-description" 
-                        v-model="createForm.description" 
+                    <Textarea
+                        id="create-description"
+                        v-model="createForm.description"
                         :class="{'p-invalid': formErrors.description}"
                         @input="validateEventForm('create')"
-                        rows="4" 
+                        rows="4"
                         placeholder="Describe your event..."
                         maxlength="255"
                     />
@@ -176,17 +176,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <template #footer>
-                <Button 
-                    label="Cancel" 
-                    icon="pi pi-times" 
-                    @click="createDialog = false" 
+                <Button
+                    label="Cancel"
+                    icon="pi pi-times"
+                    @click="createDialog = false"
                     severity="secondary"
                 />
-                <Button 
-                    label="Create Event" 
-                    icon="pi pi-plus" 
+                <Button
+                    label="Create Event"
+                    icon="pi pi-plus"
                     @click="createEvent"
                     :disabled="!isCreateFormValid"
                     :loading="creating"
@@ -195,8 +195,8 @@
         </Dialog>
 
         <!-- Edit Event Dialog -->
-        <Dialog 
-            v-model:visible="editDialog" 
+        <Dialog
+            v-model:visible="editDialog"
             header="Edit Event"
             :style="{ width: '600px' }"
             :modal="true"
@@ -204,72 +204,72 @@
             <div v-if="editingEvent" class="edit-form">
                 <div class="field">
                     <label for="edit-title">Event Title</label>
-                    <InputText 
-                        id="edit-title" 
-                        v-model="editForm.eventTitle" 
+                    <InputText
+                        id="edit-title"
+                        v-model="editForm.eventTitle"
                         :class="{'p-invalid': formErrors.eventTitle}"
                         @input="validateEventForm('edit')"
                         placeholder="Enter event title"
                     />
                     <small v-if="formErrors.eventTitle" class="p-error">{{ formErrors.eventTitle }}</small>
                 </div>
-                
+
                 <div class="field">
                     <label for="edit-location">Location</label>
-                    <InputText 
-                        id="edit-location" 
-                        v-model="editForm.location" 
+                    <InputText
+                        id="edit-location"
+                        v-model="editForm.location"
                         :class="{'p-invalid': formErrors.location}"
                         @input="validateEventForm('edit')"
                         placeholder="Event location"
                     />
                     <small v-if="formErrors.location" class="p-error">{{ formErrors.location }}</small>
                 </div>
-                
+
                 <div class="field">
                     <label for="edit-genre">Genre</label>
-                    <Dropdown 
-                        id="edit-genre" 
-                        v-model="editForm.genre" 
-                        :options="genres" 
-                        optionLabel="name" 
+                    <Dropdown
+                        id="edit-genre"
+                        v-model="editForm.genre"
+                        :options="genres"
+                        optionLabel="name"
                         optionValue="value"
                         placeholder="Select event genre"
                     />
                 </div>
-                
+
                 <div class="field">
                     <label for="edit-date">Date</label>
-                    <Calendar 
-                        id="edit-date" 
-                        v-model="editForm.eventDate" 
+                    <Calendar
+                        id="edit-date"
+                        v-model="editForm.eventDate"
                         placeholder="Select event date"
                         dateFormat="yy-mm-dd"
                         :minDate="new Date()"
                         @date-select="onEditDateSelect"
                     />
                 </div>
-                
+
                 <div class="field">
                     <label for="edit-timeSlot">Time Slot</label>
-                    <Dropdown 
-                        id="edit-timeSlot" 
-                        v-model="editForm.timeSlot" 
-                        :options="editTimeSlotOptions" 
-                        optionLabel="label" 
+                    <Dropdown
+                        id="edit-timeSlot"
+                        v-model="editForm.timeSlot"
+                        :options="editTimeSlotOptions"
+                        optionLabel="label"
                         optionValue="value"
                         placeholder="Select time slot"
                     />
                 </div>
-                
+
                 <div class="field">
                     <label for="edit-description">Description</label>
-                    <Textarea 
-                        id="edit-description" 
-                        v-model="editForm.description" 
+                    <Textarea
+                        id="edit-description"
+                        v-model="editForm.description"
                         :class="{'p-invalid': formErrors.description}"
                         @input="validateEventForm('edit')"
-                        rows="4" 
+                        rows="4"
                         placeholder="Describe your event..."
                         maxlength="255"
                     />
@@ -281,17 +281,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <template #footer>
-                <Button 
-                    label="Cancel" 
-                    icon="pi pi-times" 
-                    @click="editDialog = false" 
+                <Button
+                    label="Cancel"
+                    icon="pi pi-times"
+                    @click="editDialog = false"
                     severity="secondary"
                 />
-                <Button 
-                    label="Save Changes" 
-                    icon="pi pi-check" 
+                <Button
+                    label="Save Changes"
+                    icon="pi pi-check"
                     @click="saveEvent"
                     :loading="saving"
                 />
@@ -299,8 +299,8 @@
         </Dialog>
 
         <!-- Confirm Delete Dialog -->
-        <Dialog 
-            v-model:visible="deleteDialog" 
+        <Dialog
+            v-model:visible="deleteDialog"
             header="Confirm Delete"
             :style="{ width: '450px' }"
             :modal="true"
@@ -313,17 +313,17 @@
                     <p class="warning-text">This action cannot be undone.</p>
                 </div>
             </div>
-            
+
             <template #footer>
-                <Button 
-                    label="Cancel" 
-                    icon="pi pi-times" 
-                    @click="deleteDialog = false" 
+                <Button
+                    label="Cancel"
+                    icon="pi pi-times"
+                    @click="deleteDialog = false"
                     severity="secondary"
                 />
-                <Button 
-                    label="Delete" 
-                    icon="pi pi-trash" 
+                <Button
+                    label="Delete"
+                    icon="pi pi-trash"
                     @click="deleteEvent"
                     severity="danger"
                     :loading="deleting"
@@ -417,9 +417,9 @@ const createTimeSlotOptions = computed(() => createAvailableSlots.value);
 
 const editTimeSlotOptions = computed(() => editAvailableSlots.value);
 
-const isCreateFormValid = computed(() => 
-    createForm.value.eventTitle && 
-    createForm.value.eventDate && 
+const isCreateFormValid = computed(() =>
+    createForm.value.eventTitle &&
+    createForm.value.eventDate &&
     createForm.value.timeSlot
 );
 
@@ -427,11 +427,11 @@ const isCreateFormValid = computed(() =>
 const formatDate = (dateString: string): string => {
     if (!dateString) return 'Date TBD';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 };
 
@@ -464,7 +464,7 @@ const fetchMyEvents = async () => {
             credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to fetch events');
-        
+
         const data: MyEvent[] = await response.json();
         events.value = data.map((event: MyEvent) => ({
             ...event,
@@ -511,7 +511,7 @@ const editEvent = (event: MyEvent) => {
     };
     editAvailableSlots.value = [];
     editDialog.value = true;
-    
+
     // Load available slots for edit date
     if (editForm.value.eventDate) {
         onEditDateSelect();
@@ -547,15 +547,15 @@ const loadAvailableSlots = async (dateStr: string, type: 'create' | 'edit', excl
             // For now, this part of the logic might not have an effect.
             url += `?excludeEventId=${excludeEventId}`;
         }
-        
+
         const response = await fetch(url, {
             credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to fetch available slots');
-        
+
         const data = await response.json();
         const availableSlots = data.availableSlots || [];
-        
+
         if (type === 'create') {
             createAvailableSlots.value = availableSlots;
             const isCurrentSlotValid = availableSlots.some((slot: { value: number }) => slot.value === createForm.value.timeSlot);
@@ -594,7 +594,7 @@ const validateEventForm = (formType: 'create' | 'edit') => {
     if (containsProfanity(form.location)) {
         formErrors.value.location = 'Inappropriate language is not allowed.';
     }
-    
+
     if (form.description && form.description.length > 255) {
         formErrors.value.description = 'Description must be 255 characters or less.';
     } else if (containsProfanity(form.description)) {
@@ -605,7 +605,7 @@ const validateEventForm = (formType: 'create' | 'edit') => {
         if (!form.eventDate) formErrors.value.eventDate = 'Event date is required.';
         if (!form.timeSlot) formErrors.value.timeSlot = 'Time slot is required.';
     }
-    
+
     return Object.keys(formErrors.value).length === 0;
 };
 
@@ -614,7 +614,7 @@ const createEvent = async () => {
         toast.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fix the errors before creating the event.', life: 3000 });
         return;
     }
-    
+
     creating.value = true;
     try {
         const eventData = {
@@ -627,26 +627,26 @@ const createEvent = async () => {
             description: createForm.value.description || null,
             isOpenCall: true // Always an open call
         };
-        
+
         const response = await fetch(`${API_BASE_URL}/events`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify(eventData)
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to create event');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Event created successfully',
             life: 3000
         });
-        
+
         createDialog.value = false;
         await fetchMyEvents();
     } catch (error) {
@@ -667,9 +667,9 @@ const saveEvent = async () => {
         toast.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fix the errors before saving the event.', life: 3000 });
         return;
     }
-    
+
     if (!editingEvent.value) return;
-    
+
     saving.value = true;
     try {
         const eventData = {
@@ -682,26 +682,26 @@ const saveEvent = async () => {
             description: editForm.value.description || null,
             isOpenCall: true // Always an open call
         };
-        
+
         const response = await fetch(`${API_BASE_URL}/events/${editingEvent.value.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify(eventData)
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to update event');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Event updated successfully',
             life: 3000
         });
-        
+
         editDialog.value = false;
         await fetchMyEvents();
     } catch (error) {
@@ -719,26 +719,26 @@ const saveEvent = async () => {
 
 const deleteEvent = async () => {
     if (!eventToDelete.value) return;
-    
+
     deleting.value = true;
     try {
         const response = await fetch(`${API_BASE_URL}/events/${eventToDelete.value.id}?userId=${currentUser.value?.userId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to delete event');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Event deleted successfully',
             life: 3000
         });
-        
+
         deleteDialog.value = false;
         await fetchMyEvents();
     } catch (error) {
@@ -896,14 +896,14 @@ onMounted(async () => {
     .events-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .event-actions {
         flex-direction: column;
     }
-    
+
     .event-header {
         flex-direction: column;
         align-items: flex-start;
     }
 }
-</style> 
+</style>

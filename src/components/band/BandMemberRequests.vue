@@ -1,5 +1,5 @@
 <template>
-    <Card class="member-requests-section">
+    <Card class="member-requests-section glass-card">
         <template #title>
             <div class="requests-header">
                 <span>Membership Requests</span>
@@ -14,24 +14,24 @@
                 <i class="pi pi-spin pi-spinner"></i>
                 <span>Loading requests...</span>
             </div>
-            
+
             <div v-else-if="pendingRequests.length === 0" class="no-requests-state">
                 <i class="pi pi-inbox" style="font-size: 2rem; color: var(--p-text-muted-color);"></i>
                 <p>No pending membership requests</p>
             </div>
-            
+
             <div v-else class="requests-list">
-                <div v-for="request in pendingRequests" :key="request.id" class="request-item">
+                <div v-for="request in pendingRequests" :key="request.id" class="request-item glass-item">
                     <div class="request-info">
                         <div class="applicant-name">
-                            <Avatar 
-                                :label="getInitials(request.firstName, request.lastName)" 
+                            <Avatar
+                                :label="getInitials(request.firstName, request.lastName)"
                                 size="large"
                                 shape="circle"
                             />
                             <strong>{{ request.firstName }} {{ request.lastName }}</strong>
                         </div>
-                        
+
                         <div class="applicant-details">
                             <div v-if="request.instrument" class="detail-item">
                                 <i class="pi pi-music"></i>
@@ -46,14 +46,14 @@
                                 <span>{{ formatDate(request.timeCreated) }}</span>
                             </div>
                         </div>
-                        
+
                         <div v-if="request.message" class="request-message">
                             <em>"{{ request.message }}"</em>
                         </div>
                     </div>
-                    
+
                     <div class="request-actions">
-                        <Button 
+                        <Button
                             icon="pi pi-check"
                             severity="success"
                             size="small"
@@ -61,7 +61,7 @@
                             :loading="processingRequest === request.id"
                             title="Approve request"
                         />
-                        <Button 
+                        <Button
                             icon="pi pi-times"
                             severity="danger"
                             outlined
@@ -73,10 +73,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <div v-if="pendingRequests.length > 3" class="view-all-section">
-                <Button 
-                    label="View All Requests" 
+                <Button
+                    label="View All Requests"
                     icon="pi pi-external-link"
                     severity="secondary"
                     outlined
@@ -149,7 +149,7 @@ const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 24) {
         return `${Math.floor(diffInHours)} hours ago`;
     } else if (diffInHours < 48) {
@@ -165,32 +165,32 @@ const fetchMembershipRequests = async () => {
         console.log('BandMemberRequests: No current user ID');
         return;
     }
-    
+
     loading.value = true;
-    
+
     try {
         const bandId = getCurrentBandId();
         console.log('BandMemberRequests: Fetching requests for band ID:', bandId);
         console.log('BandMemberRequests: Current user ID:', currentUserId);
-        
+
         const response = await fetch(`/api/bands/${bandId}/membership-requests`);
-        
+
         if (!response.ok) {
             console.error('BandMemberRequests: API response not ok:', response.status, response.statusText);
             throw new Error('Failed to fetch membership requests');
         }
-        
+
         const requests = await response.json();
         console.log('BandMemberRequests: Fetched requests:', requests);
         membershipRequests.value = requests;
-        
+
         // Show only first 3 pending requests on dashboard
         pendingRequests.value = requests
             .filter((request: MembershipRequest) => request.status === 'pending')
             .slice(0, 3);
-        
+
         console.log('BandMemberRequests: Pending requests:', pendingRequests.value);
-            
+
     } catch (error) {
         console.error('Error fetching membership requests:', error);
         toast.add({
@@ -215,15 +215,15 @@ const approveRequest = async (request: MembershipRequest) => {
         });
         return;
     }
-    
+
     processingRequest.value = request.id;
-    
+
     try {
         const bandId = getCurrentBandId();
         const requestBody = {
             respondedByUserId: currentUserId
         };
-        
+
         console.log('BandMemberRequests: Approving request with:', {
             bandId,
             requestId: request.id,
@@ -231,7 +231,7 @@ const approveRequest = async (request: MembershipRequest) => {
             currentUserId,
             currentUserIdType: typeof currentUserId
         });
-        
+
         const response = await fetch(`/api/bands/${bandId}/membership-requests/${request.id}/approve`, {
             method: 'POST',
             headers: {
@@ -239,26 +239,26 @@ const approveRequest = async (request: MembershipRequest) => {
             },
             body: JSON.stringify(requestBody)
         });
-        
+
         console.log('BandMemberRequests: Response status:', response.status);
         console.log('BandMemberRequests: Response headers:', [...response.headers.entries()]);
-        
+
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Failed to approve request');
         }
-        
+
         toast.add({
             severity: 'success',
             summary: 'Request Approved',
             detail: `${request.firstName} ${request.lastName} has been added to the band`,
             life: 3000
         });
-        
+
         // Refresh requests and emit update
         await fetchMembershipRequests();
         emit('requestsUpdated');
-        
+
     } catch (error) {
         console.error('Error approving request:', error);
         toast.add({
@@ -274,9 +274,9 @@ const approveRequest = async (request: MembershipRequest) => {
 
 const rejectRequest = async (request: MembershipRequest) => {
     if (!currentUserId) return;
-    
+
     processingRequest.value = request.id;
-    
+
     try {
         const bandId = getCurrentBandId();
         const response = await fetch(`/api/bands/${bandId}/membership-requests/${request.id}/reject`, {
@@ -288,22 +288,22 @@ const rejectRequest = async (request: MembershipRequest) => {
                 respondedByUserId: currentUserId
             })
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Failed to reject request');
         }
-        
+
         toast.add({
             severity: 'info',
             summary: 'Request Rejected',
             detail: `${request.firstName} ${request.lastName}'s request has been rejected`,
             life: 3000
         });
-        
+
         // Refresh requests
         await fetchMembershipRequests();
-        
+
     } catch (error) {
         console.error('Error rejecting request:', error);
         toast.add({
@@ -496,15 +496,15 @@ defineExpose({
         align-items: stretch;
         gap: 0.75rem;
     }
-    
+
     .request-actions {
         flex-direction: row;
         justify-content: center;
     }
-    
+
     .applicant-details {
         flex-direction: column;
         gap: 0.5rem;
     }
 }
-</style> 
+</style>

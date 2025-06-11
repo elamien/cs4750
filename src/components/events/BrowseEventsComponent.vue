@@ -1,6 +1,6 @@
 <template>
     <div class="browse-events-content">
-        <div class="filters">
+        <div class="filters glass-card">
             <div class="filter-row">
                 <div class="field">
                     <label for="genre">Genre</label>
@@ -10,7 +10,7 @@
                         :options="genres"
                         optionLabel="name"
                         placeholder="All Genres"
-                        class="w-full"
+                        class="w-full glass-item"
                     />
                 </div>
                 <div class="field">
@@ -19,7 +19,7 @@
                         id="date"
                         v-model="selectedDate"
                         placeholder="Select date"
-                        class="w-full"
+                        class="w-full glass-item"
                     />
                 </div>
                 <div class="field">
@@ -28,7 +28,7 @@
                         id="search"
                         v-model="searchTerm"
                         placeholder="Search events..."
-                        class="w-full"
+                        class="w-full glass-item"
                     />
                 </div>
             </div>
@@ -39,12 +39,13 @@
                     offLabel="Show Open Gigs Only"
                     onIcon="pi pi-globe"
                     offIcon="pi pi-briefcase"
+                    class="glass-item"
                 />
             </div>
         </div>
 
         <div class="events-grid">
-            <Card v-for="event in filteredEvents" :key="event.id" class="event-card">
+            <Card v-for="event in filteredEvents" :key="event.id" class="event-card glass-card">
                 <template #title>{{ event.eventTitle }}</template>
                 <template #subtitle>
                     <div class="event-meta">

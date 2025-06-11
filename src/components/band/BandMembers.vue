@@ -1,20 +1,20 @@
 <template>
     <div>
-        <Card class="members-section">
+        <Card class="members-section glass-card">
         <template #title>
             <div class="members-header">
                 <span>Band Members</span>
                 <div class="members-actions">
-                    <Button 
-                        v-if="selectedMembers.length > 0" 
+                    <Button
+                        v-if="selectedMembers.length > 0"
                         :label="`Remove ${selectedMembers.length} Member${selectedMembers.length !== 1 ? 's' : ''}`"
-                        icon="pi pi-trash" 
-                        severity="danger" 
+                        icon="pi pi-trash"
+                        severity="danger"
                         size="small"
                         @click="bulkRemoveMembers"
                     />
-                    <Button 
-                        :label="isEditMode ? 'Cancel' : 'Manage Members'" 
+                    <Button
+                        :label="isEditMode ? 'Cancel' : 'Manage Members'"
                         :icon="isEditMode ? 'pi pi-times' : 'pi pi-cog'"
                         :severity="isEditMode ? 'secondary' : 'primary'"
                         size="small"
@@ -27,7 +27,7 @@
             <div class="members-list">
                 <!-- Select All Checkbox (when in edit mode) -->
                 <div v-if="isEditMode" class="select-all-row">
-                    <Checkbox 
+                    <Checkbox
                         v-model="selectAll"
                         @change="toggleSelectAll"
                         binary
@@ -35,24 +35,24 @@
                     <label>Select All Members</label>
                 </div>
 
-                <div v-for="member in members" :key="member.id" class="member-item" :class="{ 'edit-mode': isEditMode }">
+                <div v-for="member in members" :key="member.id" class="member-item glass-item" :class="{ 'edit-mode': isEditMode }">
                     <!-- Selection Checkbox (when in edit mode) -->
-                    <Checkbox 
+                    <Checkbox
                         v-if="isEditMode && member.role !== 'leader'"
                         v-model="selectedMembers"
                         :value="member.id"
                         binary
                         class="member-checkbox"
                     />
-                    
+
                     <Avatar :label="getInitials(member.firstName, member.lastName)" shape="circle" />
-                    
+
                     <div class="member-info">
                         <div class="member-name">
                             <strong>{{ member.firstName }} {{ member.lastName }}</strong>
                             <Tag v-if="member.role === 'leader'" value="Leader" severity="warn" />
                         </div>
-                        
+
                         <div class="member-details">
                             <div class="member-instrument">
                                 <i class="pi pi-music"></i>
@@ -60,13 +60,13 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Member Actions -->
                     <div class="member-actions">
                         <div v-if="isEditMode && member.role !== 'leader'" class="edit-actions">
-                            <Button 
-                                icon="pi pi-trash" 
-                                severity="danger" 
+                            <Button
+                                icon="pi pi-trash"
+                                severity="danger"
                                 outlined
                                 size="small"
                                 @click="confirmRemoveMember(member)"
@@ -75,7 +75,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div v-if="members.length === 0" class="no-members">
                     <i class="pi pi-users" style="font-size: 2rem; color: var(--p-text-muted-color);"></i>
                     <p>No members found for this band.</p>
@@ -85,35 +85,35 @@
     </Card>
 
     <!-- Remove Member Confirmation Dialog -->
-    <Dialog 
-        v-model:visible="showRemoveDialog" 
-        modal 
-        header="Remove Band Member" 
+    <Dialog
+        v-model:visible="showRemoveDialog"
+        modal
+        header="Remove Band Member"
         :style="{ width: '25rem' }"
     >
         <p v-if="memberToRemove">
             Are you sure you want to remove <strong>{{ memberToRemove.firstName }} {{ memberToRemove.lastName }}</strong> from the band? This action cannot be undone.
         </p>
         <template #footer>
-            <Button 
-                label="Cancel" 
-                severity="secondary" 
-                @click="showRemoveDialog = false" 
+            <Button
+                label="Cancel"
+                severity="secondary"
+                @click="showRemoveDialog = false"
             />
-            <Button 
-                label="Remove Member" 
-                severity="danger" 
-                @click="removeMember" 
+            <Button
+                label="Remove Member"
+                severity="danger"
+                @click="removeMember"
                 :loading="removingMember"
             />
         </template>
     </Dialog>
 
     <!-- Bulk Remove Confirmation Dialog -->
-    <Dialog 
-        v-model:visible="showBulkRemoveDialog" 
-        modal 
-        header="Remove Multiple Members" 
+    <Dialog
+        v-model:visible="showBulkRemoveDialog"
+        modal
+        header="Remove Multiple Members"
         :style="{ width: '30rem' }"
     >
         <p>Are you sure you want to remove <strong>{{ selectedMembers.length }}</strong> member(s) from the band? This action cannot be undone.</p>
@@ -123,15 +123,15 @@
             </li>
         </ul>
         <template #footer>
-            <Button 
-                label="Cancel" 
-                severity="secondary" 
-                @click="showBulkRemoveDialog = false" 
+            <Button
+                label="Cancel"
+                severity="secondary"
+                @click="showBulkRemoveDialog = false"
             />
-            <Button 
-                label="Remove Members" 
-                severity="danger" 
-                @click="confirmBulkRemove" 
+            <Button
+                label="Remove Members"
+                severity="danger"
+                @click="confirmBulkRemove"
                 :loading="bulkRemoving"
             />
         </template>
@@ -253,7 +253,7 @@ const removeMember = async () => {
     if (!memberToRemove.value || !currentUserId) return;
 
     removingMember.value = true;
-    
+
     try {
         const bandId = getCurrentBandId();
         const response = await fetch(`/api/bands/${bandId}/members/${memberToRemove.value.id}/remove`, {
@@ -285,7 +285,7 @@ const removeMember = async () => {
         // Update local data
         const updatedMembers = props.members.filter(member => member.id !== memberToRemove.value?.id);
         emit('membersUpdated', updatedMembers);
-        
+
     } catch (error) {
         console.error('Error removing member:', error);
         toast.add({
@@ -309,10 +309,10 @@ const confirmBulkRemove = async () => {
     if (selectedMembers.value.length === 0 || !currentUserId) return;
 
     bulkRemoving.value = true;
-    
+
     try {
         const bandId = getCurrentBandId();
-        const promises = selectedMembers.value.map(memberId => 
+        const promises = selectedMembers.value.map(memberId =>
             fetch(`/api/bands/${bandId}/members/${memberId}/remove`, {
                 method: 'POST',
                 headers: {
@@ -325,7 +325,7 @@ const confirmBulkRemove = async () => {
         );
 
         const results = await Promise.all(promises);
-        
+
         // Check if all requests were successful
         const failures = results.filter(result => !result.ok);
         if (failures.length > 0) {
@@ -340,13 +340,13 @@ const confirmBulkRemove = async () => {
         });
 
         showBulkRemoveDialog.value = false;
-        
+
         // Update local data
         const updatedMembers = props.members.filter(member => !selectedMembers.value.includes(member.id));
         emit('membersUpdated', updatedMembers);
-        
+
         selectedMembers.value = [];
-        
+
     } catch (error) {
         console.error('Error removing members:', error);
         toast.add({
@@ -361,4 +361,4 @@ const confirmBulkRemove = async () => {
 };
 </script>
 
-<!-- Remove the scoped styles since we're using dedicated CSS file --> 
+<!-- Remove the scoped styles since we're using dedicated CSS file -->
