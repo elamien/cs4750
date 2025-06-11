@@ -62,31 +62,37 @@
                         <div class="detail-item">
                             <strong>Posted by:</strong> {{ event.creatorName }} ({{ event.creatorRole }})
                         </div>
-                        <div class="detail-item">
-                            <strong>Performing:</strong>
-                            <div class="bands-list">
-                                <div v-if="event.bandName" class="band-tags">
-                                    <Tag
-                                        :value="event.bandName"
-                                        severity="info"
-                                        class="band-tag clickable"
-                                        @click="viewBandDetails(event.bandName)"
-                                    />
+                        <div class="detail-item performing-row">
+                            <div class="performing-section">
+                                <strong>Performing:</strong>
+                                <div class="bands-list">
+                                    <div v-if="event.bandName" class="band-tags">
+                                        <Tag
+                                            :value="event.bandName"
+                                            severity="info"
+                                            class="band-tag clickable"
+                                            @click="viewBandDetails(event.bandName)"
+                                        />
+                                    </div>
+                                    <span v-else class="tba">TBA</span>
                                 </div>
-                                <span v-else class="tba">TBA</span>
+                            </div>
+                            <div class="favorite-section">
+                                <Button
+                                    v-if="isAuthenticated"
+                                    :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                                    severity="secondary"
+                                    outlined
+                                    size="small"
+                                    @click.stop="toggleFavorite(event.id)"
+                                    :title="event.isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+                                />
                             </div>
                         </div>
                     </div>
                 </template>
                 <template #footer>
                     <div class="event-actions">
-                        <Button
-                            v-if="isAuthenticated"
-                            :label="event.isFavorite ? 'Unfavorite' : 'Favorite'"
-                            :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
-                            severity="secondary"
-                            @click="toggleFavorite(event.id)"
-                        />
                         <Button
                             v-if="isAuthenticated && isBandLeader() && event.status === 'open'"
                             label="Accept Gig"
@@ -274,6 +280,8 @@ const confirmAcceptGig = async () => {
 };
 
 const toggleFavorite = async (eventId: string) => {
+    console.log('toggleFavorite called for event:', eventId);
+
     if (!currentUser.value || !currentUser.value.userId) {
         console.error('User not signed in or invalid user ID');
         return;
@@ -524,6 +532,28 @@ onMounted(async () => {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     border: 1px dashed var(--p-surface-300);
+}
+
+.performing-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.performing-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.performing-section strong {
+    flex-shrink: 0;
+}
+
+.favorite-section {
+    flex-shrink: 0;
 }
 
 .accept-dialog-content .gig-details-card {

@@ -1,14 +1,14 @@
 <template>
     <div class="favorites-view">
         <!-- Glass Submenu -->
-        <GlassSubmenu 
+        <GlassSubmenu
             v-if="!loading && activeSection"
             title="My Favorites"
             :menu-items="submenuItems"
             :active-item="activeSection"
             @item-selected="handleSectionChange"
         />
-        
+
         <!-- Main Content Area -->
         <div class="main-content">
             <!-- Loading State -->
@@ -18,7 +18,7 @@
                     <h3>Loading...</h3>
                 </div>
             </div>
-            
+
             <!-- Favorite Bands Section -->
             <div v-else-if="activeSection === 'bands'" class="content-section">
                 <div v-if="favoriteBands.length > 0" class="favorites-grid">
@@ -38,12 +38,12 @@
                         <template #footer>
                             <div class="card-actions">
                                 <Button label="View Band" icon="pi pi-eye" @click="viewBandDetails(band.id)" />
-                                <Button 
-                                    label="Remove Favorite" 
-                                    icon="pi pi-heart-fill" 
+                                <Button
+                                    label="Remove Favorite"
+                                    icon="pi pi-heart-fill"
                                     severity="danger"
                                     outlined
-                                    @click="removeFavoriteBand(band.id)" 
+                                    @click="removeFavoriteBand(band.id)"
                                 />
                             </div>
                         </template>
@@ -74,27 +74,27 @@
                         <template #content>
                             <p class="event-description">{{ event.description || 'No description available.' }}</p>
                             <div class="event-details">
-                                <div><strong>Genre:</strong> {{ event.genre || 'N/A' }}</div>
+                                <div class="genre-row">
+                                    <span><strong>Genre:</strong> {{ event.genre || 'N/A' }}</span>
+                                                                                                            <BrokenHeart
+                                        @broken="removeFavoriteEvent(event.id)"
+                                        tooltip="Remove from favorites"
+                                        size="small"
+                                    />
+                                </div>
                                 <!-- slotsAvailable & payRate removed as not in core event table -->
                             </div>
                         </template>
                         <template #footer>
                             <div class="card-actions">
                                 <!-- Request to Play logic would depend on event status and if band slots are defined -->
-                                <!-- <Button 
+                                <!-- <Button
                                     v-if="event.status === 'open'" // Assuming event has a status from DB
-                                    label="Request to Play" 
-                                    icon="pi pi-send" 
+                                    label="Request to Play"
+                                    icon="pi pi-send"
                                     severity="success"
-                                    @click="requestToPlay(event.id)" 
+                                    @click="requestToPlay(event.id)"
                                 /> -->
-                                <Button 
-                                    label="Remove Favorite" 
-                                    icon="pi pi-heart-fill" 
-                                    severity="danger"
-                                    outlined
-                                    @click="removeFavoriteEvent(event.id)" 
-                                />
                             </div>
                         </template>
                     </Card>
@@ -116,6 +116,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import GlassSubmenu from '@/components/ui/GlassSubmenu.vue';
+import BrokenHeart from '@/components/ui/BrokenHeart.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -130,7 +131,7 @@ const submenuItems = computed(() => {
         { label: 'Favorite Bands', value: 'bands', icon: 'pi pi-users' },
         { label: 'Favorite Events', value: 'events', icon: 'pi pi-calendar' }
     ];
-    
+
     return items;
 });
 
@@ -191,11 +192,11 @@ const fetchFavoriteBands = async () => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         type ApiFavoriteBand = Omit<FavoriteBandItem, 'id'> & {
             id: number | string;
         };
-        
+
         const bandsData: ApiFavoriteBand[] = await response.json();
         favoriteBands.value = bandsData.map((band: ApiFavoriteBand) => ({
             ...band,
@@ -214,11 +215,11 @@ const fetchFavoriteEvents = async () => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         type ApiFavoriteEvent = Omit<FavoriteEventItem, 'id'> & {
             id: number | string;
         };
-        
+
         const eventsData: ApiFavoriteEvent[] = await response.json();
         favoriteEvents.value = eventsData.map((event: ApiFavoriteEvent) => ({
             ...event,
@@ -234,13 +235,13 @@ const fetchFavoriteEvents = async () => {
 // Utility functions
 const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric', 
-        hour: 'numeric', 
-        minute: '2-digit' 
+    return new Date(dateString).toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
     });
 };
 
@@ -257,9 +258,9 @@ const removeFavoriteBand = async (bandId: string) => {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/favorite-bands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                bandId: bandId, 
-                makeFavorite: false 
+            body: JSON.stringify({
+                bandId: bandId,
+                makeFavorite: false
             })
         });
 
@@ -288,9 +289,9 @@ const removeFavoriteEvent = async (eventId: string) => {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/favorite-events`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                eventId: eventId, 
-                makeFavorite: false 
+            body: JSON.stringify({
+                eventId: eventId,
+                makeFavorite: false
             })
         });
 
@@ -316,7 +317,7 @@ const removeFavoriteEvent = async (eventId: string) => {
 
 onMounted(async () => {
     loading.value = true;
-    
+
     // Set initial section from URL or default to first item
     const sectionFromUrl = route.query.section as string;
     if (sectionFromUrl && ['bands', 'events'].includes(sectionFromUrl)) {
@@ -328,12 +329,12 @@ onMounted(async () => {
             activeSection.value = firstItem.value;
         }
     }
-    
+
     await Promise.all([
         fetchFavoriteBands(),
         fetchFavoriteEvents()
     ]);
-    
+
     loading.value = false;
 });
 </script>
@@ -428,6 +429,14 @@ onMounted(async () => {
     font-size: 0.9rem;
 }
 
+.genre-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+
 /* .tags removed as it was specific to old band mock data */
 
 .card-actions {
@@ -460,7 +469,7 @@ onMounted(async () => {
         max-width: calc(100vw - 220px);
         padding: 1.5rem;
     }
-    
+
     .favorites-grid {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     }
@@ -473,9 +482,9 @@ onMounted(async () => {
         max-width: calc(100vw - 200px);
         padding: 1rem;
     }
-    
+
     .favorites-grid {
         grid-template-columns: 1fr;
     }
 }
-</style> 
+</style>
