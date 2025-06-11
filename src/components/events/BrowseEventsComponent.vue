@@ -46,7 +46,20 @@
 
         <div class="events-grid">
             <Card v-for="event in filteredEvents" :key="event.id" class="event-card glass-card">
-                <template #title>{{ event.eventTitle }}</template>
+                <template #title>
+                    <div class="event-title-row">
+                        <span>{{ event.eventTitle }}</span>
+                        <Button
+                            v-if="isAuthenticated"
+                            :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                            severity="secondary"
+                            outlined
+                            size="small"
+                            @click.stop="toggleFavorite(event.id)"
+                            :title="event.isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+                        />
+                    </div>
+                </template>
                 <template #subtitle>
                     <div class="event-meta">
                         <span><i class="pi pi-calendar"></i> {{ formatDate(event.eventDate) }}</span>
@@ -78,15 +91,14 @@
                                     <span v-else class="tba">TBA</span>
                                 </div>
                             </div>
-                            <div class="favorite-section">
+                            <div class="accept-section">
                                 <Button
-                                    v-if="isAuthenticated"
-                                    :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
-                                    severity="secondary"
-                                    outlined
+                                    v-if="isAuthenticated && isBandLeader() && event.status === 'open'"
+                                    label="Accept"
+                                    icon="pi pi-check-circle"
+                                    severity="success"
                                     size="small"
-                                    @click.stop="toggleFavorite(event.id)"
-                                    :title="event.isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+                                    @click="openCommitmentDialog(event)"
                                 />
                             </div>
                         </div>
@@ -94,13 +106,7 @@
                 </template>
                 <template #footer>
                     <div class="event-actions">
-                        <Button
-                            v-if="isAuthenticated && isBandLeader() && event.status === 'open'"
-                            label="Accept Gig"
-                            icon="pi pi-check-circle"
-                            severity="success"
-                            @click="openCommitmentDialog(event)"
-                        />
+                        <!-- Actions can be added here if needed -->
                     </div>
                 </template>
             </Card>
@@ -125,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
@@ -332,7 +338,14 @@ const API_BASE_URL = 'http://localhost:3001/api';
 
 const fetchEvents = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/events`);
+        let url = `${API_BASE_URL}/events`;
+
+        // Add userId parameter if user is authenticated
+        if (currentUser.value && currentUser.value.userId) {
+            url += `?userId=${currentUser.value.userId}`;
+        }
+
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -373,6 +386,19 @@ const fetchEvents = async () => {
 onMounted(async () => {
     await initializeGenres();
     fetchEvents();
+});
+
+// Watch for authentication state changes and refetch events
+watch(isAuthenticated, () => {
+    fetchEvents();
+});
+
+// Watch for user changes and refetch events
+watch(() => currentUser.value?.userId, (newUserId, oldUserId) => {
+    // Only refetch if the user ID actually changed
+    if (newUserId !== oldUserId) {
+        fetchEvents();
+    }
 });
 </script>
 
@@ -535,6 +561,11 @@ onMounted(async () => {
     border: 1px dashed var(--p-surface-300);
 }
 
+/* Dark mode for TBA to match heart icon background */
+[data-theme="dark"] .tba {
+    background: var(--p-surface-800);
+}
+
 .performing-row {
     display: flex;
     justify-content: space-between;
@@ -553,8 +584,51 @@ onMounted(async () => {
     flex-shrink: 0;
 }
 
-.favorite-section {
+.event-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.event-title-row span {
+    flex: 1;
+}
+
+.accept-section {
     flex-shrink: 0;
+}
+
+/* Style Accept button to match Manage button */
+.accept-section .p-button {
+    background: rgba(34, 197, 94, 0.3) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    border-radius: 30px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.accept-section .p-button .p-button-label,
+.accept-section .p-button .p-button-icon {
+    color: white !important;
+}
+
+.accept-section .p-button:hover {
+    background: rgba(34, 197, 94, 0.4) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+/* Dark mode styling for Accept button */
+[data-theme="dark"] .accept-section .p-button {
+    background: rgba(34, 197, 94, 0.4) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+[data-theme="dark"] .accept-section .p-button:hover {
+    background: rgba(34, 197, 94, 0.5) !important;
+    border-color: rgba(34, 197, 94, 0.6) !important;
 }
 
 .accept-dialog-content .gig-details-card {

@@ -2,7 +2,7 @@
     <Dialog
         :visible="visible"
         modal
-        header="Confirm Gig Commitment"
+        header="Confirm Event Commitment"
         :style="{ width: '30rem' }"
         @update:visible="$emit('update:visible', $event)"
     >
@@ -19,7 +19,7 @@
                 <i class="pi pi-exclamation-triangle warning-icon"></i>
                 <div class="warning-content">
                     <strong>Important Commitment Policy</strong>
-                    <p>Once you accept this gig, you <strong>cannot</strong> toggle back to available if you cancel. You can only cancel your commitment, and you'll need to re-apply through Browse Events if you change your mind.</p>
+                    <p>Once you accept this event, you <strong>cannot toggle back</strong> to available if you cancel. You can only cancel your commitment, and you'll need to re-apply through Browse Events if you change your mind.</p>
                     <p>Additionally, you <strong>cannot cancel within 24 hours</strong> of the event without emergency contact.</p>
                 </div>
             </div>
@@ -31,7 +31,7 @@
                 @click="$emit('cancel')"
             />
             <Button
-                label="I Understand - Commit to Gig"
+                label="I Understand - Commit to Event"
                 severity="success"
                 @click="$emit('confirm')"
                 :loading="loading"
@@ -85,7 +85,8 @@ const formatDate = (dateString: string) => {
 .event-summary {
     margin: 1rem 0;
     padding: 1rem;
-    background: var(--p-surface-50);
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-card-border);
     border-radius: 6px;
     border-left: 4px solid var(--hoojams-orange);
 }

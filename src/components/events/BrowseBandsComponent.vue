@@ -4,11 +4,11 @@
             <div class="filter-row">
                 <div class="field">
                     <label for="genre">Genre</label>
-                    <Dropdown 
+                    <Dropdown
                         id="genre"
-                        v-model="selectedGenre" 
-                        :options="genres" 
-                        optionLabel="name" 
+                        v-model="selectedGenre"
+                        :options="genres"
+                        optionLabel="name"
                         optionValue="value"
                         placeholder="All Genres"
                         showClear
@@ -17,9 +17,9 @@
                 </div>
                 <div class="field">
                     <label for="search">Search</label>
-                    <InputText 
+                    <InputText
                         id="search"
-                        v-model="searchTerm" 
+                        v-model="searchTerm"
                         placeholder="Search bands by name or description..."
                         class="w-full"
                     />
@@ -41,12 +41,12 @@
                 <template #footer>
                     <div class="band-actions">
                         <Button label="View Details" icon="pi pi-eye" @click.stop="viewBandDetails(band.id)" />
-                        <Button 
-                            v-if="isSignedIn" 
-                            :label="band.isFavorite ? 'Unfavorite' : 'Favorite'" 
-                            :icon="band.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+                        <Button
+                            v-if="isSignedIn"
+                            :label="band.isFavorite ? 'Unfavorite' : 'Favorite'"
+                            :icon="band.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
                             severity="secondary"
-                            @click.stop="toggleFavorite(band.id)" 
+                            @click.stop="toggleFavorite(band.id)"
                         />
                     </div>
                 </template>
@@ -102,10 +102,10 @@ const searchTerm = ref('');
 const filteredBands = computed(() => {
     return bands.value.filter(band => {
         const matchesGenre = !selectedGenre.value || band.genre === selectedGenre.value;
-        const matchesSearch = !searchTerm.value || 
+        const matchesSearch = !searchTerm.value ||
             band.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
             (band.description && band.description.toLowerCase().includes(searchTerm.value.toLowerCase()));
-        
+
         return matchesGenre && matchesSearch;
     });
 });
@@ -119,14 +119,14 @@ const toggleFavorite = async (bandId: string) => {
         console.error('User not signed in or invalid user ID');
         return;
     }
-    
+
     const currentUserId = currentUser.value.id;
     const band = bands.value.find(b => b.id === bandId);
     if (!band) return;
 
     const newFavoriteStatus = !band.isFavorite;
     const originalStatus = band.isFavorite;
-    
+
     // Optimistic update
     band.isFavorite = newFavoriteStatus;
 
@@ -134,9 +134,9 @@ const toggleFavorite = async (bandId: string) => {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId}/favorite-bands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                bandId: bandId, 
-                makeFavorite: newFavoriteStatus 
+            body: JSON.stringify({
+                bandId: bandId,
+                makeFavorite: newFavoriteStatus
             })
         });
 
@@ -159,7 +159,19 @@ const API_BASE_URL = 'http://localhost:3001/api';
 
 const fetchBands = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/bands`);
+        let url = `${API_BASE_URL}/bands`;
+        const params = new URLSearchParams();
+
+        // Add userId parameter if user is authenticated
+        if (currentUser.value && currentUser.value.id) {
+            params.append('userId', currentUser.value.id);
+        }
+
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -170,7 +182,7 @@ const fetchBands = async () => {
         };
 
         const apiData: ApiBand[] = await response.json();
-        
+
         bands.value = apiData.map((bandFromApi: ApiBand) => ({
             ...bandFromApi,
             id: String(bandFromApi.id),
@@ -272,9 +284,9 @@ onMounted(async () => {
     .bands-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .band-actions {
         flex-direction: column;
     }
 }
-</style> 
+</style>

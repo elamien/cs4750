@@ -7,46 +7,97 @@ const filter = new Filter();
 
 // GET /api/events - Fetch all events with new time slot structure
 router.get('/', async (req, res, next) => {
-  try {
-    const query = `
-      SELECT 
-        e.event_id AS id,
-        e.user_id AS userId,
-        e.event_title AS eventTitle,
-        DATE(e.event_date) AS eventDate,
-        e.time_slot AS timeSlot,
-        e.datetime,
-        e.location,
-        e.genre,
-        e.status,
-        e.description,
-        e.assigned_band_id AS assignedBandId,
-        b.name AS bandName,
-        u.first_name AS creatorFirstName,
-        u.last_name AS creatorLastName,
-        (
-          SELECT r.role_name 
-          FROM user_roles ur 
-          JOIN roles r ON ur.role_id = r.role_id 
-          WHERE ur.user_id = u.user_id 
-          ORDER BY 
-            CASE r.role_name 
-              WHEN 'WXTJ Executive' THEN 1
-              WHEN 'Band Leader' THEN 2  
-              WHEN 'Band Member' THEN 3
-              WHEN 'General User' THEN 4
-              ELSE 5
-            END
-          LIMIT 1
-        ) AS creatorRole
-      FROM event e
-      JOIN user u ON e.user_id = u.user_id
-      LEFT JOIN band b ON e.assigned_band_id = b.band_id
-      ORDER BY e.event_date DESC, e.time_slot ASC;
-    `;
-    const [rows] = await pool.query(query);
+  const { userId } = req.query; // Get userId from query params for favorite status
 
-        const eventsWithFavorites = rows.map(event => ({
+  try {
+    let query;
+    let queryParams = [];
+
+    if (userId) {
+      // Query with favorite status check for authenticated user
+      query = `
+        SELECT
+          e.event_id AS id,
+          e.user_id AS userId,
+          e.event_title AS eventTitle,
+          DATE(e.event_date) AS eventDate,
+          e.time_slot AS timeSlot,
+          e.datetime,
+          e.location,
+          e.genre,
+          e.status,
+          e.description,
+          e.assigned_band_id AS assignedBandId,
+          b.name AS bandName,
+          u.first_name AS creatorFirstName,
+          u.last_name AS creatorLastName,
+          (
+            SELECT r.role_name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.role_id
+            WHERE ur.user_id = u.user_id
+            ORDER BY
+              CASE r.role_name
+                WHEN 'WXTJ Executive' THEN 1
+                WHEN 'Band Leader' THEN 2
+                WHEN 'Band Member' THEN 3
+                WHEN 'General User' THEN 4
+                ELSE 5
+              END
+            LIMIT 1
+          ) AS creatorRole,
+          CASE WHEN ufe.user_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite
+        FROM event e
+        JOIN user u ON e.user_id = u.user_id
+        LEFT JOIN band b ON e.assigned_band_id = b.band_id
+        LEFT JOIN user_favorites_events ufe ON e.event_id = ufe.event_id AND ufe.user_id = ?
+        ORDER BY e.event_date DESC, e.time_slot ASC;
+      `;
+      queryParams = [userId];
+    } else {
+      // Query without favorite status for anonymous users
+      query = `
+        SELECT
+          e.event_id AS id,
+          e.user_id AS userId,
+          e.event_title AS eventTitle,
+          DATE(e.event_date) AS eventDate,
+          e.time_slot AS timeSlot,
+          e.datetime,
+          e.location,
+          e.genre,
+          e.status,
+          e.description,
+          e.assigned_band_id AS assignedBandId,
+          b.name AS bandName,
+          u.first_name AS creatorFirstName,
+          u.last_name AS creatorLastName,
+          (
+            SELECT r.role_name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.role_id
+            WHERE ur.user_id = u.user_id
+            ORDER BY
+              CASE r.role_name
+                WHEN 'WXTJ Executive' THEN 1
+                WHEN 'Band Leader' THEN 2
+                WHEN 'Band Member' THEN 3
+                WHEN 'General User' THEN 4
+                ELSE 5
+              END
+            LIMIT 1
+          ) AS creatorRole,
+          0 AS isFavorite
+        FROM event e
+        JOIN user u ON e.user_id = u.user_id
+        LEFT JOIN band b ON e.assigned_band_id = b.band_id
+        ORDER BY e.event_date DESC, e.time_slot ASC;
+      `;
+    }
+
+    const [rows] = await pool.query(query, queryParams);
+
+    const eventsWithFavorites = rows.map(event => ({
       id: String(event.id),
       userId: String(event.userId),
       eventTitle: event.eventTitle,
@@ -65,7 +116,7 @@ router.get('/', async (req, res, next) => {
       creatorLastName: event.creatorLastName,
       creatorRole: event.creatorRole,
       creatorName: `${event.creatorFirstName} ${event.creatorLastName}`,
-      isFavorite: false
+      isFavorite: Boolean(event.isFavorite)
     }));
 
     res.json(eventsWithFavorites);
@@ -86,11 +137,11 @@ router.post('/', async (req, res, next) => {
 
   // Validation
   if (!userId || !eventTitle || !eventDate || !timeSlot) {
-    return res.status(400).json({ 
-      message: 'User ID, event title, date, and time slot are required.' 
+    return res.status(400).json({
+      message: 'User ID, event title, date, and time slot are required.'
     });
   }
-  
+
   if (description && description.length > 255) {
     return res.status(400).json({ message: 'Description must be 255 characters or less.' });
   }
@@ -103,13 +154,13 @@ router.post('/', async (req, res, next) => {
     // Create datetime for the specific time slot
     const timeSlotMapping = {
       1: '08:00:00',
-      2: '09:00:00', 
+      2: '09:00:00',
       3: '10:00:00',
       4: '11:00:00'
     };
-    
+
     const datetime = `${eventDate} ${timeSlotMapping[timeSlot]}`;
-    
+
     const query = `
       INSERT INTO event (user_id, event_title, event_date, time_slot, datetime, location, genre, description)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -124,13 +175,13 @@ router.post('/', async (req, res, next) => {
       genre || null,
       description || null
     ];
-    
+
     const [result] = await pool.query(query, params);
     const newEventId = result.insertId;
 
     // Fetch the newly created event to return it in the response
     const [newEventRows] = await pool.query('SELECT event_id AS id, user_id AS userId, event_title AS eventTitle, event_date AS eventDate, time_slot AS timeSlot, datetime, location, genre, status, description, assigned_band_id AS assignedBandId FROM event WHERE event_id = ?', [newEventId]);
-    
+
     if (newEventRows.length > 0) {
         const newEvent = {
             ...newEventRows[0],
@@ -158,21 +209,21 @@ router.post('/', async (req, res, next) => {
 // GET /api/events/available-slots/:date - Check available slots for a specific date
 router.get('/available-slots/:date', async (req, res, next) => {
   const { date } = req.params;
-  
+
   try {
     // Get occupied slots for the given date
     const query = `
-      SELECT time_slot 
-      FROM event 
+      SELECT time_slot
+      FROM event
       WHERE event_date = ?
       ORDER BY time_slot
     `;
     const [rows] = await pool.query(query, [date]);
-    
+
     const occupiedSlots = rows.map(row => row.time_slot);
     const allSlots = [1, 2, 3, 4];
     const availableSlots = allSlots.filter(slot => !occupiedSlots.includes(slot));
-    
+
     // Slot information
     const slotInfo = {
       1: { label: 'Slot 1 (8:00 AM - 9:00 AM)', time: '8:00 AM' },
@@ -180,20 +231,20 @@ router.get('/available-slots/:date', async (req, res, next) => {
       3: { label: 'Slot 3 (10:00 AM - 11:00 AM)', time: '10:00 AM' },
       4: { label: 'Slot 4 (11:00 AM - 12:00 PM)', time: '11:00 AM' }
     };
-    
+
     const availableSlotsWithInfo = availableSlots.map(slot => ({
       value: slot,
       label: slotInfo[slot].label,
       time: slotInfo[slot].time
     }));
-    
+
     res.json({
       date,
       availableSlots: availableSlotsWithInfo,
       occupiedSlots,
       totalAvailable: availableSlots.length
     });
-    
+
   } catch (error) {
     console.error('Failed to fetch available slots:', error);
     next(error);
@@ -205,11 +256,11 @@ router.get('/available-dates', async (req, res, next) => {
   try {
     // Get dates from today onwards that have less than 4 events
     const query = `
-      SELECT 
+      SELECT
         DATE(CURDATE() + INTERVAL n.num DAY) as check_date,
         COUNT(e.event_id) as occupied_slots
       FROM (
-        SELECT 0 as num UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 
+        SELECT 0 as num UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
         UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9
         UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14
         UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19
@@ -227,17 +278,17 @@ router.get('/available-dates', async (req, res, next) => {
       HAVING occupied_slots < 4
       ORDER BY check_date
     `;
-    
+
     const [rows] = await pool.query(query);
-    
+
     const availableDates = rows.map(row => ({
       date: row.check_date,
       occupiedSlots: row.occupied_slots,
       availableSlots: 4 - row.occupied_slots
     }));
-    
+
     res.json(availableDates);
-    
+
   } catch (error) {
     console.error('Failed to fetch available dates:', error);
     next(error);
@@ -258,11 +309,11 @@ router.put('/:id', async (req, res, next) => {
   description = filter.clean(description || '');
 
   if (!userId || !eventTitle || !eventDate || !timeSlot) {
-    return res.status(400).json({ 
-      message: 'User ID, event title, date, and time slot are required.' 
+    return res.status(400).json({
+      message: 'User ID, event title, date, and time slot are required.'
     });
   }
-  
+
   if (description && description.length > 255) {
     return res.status(400).json({ message: 'Description must be 255 characters or less.' });
   }
@@ -288,8 +339,8 @@ router.put('/:id', async (req, res, next) => {
 
     // Check if the new date/time slot combination is available (if changed)
     const currentEvent = eventCheck[0];
-    const isChangingDateTime = 
-      currentEvent.event_date !== eventDate || 
+    const isChangingDateTime =
+      currentEvent.event_date !== eventDate ||
       currentEvent.time_slot !== timeSlot;
 
     if (isChangingDateTime) {
@@ -299,8 +350,8 @@ router.put('/:id', async (req, res, next) => {
       );
 
       if (conflictCheck.length > 0) {
-        return res.status(409).json({ 
-          message: 'This time slot is already taken for the selected date. Please choose a different slot.' 
+        return res.status(409).json({
+          message: 'This time slot is already taken for the selected date. Please choose a different slot.'
         });
       }
     }
@@ -308,24 +359,24 @@ router.put('/:id', async (req, res, next) => {
     // Create datetime for the specific time slot
     const timeSlotMapping = {
       1: '08:00:00',
-      2: '09:00:00', 
+      2: '09:00:00',
       3: '10:00:00',
       4: '11:00:00'
     };
-    
+
     const datetime = `${eventDate} ${timeSlotMapping[timeSlot]}`;
 
     // Update the event
     const query = `
-      UPDATE event 
-      SET event_title = ?, event_date = ?, time_slot = ?, datetime = ?, 
+      UPDATE event
+      SET event_title = ?, event_date = ?, time_slot = ?, datetime = ?,
           location = ?, genre = ?, description = ?
       WHERE event_id = ?
     `;
-    
+
     await pool.query(query, [
       eventTitle,
-      eventDate, 
+      eventDate,
       timeSlot,
       datetime,
       location || null,
@@ -336,9 +387,9 @@ router.put('/:id', async (req, res, next) => {
 
     // Return the updated event
     const [updatedEvent] = await pool.query(
-      `SELECT event_id AS id, user_id AS userId, event_title AS eventTitle, 
-       event_date AS eventDate, time_slot AS timeSlot, datetime, location, 
-       genre, status, description, assigned_band_id AS assignedBandId 
+      `SELECT event_id AS id, user_id AS userId, event_title AS eventTitle,
+       event_date AS eventDate, time_slot AS timeSlot, datetime, location,
+       genre, status, description, assigned_band_id AS assignedBandId
        FROM event WHERE event_id = ?`,
       [eventId]
     );
@@ -398,7 +449,7 @@ router.delete('/:id', async (req, res, next) => {
 
       // Get count of related records that will be cleaned up
       const [relatedRecords] = await pool.query(
-        `SELECT 
+        `SELECT
            (SELECT COUNT(*) FROM event_request WHERE event_id = ?) AS requestCount,
            (SELECT COUNT(*) FROM band_member_event_availability WHERE event_id = ?) AS availabilityCount`,
         [eventId, eventId]
@@ -434,7 +485,7 @@ router.delete('/:id', async (req, res, next) => {
         message += ` ${cleanupDetails.join(', ')}.`;
       }
 
-      res.json({ 
+      res.json({
         message,
         deletedEventId: eventId,
         eventTitle: event.event_title,
@@ -460,7 +511,7 @@ router.delete('/:id', async (req, res, next) => {
 // GET /api/events/:id/available-bands - Get available bands for an event
 router.get('/:id/available-bands', async (req, res, next) => {
   const { id: eventId } = req.params;
-  
+
   try {
     // First verify the event exists
     const [eventCheck] = await pool.query(
@@ -476,7 +527,7 @@ router.get('/:id/available-bands', async (req, res, next) => {
 
     // Get all bands that are NOT already assigned to an event on the same date/time
     const query = `
-      SELECT 
+      SELECT
         b.band_id AS id,
         b.name,
         b.genre,
@@ -487,8 +538,8 @@ router.get('/:id/available-bands', async (req, res, next) => {
       LEFT JOIN band_member bm ON b.band_id = bm.band_id
       LEFT JOIN band_leader bl ON b.band_id = bl.band_id
       WHERE b.band_id NOT IN (
-        SELECT DISTINCT assigned_band_id 
-        FROM event 
+        SELECT DISTINCT assigned_band_id
+        FROM event
         WHERE event_date = ? AND assigned_band_id IS NOT NULL
       )
       AND b.band_id NOT IN (
@@ -502,7 +553,7 @@ router.get('/:id/available-bands', async (req, res, next) => {
     `;
 
     const [rows] = await pool.query(query, [event_date, event_date]);
-    
+
     const availableBands = rows.map(band => ({
       ...band,
       id: String(band.id),
@@ -575,10 +626,10 @@ router.post('/:id/invite-band', async (req, res, next) => {
       INSERT INTO event_request (event_id, band_id, status, message, time_created)
       VALUES (?, ?, 'pending', ?, NOW())
     `;
-    
+
     await pool.query(inviteQuery, [eventId, bandId, message || null]);
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: `Invitation sent to ${bandCheck[0].name}`,
       eventTitle: eventCheck[0].event_title,
       bandName: bandCheck[0].name
@@ -618,9 +669,9 @@ router.post('/:id/accept-gig', async (req, res, next) => {
 
       // 2. Find the user's band and verify they are a band leader
       const [bandLeaderRows] = await pool.query(
-        `SELECT bl.band_id, b.name AS band_name 
-         FROM band_leader bl 
-         JOIN user_roles ur ON bl.user_role_id = ur.user_role_id 
+        `SELECT bl.band_id, b.name AS band_name
+         FROM band_leader bl
+         JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
          JOIN band b ON bl.band_id = b.band_id
          WHERE ur.user_id = ?`,
         [userId]
@@ -636,15 +687,15 @@ router.post('/:id/accept-gig', async (req, res, next) => {
 
       // 3. Check if this band already has a gig at this time
       const [conflictRows] = await pool.query(
-        `SELECT e.event_title FROM event e 
+        `SELECT e.event_title FROM event e
          WHERE e.assigned_band_id = ? AND e.event_date = ? AND e.time_slot = ? AND e.event_id != ?`,
         [bandId, event.event_date, event.time_slot, eventId]
       );
 
       if (conflictRows.length > 0) {
         await pool.query('ROLLBACK');
-        return res.status(409).json({ 
-          message: `Your band already has a gig scheduled at this time: "${conflictRows[0].event_title}".` 
+        return res.status(409).json({
+          message: `Your band already has a gig scheduled at this time: "${conflictRows[0].event_title}".`
         });
       }
 
@@ -656,14 +707,14 @@ router.post('/:id/accept-gig', async (req, res, next) => {
 
       // 5. Create an approved event_request record for tracking
       await pool.query(
-        `INSERT INTO event_request (event_id, band_id, status, message, responded_by_user_id, time_responded) 
+        `INSERT INTO event_request (event_id, band_id, status, message, responded_by_user_id, time_responded)
          VALUES (?, ?, 'approved', 'Direct gig acceptance', ?, NOW())`,
         [eventId, bandId, userId]
       );
 
       await pool.query('COMMIT');
 
-      res.json({ 
+      res.json({
         message: `Gig accepted successfully! ${bandName} is now scheduled to perform.`,
         eventTitle: event.event_title,
         bandName: bandName
@@ -676,13 +727,13 @@ router.post('/:id/accept-gig', async (req, res, next) => {
 
   } catch (error) {
     console.error('Failed to accept gig:', error);
-    
+
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'This gig has already been taken by another band.' });
     }
-    
+
     next(error);
   }
 });
 
-export default router; 
+export default router;

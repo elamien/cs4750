@@ -7,35 +7,62 @@ const filter = new Filter();
 
 // GET /api/bands - Fetch all bands with member counts for join view (with optional search)
 router.get('/', async (req, res, next) => {
-  const { search } = req.query;
+  const { search, userId } = req.query;
 
   try {
-    let query = `
-      SELECT
-        b.band_id AS id,
-        b.name,
-        b.genre,
-        b.description,
-        NULL AS location,
-        COUNT(bm.user_role_id) AS memberCount,
-        CONCAT(leader.first_name, ' ', leader.last_name) AS bandLeaderName
-      FROM band b
-      LEFT JOIN band_member bm ON b.band_id = bm.band_id
-      LEFT JOIN band_leader bl ON b.band_id = bl.band_id
-      LEFT JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
-      LEFT JOIN user leader ON ur.user_id = leader.user_id
-    `;
+    let query;
+    let params = [];
 
-    const params = [];
+    if (userId) {
+      // Query with favorite status check for authenticated user
+      query = `
+        SELECT
+          b.band_id AS id,
+          b.name,
+          b.genre,
+          b.description,
+          NULL AS location,
+          COUNT(bm.user_role_id) AS memberCount,
+          CONCAT(leader.first_name, ' ', leader.last_name) AS bandLeaderName,
+          CASE WHEN ufb.user_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite
+        FROM band b
+        LEFT JOIN band_member bm ON b.band_id = bm.band_id
+        LEFT JOIN band_leader bl ON b.band_id = bl.band_id
+        LEFT JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+        LEFT JOIN user leader ON ur.user_id = leader.user_id
+        LEFT JOIN user_favorites_bands ufb ON b.band_id = ufb.band_id AND ufb.user_id = ?
+      `;
+      params.push(userId);
+    } else {
+      // Query without favorite status for anonymous users
+      query = `
+        SELECT
+          b.band_id AS id,
+          b.name,
+          b.genre,
+          b.description,
+          NULL AS location,
+          COUNT(bm.user_role_id) AS memberCount,
+          CONCAT(leader.first_name, ' ', leader.last_name) AS bandLeaderName,
+          0 AS isFavorite
+        FROM band b
+        LEFT JOIN band_member bm ON b.band_id = bm.band_id
+        LEFT JOIN band_leader bl ON b.band_id = bl.band_id
+        LEFT JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+        LEFT JOIN user leader ON ur.user_id = leader.user_id
+      `;
+    }
+
     if (search) {
       query += ` WHERE b.name LIKE ?`;
       params.push(`%${search}%`);
     }
 
     query += `
-      GROUP BY b.band_id, b.name, b.genre, b.description, leader.first_name, leader.last_name
+      GROUP BY b.band_id, b.name, b.genre, b.description, leader.first_name, leader.last_name${userId ? ', ufb.user_id' : ''}
       ORDER BY b.name;
     `;
+
     const [rows] = await pool.query(query, params);
 
     const bands = rows.map(band => ({
@@ -44,7 +71,7 @@ router.get('/', async (req, res, next) => {
       memberCount: parseInt(band.memberCount) || 0,
       bandLeaderName: band.bandLeaderName,
       needs: [], // TODO: Could add a band_looking_for table if needed
-      isFavorite: false // Placeholder
+      isFavorite: Boolean(band.isFavorite)
     }));
 
     res.json(bands);
