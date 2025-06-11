@@ -4,6 +4,7 @@
             :band-info="bandInfo"
             @leave-band="handleLeaveBand"
             @post-fill-in-request="handlePostFillInRequest"
+            @edit-band-info="handleEditBandInfo"
         />
 
         <div class="band-content">
@@ -12,12 +13,6 @@
                     class="events-section"
                     :upcoming-events="upcomingEvents"
                     @set-availability="setAvailability"
-                />
-
-                <BandInformation
-                    class="band-info-section"
-                    :band-info="bandInfo"
-                    @band-updated="handleBandUpdated"
                 />
 
                 <BandMembers
@@ -78,7 +73,6 @@ import '@/assets/views/my-band-view.css';
 // Import decomposed components
 import BandHeader from '@/components/band/BandHeader.vue';
 import BandUpcomingEvents from '@/components/band/BandUpcomingEvents.vue';
-import BandInformation from '@/components/band/BandInformation.vue';
 import BandMembers from '@/components/band/BandMembers.vue';
 import BandMemberRequests from '@/components/band/BandMemberRequests.vue';
 import BandFillInRequests from '@/components/band/BandFillInRequests.vue';
@@ -465,16 +459,9 @@ const confirmLeaveBand = async () => {
     }
 };
 
-const handleBandUpdated = (updatedBandInfo: { id: string; name: string; genre?: string | null; description?: string | null; location?: string | null }) => {
-    // Update the local band info state, preserving the members array
-    bandInfo.value = {
-        ...bandInfo.value,
-        id: updatedBandInfo.id,
-        name: updatedBandInfo.name,
-        genre: updatedBandInfo.genre,
-        description: updatedBandInfo.description,
-        location: updatedBandInfo.location
-    };
+const handleEditBandInfo = () => {
+    // Navigate to the band info edit page
+    router.push('/my-band/info');
 };
 
 const handleMembersUpdated = (updatedMembers: BandUser[]) => {

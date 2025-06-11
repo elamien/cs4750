@@ -166,6 +166,10 @@ watch(() => props.bandId, (newBandId) => {
     margin-bottom: 2rem;
 }
 
+div.p-card.p-component.fill-in-requests-section.glass-card {
+    padding: 0;
+}
+
 .loading-state, .empty-state {
     text-align: center;
     padding: 2rem;

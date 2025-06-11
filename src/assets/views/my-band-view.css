@@ -18,30 +18,25 @@
 @media (min-width: 768px) {
     .band-sections {
         grid-template-columns: 2fr 1fr;
-        grid-template-areas: 
-            "events info"
-            "events actions"
+        grid-template-areas:
+            "events fill-in"
             "members requests";
     }
-    
+
     .band-sections .events-section {
         grid-area: events;
     }
-    
-    .band-sections .band-info-section {
-        grid-area: info;
+
+    .band-sections .fill-in-requests-section {
+        grid-area: fill-in;
     }
-    
+
     .band-sections .members-section {
         grid-area: members;
     }
-    
+
     .band-sections .member-requests-section {
         grid-area: requests;
-    }
-    
-    .band-sections .actions-section {
-        grid-area: actions;
     }
 }
 
@@ -51,4 +46,4 @@
     .my-band-view {
         padding: 1rem;
     }
-} 
+}
