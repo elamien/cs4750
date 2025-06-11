@@ -9,7 +9,7 @@ const filter = new Filter();
 router.get('/', async (req, res, next) => {
   try {
     const query = `
-      SELECT 
+      SELECT
         u.user_id AS id,
         u.first_name AS firstName,
         u.last_name AS lastName,
@@ -19,16 +19,16 @@ router.get('/', async (req, res, next) => {
         u.genre,
         u.instrument,
         r.role_name AS roleName,
-        CASE 
-          WHEN r.role_name = 'General User' THEN 
-            CASE 
+        CASE
+          WHEN r.role_name = 'General User' THEN
+            CASE
               WHEN g.has_created_band = 1 THEN 'Has Created Band'
               WHEN g.has_pending_band_request = 1 THEN 'Pending Band Request'
               WHEN g.looking_for_a_band = 1 THEN 'Looking for Band'
               ELSE 'General User'
             END
           WHEN r.role_name = 'WXTJ Executive' THEN CONCAT('Executive: ', COALESCE(w.exec_title, 'Executive'))
-          WHEN r.role_name IN ('Band Leader', 'Band Member') THEN 
+          WHEN r.role_name IN ('Band Leader', 'Band Member') THEN
             CONCAT(r.role_name, ' (', COALESCE(b.name, 'Unknown Band'), ')')
           ELSE r.role_name
         END AS roleDetails
@@ -43,12 +43,12 @@ router.get('/', async (req, res, next) => {
       ORDER BY u.user_id ASC;
     `;
     const [rows] = await pool.query(query);
-    
+
     const users = rows.map(user => ({
       ...user,
       id: String(user.id)
     }));
-    
+
     res.json(users);
   } catch (error) {
     console.error('Failed to fetch all users:', error);
@@ -59,10 +59,10 @@ router.get('/', async (req, res, next) => {
 // GET /api/users/:id - Fetch a specific user by ID
 router.get('/:id', async (req, res, next) => {
   const { id: userId } = req.params;
-  
+
   try {
     const query = `
-      SELECT 
+      SELECT
         user_id AS id,
         first_name AS firstName,
         last_name AS lastName,
@@ -75,16 +75,16 @@ router.get('/:id', async (req, res, next) => {
       WHERE user_id = ?;
     `;
     const [rows] = await pool.query(query, [userId]);
-    
+
     if (rows.length === 0) {
       return res.status(404).json({ message: 'User not found.' });
     }
-    
+
     const user = {
       ...rows[0],
       id: String(rows[0].id)
     };
-    
+
     res.json(user);
   } catch (error) {
     console.error('Failed to fetch user:', error);
@@ -96,7 +96,7 @@ router.get('/:id', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
   const { id: userId } = req.params;
   let { firstName, lastName, email, phoneNumber, bio, instrument, genre } = req.body;
-  
+
   if (!firstName || !lastName || !email) {
     return res.status(400).json({ message: 'First name, last name, and email are required.' });
   }
@@ -105,15 +105,15 @@ router.put('/:id', async (req, res, next) => {
   firstName = filter.clean(firstName || '');
   lastName = filter.clean(lastName || '');
   bio = filter.clean(bio || '');
-  
+
   if (bio && bio.length > 255) {
     return res.status(400).json({ message: 'Bio must be 255 characters or less.' });
   }
-  
+
   try {
     const query = `
-      UPDATE user 
-      SET 
+      UPDATE user
+      SET
         first_name = ?,
         last_name = ?,
         email = ?,
@@ -124,31 +124,31 @@ router.put('/:id', async (req, res, next) => {
       WHERE user_id = ?;
     `;
     const [result] = await pool.query(query, [
-      firstName, 
-      lastName, 
-      email, 
-      phoneNumber || null, 
-      bio || null, 
-      instrument || null, 
-      genre || null, 
+      firstName,
+      lastName,
+      email,
+      phoneNumber || null,
+      bio || null,
+      instrument || null,
+      genre || null,
       userId
     ]);
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'User not found.' });
     }
-    
+
     // Return the updated user
     const [updatedRows] = await pool.query(
       `SELECT user_id AS id, first_name AS firstName, last_name AS lastName, bio, email, phone_number AS phoneNumber, genre, instrument FROM user WHERE user_id = ?`,
       [userId]
     );
-    
+
     const updatedUser = {
       ...updatedRows[0],
       id: String(updatedRows[0].id)
     };
-    
+
     res.json(updatedUser);
   } catch (error) {
     console.error('Failed to update user:', error);
@@ -162,10 +162,10 @@ router.put('/:id', async (req, res, next) => {
 // GET /api/users/:id/favorite-bands - Get user's favorite bands
 router.get('/:id/favorite-bands', async (req, res, next) => {
   const { id: userId } = req.params;
-  
+
   try {
     const query = `
-      SELECT 
+      SELECT
         b.band_id AS id,
         b.name,
         b.genre,
@@ -177,12 +177,12 @@ router.get('/:id/favorite-bands', async (req, res, next) => {
       ORDER BY b.name;
     `;
     const [rows] = await pool.query(query, [userId]);
-    
+
     const bands = rows.map(band => ({
       ...band,
       id: String(band.id)
     }));
-    
+
     res.json(bands);
   } catch (error) {
     console.error('Failed to fetch user favorite bands:', error);
@@ -193,10 +193,10 @@ router.get('/:id/favorite-bands', async (req, res, next) => {
 // GET /api/users/:id/favorite-events - Get user's favorite events
 router.get('/:id/favorite-events', async (req, res, next) => {
   const { id: userId } = req.params;
-  
+
   try {
     const query = `
-      SELECT 
+      SELECT
         e.event_id AS id,
         e.event_title AS name,
         e.datetime AS date,
@@ -209,13 +209,13 @@ router.get('/:id/favorite-events', async (req, res, next) => {
       ORDER BY e.datetime DESC;
     `;
     const [rows] = await pool.query(query, [userId]);
-    
+
     const events = rows.map(event => ({
       ...event,
       id: String(event.id),
       date: event.date ? event.date.toISOString().split('T')[0] : null
     }));
-    
+
     res.json(events);
   } catch (error) {
     console.error('Failed to fetch user favorite events:', error);
@@ -290,47 +290,51 @@ router.post('/:userId/favorite-events', async (req, res, next) => {
 // GET /api/users/:id/band-status - Get user's band membership and request status
 router.get('/:id/band-status', async (req, res, next) => {
   const { id: userId } = req.params;
-  
+
   try {
     // Check if user is a band member
     const [memberBands] = await pool.query(
-      `SELECT b.band_id, b.name as band_name, r.role_name as role 
-       FROM band_member bm 
+      `SELECT b.band_id, b.name as band_name, r.role_name as role
+       FROM band_member bm
        JOIN user_roles ur ON bm.user_role_id = ur.user_role_id
-       JOIN band b ON bm.band_id = b.band_id 
+       JOIN band b ON bm.band_id = b.band_id
        JOIN roles r ON ur.role_id = r.role_id
        WHERE ur.user_id = ?`,
       [userId]
     );
-    
+
     // Check if user is a band leader
     const [leaderBands] = await pool.query(
-      `SELECT b.band_id, b.name as band_name, r.role_name as role 
-       FROM band_leader bl 
+      `SELECT b.band_id, b.name as band_name, r.role_name as role
+       FROM band_leader bl
        JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
-       JOIN band b ON bl.band_id = b.band_id 
+       JOIN band b ON bl.band_id = b.band_id
        JOIN roles r ON ur.role_id = r.role_id
        WHERE ur.user_id = ?`,
       [userId]
     );
-    
+
     // Combine member and leader bands
     const allUserBands = [...memberBands, ...leaderBands];
-    
+
     // Check if user has pending join requests and get details
     let hasPendingRequest = false;
     let pendingRequests = [];
     try {
       const [requestRows] = await pool.query(
-        `SELECT 
+        `SELECT
           mr.membership_request_id as id,
           mr.band_id as bandId,
           mr.message,
           mr.time_created as timeCreated,
           b.name as bandName,
-          b.genre as bandGenre
+          b.genre as bandGenre,
+          CONCAT(leader.first_name, ' ', leader.last_name) as bandLeaderName
          FROM membership_request mr
          JOIN band b ON mr.band_id = b.band_id
+         LEFT JOIN band_leader bl ON b.band_id = bl.band_id
+         LEFT JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
+         LEFT JOIN user leader ON ur.user_id = leader.user_id
          WHERE mr.user_id = ? AND mr.status = 'pending'`,
         [userId]
       );
@@ -340,6 +344,7 @@ router.get('/:id/band-status', async (req, res, next) => {
         bandId: String(req.bandId),
         bandName: req.bandName,
         bandGenre: req.bandGenre,
+        bandLeaderName: req.bandLeaderName,
         message: req.message,
         timeCreated: req.timeCreated ? new Date(req.timeCreated).toISOString() : null
       }));
@@ -347,17 +352,17 @@ router.get('/:id/band-status', async (req, res, next) => {
       // Table might not exist, ignore error
       console.log('membership_request table error:', error.message);
     }
-    
 
-    
+
+
     // Check if user created any band (is a leader) - using band_leader table
     const [createdBands] = await pool.query(
-      `SELECT COUNT(*) as count FROM band_leader bl 
+      `SELECT COUNT(*) as count FROM band_leader bl
        JOIN user_roles ur ON bl.user_role_id = ur.user_role_id
        WHERE ur.user_id = ?`,
       [userId]
     );
-    
+
     res.json({
       isMemberOfBand: allUserBands.length > 0,
       hasPendingRequest: hasPendingRequest,
@@ -378,10 +383,10 @@ router.get('/:id/band-status', async (req, res, next) => {
 // GET /api/users/:id/events - Get events created by a specific user
 router.get('/:id/events', async (req, res, next) => {
   const { id: userId } = req.params;
-  
+
   try {
     const query = `
-      SELECT 
+      SELECT
         e.event_id AS id,
         e.user_id AS userId,
         e.event_title AS eventTitle,
@@ -432,31 +437,31 @@ router.get('/:id/events', async (req, res, next) => {
 // DELETE /api/users/:id - Delete a user (admin only)
 router.delete('/:id', async (req, res, next) => {
   const { id: userId } = req.params;
-  
+
   try {
     // Check if user exists first
     const [userCheck] = await pool.query('SELECT user_id FROM user WHERE user_id = ?', [userId]);
-    
+
     if (userCheck.length === 0) {
       return res.status(404).json({ message: 'User not found.' });
     }
-    
+
     // Delete user (CASCADE will handle related records)
     const [result] = await pool.query('DELETE FROM user WHERE user_id = ?', [userId]);
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'User not found.' });
     }
-    
-    res.json({ 
+
+    res.json({
       message: 'User deleted successfully.',
-      deletedUserId: userId 
+      deletedUserId: userId
     });
   } catch (error) {
     console.error('Failed to delete user:', error);
     if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-      return res.status(409).json({ 
-        message: 'Cannot delete user: User has associated records that must be removed first.' 
+      return res.status(409).json({
+        message: 'Cannot delete user: User has associated records that must be removed first.'
       });
     }
     next(error);
@@ -464,4 +469,4 @@ router.delete('/:id', async (req, res, next) => {
 });
 */
 
-export default router; 
+export default router;

@@ -32,6 +32,10 @@
                                     <strong>{{ request.bandName }}</strong>
                                     <span v-if="request.bandGenre" class="genre-badge">{{ request.bandGenre }}</span>
                                 </div>
+                                <div v-if="request.bandLeaderName" class="band-leader-info">
+                                    <i class="pi pi-user"></i>
+                                    <span>Band Leader: {{ request.bandLeaderName }}</span>
+                                </div>
                                 <div v-if="request.message" class="request-message">
                                     <em>"{{ request.message }}"</em>
                                 </div>
@@ -80,6 +84,10 @@
                             <template #title>{{ band.name }}</template>
                             <template #subtitle>{{ band.genre }} • {{ band.memberCount }} members</template>
                             <template #content>
+                                <div v-if="band.bandLeaderName" class="band-leader-info">
+                                    <i class="pi pi-user"></i>
+                                    <span>Band Leader: {{ band.bandLeaderName }}</span>
+                                </div>
                                 <p>{{ band.description }}</p>
                                 <div class="band-needs" v-if="band.needs && band.needs.length > 0">
                                     <strong>Looking for:</strong>
@@ -92,7 +100,7 @@
                                 <Button
                                     label="Request to Join"
                                     icon="pi pi-user-plus"
-                                    @click="requestToJoin(band.id)"
+                                    @click="showJoinRequestDialog(band)"
                                     :disabled="currentUserProfile.hasPendingRequest || currentUserProfile.hasCreatedBand"
                                 />
                             </template>
@@ -132,6 +140,10 @@
                                 <div class="request-info">
                                     <strong>{{ request.bandName }}</strong>
                                     <span v-if="request.bandGenre" class="genre-badge">{{ request.bandGenre }}</span>
+                                </div>
+                                <div v-if="request.bandLeaderName" class="band-leader-info">
+                                    <i class="pi pi-user"></i>
+                                    <span>Band Leader: {{ request.bandLeaderName }}</span>
                                 </div>
                                 <div v-if="request.message" class="request-message">
                                     <em>"{{ request.message }}"</em>
@@ -238,6 +250,62 @@
                 <MyBandComponent />
             </div>
         </div>
+
+        <!-- Join Request Dialog -->
+        <Dialog
+            v-model:visible="showJoinDialog"
+            modal
+            header="Request to Join Band"
+            :style="{ width: '500px' }"
+            class="join-request-dialog"
+        >
+            <div v-if="selectedBand" class="dialog-content">
+                <div class="band-info-section">
+                    <h4>{{ selectedBand.name }}</h4>
+                    <p>{{ selectedBand.genre }} • {{ selectedBand.memberCount }} members</p>
+                    <p>{{ selectedBand.description }}</p>
+                </div>
+
+                <div class="message-section">
+                    <div class="field">
+                        <label for="join-message">Your Message</label>
+                        <Textarea
+                            id="join-message"
+                            v-model="joinRequestForm.message"
+                            placeholder="Tell the band why you'd like to join and what you can contribute..."
+                            rows="4"
+                            :class="{ 'p-invalid': joinRequestErrors.message }"
+                            @input="validateJoinRequest"
+                            maxlength="255"
+                        />
+                        <div class="field-footer">
+                            <small v-if="joinRequestErrors.message" class="p-error">{{ joinRequestErrors.message }}</small>
+                            <small class="char-count" :class="{ 'char-limit-warning': joinRequestForm.message.length > 230 }">
+                                {{ joinRequestForm.message.length }}/255 characters
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="dialog-actions">
+                    <Button
+                        label="Cancel"
+                        icon="pi pi-times"
+                        severity="secondary"
+                        outlined
+                        @click="closeJoinDialog"
+                    />
+                    <Button
+                        label="Send Request"
+                        icon="pi pi-send"
+                        @click="submitJoinRequest"
+                        :loading="sendingRequest"
+                    />
+                </div>
+            </template>
+        </Dialog>
     </div>
 </template>
 
@@ -255,6 +323,7 @@ import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
+import Dialog from 'primevue/dialog';
 import BrowseBandsComponent from '@/components/events/BrowseBandsComponent.vue';
 import MyBandComponent from './MyBandView.vue';
 import GlassSubmenu from '@/components/ui/GlassSubmenu.vue';
@@ -275,6 +344,7 @@ interface BandListItem {
     memberCount: number;
     description: string;
     location?: string;
+    bandLeaderName?: string | null;
     needs?: string[];
 }
 
@@ -341,6 +411,15 @@ const bandForm = ref<BandForm>({
 const bandFormErrors = ref<Record<string, string>>({});
 const cancellingRequestId = ref<string | null>(null);
 
+// Join request dialog state
+const showJoinDialog = ref(false);
+const selectedBand = ref<BandListItem | null>(null);
+const sendingRequest = ref(false);
+const joinRequestForm = ref({
+    message: ''
+});
+const joinRequestErrors = ref<Record<string, string>>({});
+
 // --- Computed Properties ---
 const filteredBands = computed(() => {
     return bands.value.filter(band => {
@@ -392,6 +471,7 @@ const fetchBands = async () => {
             memberCount: band.memberCount,
             description: band.description || 'No description available.',
             location: band.location,
+            bandLeaderName: band.bandLeaderName,
             needs: band.needs || []
         }));
     } catch (error) {
@@ -405,18 +485,50 @@ const fetchBands = async () => {
     }
 };
 
-const requestToJoin = async (bandId: string) => {
-    if (currentUserProfile.value.hasCreatedBand || currentUserProfile.value.hasPendingRequest) return;
+// Join request dialog functions
+const showJoinRequestDialog = (band: BandListItem) => {
+    selectedBand.value = band;
+    joinRequestForm.value.message = '';
+    joinRequestErrors.value = {};
+    showJoinDialog.value = true;
+};
+
+const closeJoinDialog = () => {
+    showJoinDialog.value = false;
+    selectedBand.value = null;
+    joinRequestForm.value.message = '';
+    joinRequestErrors.value = {};
+};
+
+const validateJoinRequest = () => {
+    joinRequestErrors.value = {};
+    const { message } = joinRequestForm.value;
+
+    if (!message.trim()) {
+        joinRequestErrors.value.message = 'Please provide a message explaining why you want to join.';
+    } else if (message.length > 255) {
+        joinRequestErrors.value.message = 'Message must be 255 characters or less.';
+    } else if (containsProfanity(message)) {
+        joinRequestErrors.value.message = 'Inappropriate language is not allowed.';
+    }
+
+    return Object.keys(joinRequestErrors.value).length === 0;
+};
+
+const submitJoinRequest = async () => {
+    if (!validateJoinRequest() || !selectedBand.value) return;
+
+    sendingRequest.value = true;
 
     try {
-        const response = await fetch(`/api/bands/${bandId}/join-requests`, {
+        const response = await fetch(`/api/bands/${selectedBand.value.id}/join-requests`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 userId: currentUserId.value,
-                message: 'I would like to join your band.'
+                message: joinRequestForm.value.message.trim()
             })
         });
 
@@ -427,12 +539,13 @@ const requestToJoin = async (bandId: string) => {
 
         toast.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Join request sent successfully!',
+            summary: 'Request Sent!',
+            detail: `Your join request has been sent to ${selectedBand.value.name}`,
             life: 3000
         });
 
-        // Refresh user status
+        // Close dialog and refresh user status
+        closeJoinDialog();
         await fetchUserBandStatus();
 
     } catch (error) {
@@ -443,6 +556,8 @@ const requestToJoin = async (bandId: string) => {
             detail: 'Failed to send join request',
             life: 3000
         });
+    } finally {
+        sendingRequest.value = false;
     }
 };
 
@@ -450,8 +565,14 @@ const cancelRequest = async (requestId: string, bandId: string) => {
     cancellingRequestId.value = requestId;
 
     try {
-        const response = await fetch(`/api/bands/${bandId}/join-requests/${requestId}`, {
-            method: 'DELETE'
+        const response = await fetch(`/api/bands/${bandId}/membership-requests/${requestId}/cancel`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUserId.value
+            })
         });
 
         if (!response.ok) {
