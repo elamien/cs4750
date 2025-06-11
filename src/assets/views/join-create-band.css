@@ -4,6 +4,15 @@
     position: relative;
 }
 
+/* Override glass submenu positioning for this view */
+.join-create-band .glass-submenu {
+    position: absolute;
+    top: 0;
+    left: 1rem;
+    height: fit-content;
+    max-height: none;
+}
+
 /* Main content area - positioned to account for fixed glass submenu */
 .main-content {
     margin-left: 280px; /* Space for the glass submenu */
@@ -235,17 +244,17 @@
         max-width: calc(100vw - 220px);
         padding: 1rem;
     }
-    
+
     .search-filters {
         grid-template-columns: 1fr;
         gap: 0.75rem;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .form-actions {
         flex-direction: column;
         align-items: stretch;
@@ -259,18 +268,18 @@
         max-width: calc(100vw - 200px);
         padding: 0.5rem;
     }
-    
+
     .search-filters,
     .form-grid {
         gap: 0.5rem;
     }
-    
+
     .bands-list {
         gap: 0.75rem;
     }
-    
+
     .empty-state,
     .notice-message {
         padding: 1.5rem;
     }
-} 
+}

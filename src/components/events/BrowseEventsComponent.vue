@@ -4,38 +4,38 @@
             <div class="filter-row">
                 <div class="field">
                     <label for="genre">Genre</label>
-                    <Dropdown 
+                    <Dropdown
                         id="genre"
-                        v-model="selectedGenre" 
-                        :options="genres" 
-                        optionLabel="name" 
+                        v-model="selectedGenre"
+                        :options="genres"
+                        optionLabel="name"
                         placeholder="All Genres"
                         class="w-full"
                     />
                 </div>
                 <div class="field">
                     <label for="date">Date</label>
-                    <Calendar 
+                    <Calendar
                         id="date"
-                        v-model="selectedDate" 
+                        v-model="selectedDate"
                         placeholder="Select date"
                         class="w-full"
                     />
                 </div>
                 <div class="field">
                     <label for="search">Search</label>
-                    <InputText 
+                    <InputText
                         id="search"
-                        v-model="searchTerm" 
+                        v-model="searchTerm"
                         placeholder="Search events..."
                         class="w-full"
                     />
                 </div>
             </div>
             <div class="filter-row-toggle">
-                <ToggleButton 
-                    v-model="showOpenGigsOnly" 
-                    onLabel="Show All Events" 
+                <ToggleButton
+                    v-model="showOpenGigsOnly"
+                    onLabel="Show All Events"
                     offLabel="Show Open Gigs Only"
                     onIcon="pi pi-globe"
                     offIcon="pi pi-briefcase"
@@ -66,9 +66,9 @@
                             <strong>Performing:</strong>
                             <div class="bands-list">
                                 <div v-if="event.bandName" class="band-tags">
-                                    <Tag 
-                                        :value="event.bandName" 
-                                        severity="info" 
+                                    <Tag
+                                        :value="event.bandName"
+                                        severity="info"
                                         class="band-tag clickable"
                                         @click="viewBandDetails(event.bandName)"
                                     />
@@ -80,19 +80,19 @@
                 </template>
                 <template #footer>
                     <div class="event-actions">
-                        <Button 
-                            v-if="isAuthenticated" 
-                            :label="event.isFavorite ? 'Unfavorite' : 'Favorite'" 
-                            :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+                        <Button
+                            v-if="isAuthenticated"
+                            :label="event.isFavorite ? 'Unfavorite' : 'Favorite'"
+                            :icon="event.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
                             severity="secondary"
-                            @click="toggleFavorite(event.id)" 
+                            @click="toggleFavorite(event.id)"
                         />
-                        <Button 
+                        <Button
                             v-if="isAuthenticated && isBandLeader() && event.status === 'open'"
-                            label="Accept Gig" 
-                            icon="pi pi-check-circle" 
+                            label="Accept Gig"
+                            icon="pi pi-check-circle"
                             severity="success"
-                            @click="acceptGig(event.id)" 
+                            @click="openCommitmentDialog(event)"
                         />
                     </div>
                 </template>
@@ -105,48 +105,15 @@
             <p>Try adjusting your filters or search terms</p>
         </div>
 
-        <!-- Accept Gig Confirmation Dialog -->
-        <Dialog 
-            v-model:visible="showAcceptDialog" 
-            header="Confirm Gig Acceptance"
-            :style="{ width: '500px' }"
-            :modal="true"
-        >
-            <div v-if="selectedEventForAcceptance" class="accept-dialog-content">
-                <p>You are about to accept the following gig for your band:</p>
-                
-                <Card class="gig-details-card">
-                    <template #title>{{ selectedEventForAcceptance.eventTitle }}</template>
-                    <template #content>
-                        <div class="gig-details">
-                           <span><i class="pi pi-calendar"></i> {{ formatDate(selectedEventForAcceptance.eventDate) }}</span>
-                           <span><i class="pi pi-clock"></i> {{ getTimeSlotText(selectedEventForAcceptance.timeSlot) }}</span>
-                           <span><i class="pi pi-map-marker"></i> {{ selectedEventForAcceptance.location || 'Venue TBD' }}</span>
-                        </div>
-                        <p class="confirmation-text">
-                           Are you sure you want to commit your band to this event? 
-                           This action cannot be undone.
-                        </p>
-                    </template>
-                </Card>
-            </div>
-            
-            <template #footer>
-                <Button 
-                    label="Cancel" 
-                    icon="pi pi-times" 
-                    @click="showAcceptDialog = false" 
-                    severity="secondary"
-                />
-                <Button 
-                    label="Confirm & Accept Gig" 
-                    icon="pi pi-check" 
-                    @click="confirmAcceptGig"
-                    severity="success"
-                    :loading="isAccepting"
-                />
-            </template>
-        </Dialog>
+                <!-- Gig Commitment Warning Dialog -->
+        <GigCommitmentDialog
+            :visible="showCommitmentDialog"
+            :event-details="selectedEventForCommitment"
+            :loading="isAccepting"
+            @update:visible="showCommitmentDialog = $event"
+            @cancel="showCommitmentDialog = false"
+            @confirm="confirmAcceptGig"
+        />
     </div>
 </template>
 
@@ -161,7 +128,7 @@ import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import ToggleButton from 'primevue/togglebutton';
-import Dialog from 'primevue/dialog';
+import GigCommitmentDialog from '@/components/band/GigCommitmentDialog.vue';
 import { useReferenceData } from '@/composables/useReferenceData';
 import { useAuth } from '@/composables/useAuth';
 
@@ -194,20 +161,20 @@ const selectedGenre = ref<{name: string, value: string} | null>(null);
 const selectedDate = ref(null);
 const searchTerm = ref('');
 const showOpenGigsOnly = ref(false);
-const showAcceptDialog = ref(false);
+const showCommitmentDialog = ref(false);
 const isAccepting = ref(false);
-const selectedEventForAcceptance = ref<EventListItem | null>(null);
+const selectedEventForCommitment = ref<EventListItem | null>(null);
 
 const filteredEvents = computed(() => {
     return events.value.filter(event => {
         const matchesGenre = !selectedGenre.value || event.genre === selectedGenre.value.name;
-        const matchesDate = !selectedDate.value || 
+        const matchesDate = !selectedDate.value ||
             (event.datetime && new Date(event.datetime).toDateString() === (selectedDate.value as Date).toDateString());
-        const matchesSearch = !searchTerm.value || 
+        const matchesSearch = !searchTerm.value ||
             event.eventTitle.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
             event.description?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
             event.location?.toLowerCase().includes(searchTerm.value.toLowerCase());
-        
+
         const matchesOpenGigs = !showOpenGigsOnly.value || event.status === 'open';
 
         return matchesGenre && matchesDate && matchesSearch && matchesOpenGigs;
@@ -218,18 +185,18 @@ const filteredEvents = computed(() => {
 const formatDate = (dateString: string): string => {
     if (!dateString) return 'Date TBD';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 };
 
 const getTimeSlotText = (timeSlot: number): string => {
     const timeSlotMapping = {
         1: '8:00 AM - 9:00 AM',
-        2: '9:00 AM - 10:00 AM', 
+        2: '9:00 AM - 10:00 AM',
         3: '10:00 AM - 11:00 AM',
         4: '11:00 AM - 12:00 PM'
     };
@@ -258,19 +225,17 @@ const viewBandDetails = async (bandName: string) => {
     }
 };
 
-const acceptGig = async (eventId: string) => {
-    selectedEventForAcceptance.value = events.value.find(e => e.id === eventId) || null;
-    if (selectedEventForAcceptance.value) {
-        showAcceptDialog.value = true;
-    }
+const openCommitmentDialog = (event: EventListItem) => {
+    selectedEventForCommitment.value = event;
+    showCommitmentDialog.value = true;
 };
 
 const confirmAcceptGig = async () => {
-    if (!selectedEventForAcceptance.value) return;
-    
+    if (!selectedEventForCommitment.value) return;
+
     isAccepting.value = true;
     try {
-        const response = await fetch(`${API_BASE_URL}/events/${selectedEventForAcceptance.value.id}/accept-gig`, {
+        const response = await fetch(`${API_BASE_URL}/events/${selectedEventForCommitment.value.id}/accept-gig`, {
             method: 'POST',
             headers: {
                 // Assuming authentication token is sent via cookies or a dedicated header
@@ -278,7 +243,7 @@ const confirmAcceptGig = async () => {
             },
             body: JSON.stringify({ userId: currentUser.value?.userId }) // Send current user ID to identify the band
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to accept gig. It might have been taken.');
@@ -287,13 +252,13 @@ const confirmAcceptGig = async () => {
         toast.add({
             severity: 'success',
             summary: 'Gig Accepted!',
-            detail: `Your band is now scheduled to play at "${selectedEventForAcceptance.value.eventTitle}".`,
+            detail: `Your band is now scheduled to play at "${selectedEventForCommitment.value.eventTitle}".`,
             life: 5000
         });
-        
+
         // Refresh events to show updated status
         await fetchEvents();
-        
+
     } catch (error) {
         toast.add({
             severity: 'error',
@@ -303,8 +268,8 @@ const confirmAcceptGig = async () => {
         });
     } finally {
         isAccepting.value = false;
-        showAcceptDialog.value = false;
-        selectedEventForAcceptance.value = null;
+        showCommitmentDialog.value = false;
+        selectedEventForCommitment.value = null;
     }
 };
 
@@ -313,14 +278,14 @@ const toggleFavorite = async (eventId: string) => {
         console.error('User not signed in or invalid user ID');
         return;
     }
-    
+
     const currentUserId = currentUser.value.userId;
     const event = events.value.find(e => e.id === eventId);
     if (!event) return;
 
     const newFavoriteStatus = !event.isFavorite;
     const originalStatus = event.isFavorite;
-    
+
     // Optimistic update
     event.isFavorite = newFavoriteStatus;
 
@@ -328,9 +293,9 @@ const toggleFavorite = async (eventId: string) => {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId}/favorite-events`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                eventId: eventId, 
-                makeFavorite: newFavoriteStatus 
+            body: JSON.stringify({
+                eventId: eventId,
+                makeFavorite: newFavoriteStatus
             })
         });
 
@@ -374,7 +339,7 @@ const fetchEvents = async () => {
         };
 
         const apiData: ApiEvent[] = await response.json();
-        
+
         events.value = apiData.map((eventFromApi: ApiEvent) => ({
             ...eventFromApi,
             id: String(eventFromApi.id),
@@ -586,4 +551,4 @@ onMounted(async () => {
     color: var(--p-primary-color);
     margin-top: 1rem;
 }
-</style> 
+</style>

@@ -4,8 +4,8 @@
             <h3>{{ title }}</h3>
         </div>
         <nav class="submenu-nav">
-            <div 
-                v-for="item in menuItems" 
+            <div
+                v-for="item in menuItems"
                 :key="item.value"
                 class="submenu-item"
                 :class="{ active: item.value === activeItem }"
@@ -44,6 +44,8 @@ defineEmits<{
     top: calc(var(--navbar-height, 80px) + 2rem);
     left: 1rem;
     width: 250px;
+    height: fit-content;
+    max-height: calc(100vh - var(--navbar-height, 80px) - 4rem);
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -51,7 +53,6 @@ defineEmits<{
     padding: 1.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     z-index: 100;
-    max-height: calc(100vh - var(--navbar-height, 80px) - 3rem);
     overflow-y: auto;
 }
 
@@ -132,11 +133,11 @@ defineEmits<{
         left: 0.5rem;
         top: calc(var(--navbar-height, 80px) + 1rem);
     }
-    
+
     .submenu-item {
         padding: 0.5rem 0.75rem;
     }
-    
+
     .submenu-label {
         font-size: 0.9rem;
     }
@@ -147,4 +148,4 @@ defineEmits<{
         width: 180px;
     }
 }
-</style> 
+</style>

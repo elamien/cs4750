@@ -1,15 +1,30 @@
 /* BandHeader Component Styles */
 .band-header {
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 1rem;
     margin-bottom: 2rem;
 }
 
 .band-header h1 {
     color: var(--theme-main-text);
-    margin-bottom: 0.5rem;
+    margin: 0;
+    flex: 0 0 auto;
 }
 
 .band-header p {
     color: var(--theme-secondary-text);
     font-size: 1.1rem;
-} 
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 768px) {
+    .band-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

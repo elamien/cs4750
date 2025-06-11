@@ -9,11 +9,11 @@
                     </router-link>
                 </template>
                 <template #item="{ item, props, hasSubmenu, root }">
-                    <router-link 
-                        v-if="item.route && !hasSubmenu" 
-                        :to="item.route" 
-                        v-ripple 
-                        class="flex items-center nav-link" 
+                    <router-link
+                        v-if="item.route && !hasSubmenu"
+                        :to="item.route"
+                        v-ripple
+                        class="flex items-center nav-link"
                         active-class="nav-link-active"
                         v-bind="props.action">
                         <i v-if="item.icon" :class="item.icon" style="margin-right: 0.5rem;"></i>
@@ -32,10 +32,10 @@
                 <template #end>
                     <div class="navbar-end">
                         <div v-if="isAuthenticated" class="navbar-user-section">
-                            <RouterLink 
+                            <RouterLink
                                 v-if="isWXTJExecutive()"
                                 to="/admin"
-                                v-ripple 
+                                v-ripple
                                 class="flex items-center nav-link"
                                 active-class="nav-link-active"
                                 title="Admin Panel"
@@ -43,9 +43,9 @@
                                 <i class="pi pi-shield" style="margin-right: 0.5rem;"></i>
                                 <span>Manage</span>
                             </RouterLink>
-                            <RouterLink 
+                            <RouterLink
                                 to="/favorites"
-                                v-ripple 
+                                v-ripple
                                 class="flex items-center nav-link"
                                 active-class="nav-link-active"
                                 title="My Favorites"
@@ -54,22 +54,22 @@
                                 <span>Favorites</span>
                             </RouterLink>
                             <div class="profile-menu">
-                                <div 
+                                <div
                                     class="nav-link profile-nav-link"
                                     @click="toggleProfileMenu"
                                     title="Profile Menu"
                                     ref="avatarRef"
                                     v-ripple
                                 >
-                                    <Avatar 
-                                        :label="currentUser?.firstName && currentUser?.lastName ? getInitials() : 'U'" 
-                                        shape="circle" 
+                                    <Avatar
+                                        :label="currentUser?.firstName && currentUser?.lastName ? getInitials() : 'U'"
+                                        shape="circle"
                                         class="profile-avatar"
                                     />
                                 </div>
-                                <Menu 
-                                    ref="profileMenuRef" 
-                                    :model="profileMenuItems" 
+                                <Menu
+                                    ref="profileMenuRef"
+                                    :model="profileMenuItems"
                                     :popup="true"
                                     class="profile-dropdown"
                                 />
@@ -80,17 +80,17 @@
                 </template>
             </Menubar>
         </div>
-        
+
         <!-- Ambient Music Background -->
         <AmbientMusicBackground />
-        
+
         <main :class="styles.mainContent">
             <RouterView />
         </main>
-        
+
         <!-- Background Music Player -->
         <BackgroundMusicPlayer />
-        
+
         <!-- Authentication Modal -->
         <Dialog v-model:visible="showAuthModal" modal header="Welcome" :style="{ width: '25rem' }" :closable="true">
             <div class="auth-container" @keydown="handleAuthKeydown">
@@ -107,12 +107,12 @@
                     <div class="form-fields">
                         <div class="field">
                             <label for="email">Email</label>
-                            <InputText 
-                                id="email" 
+                            <InputText
+                                id="email"
                                 ref="emailInput"
-                                v-model="authForm.email" 
-                                type="email" 
-                                placeholder="Enter your email" 
+                                v-model="authForm.email"
+                                type="email"
+                                placeholder="Enter your email"
                                 class="w-full"
                                 autofocus
                                 @keyup.enter="focusPassword"
@@ -121,10 +121,10 @@
                         </div>
                         <div class="field">
                             <label for="password">Password</label>
-                            <Password 
+                            <Password
                                 id="password"
                                 ref="passwordInput"
-                                v-model="authForm.password" 
+                                v-model="authForm.password"
                                 placeholder="Enter your password"
                                 :feedback="false"
                                 toggleMask
@@ -133,25 +133,22 @@
                                 @input="signInError = ''"
                             />
                         </div>
-                        <div class="field-checkbox">
-                            <Checkbox id="remember" v-model="authForm.rememberMe" :binary="true" />
-                            <label for="remember">Remember me</label>
-                        </div>
+
                     </div>
                     <div class="auth-actions">
                         <Button label="Sign In" icon="pi pi-sign-in" @click="handleSignIn" class="w-full" />
                         <div class="auth-links">
-                            <Button 
-                                label="Don't have an account? Sign up" 
-                                link 
-                                @click="authMode = 'signup'" 
-                                class="p-0" 
+                            <Button
+                                label="Don't have an account? Sign up"
+                                link
+                                @click="authMode = 'signup'"
+                                class="p-0"
                             />
                             <Button label="Forgot Password?" link class="p-0" />
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Sign Up Form -->
                 <div v-if="authMode === 'signup'" class="auth-form">
                     <h3>Create Account</h3>
@@ -199,18 +196,18 @@
                     <div class="auth-actions">
                         <Button label="Create Account" icon="pi pi-user-plus" @click="handleSignUp" class="w-full" />
                         <div class="auth-links">
-                            <Button 
-                                label="Already have an account? Sign in" 
-                                link 
-                                @click="authMode = 'signin'" 
-                                class="p-0" 
+                            <Button
+                                label="Already have an account? Sign in"
+                                link
+                                @click="authMode = 'signin'"
+                                class="p-0"
                             />
                         </div>
                     </div>
                 </div>
             </div>
         </Dialog>
-        
+
                   <!-- Toast for notifications -->
         <Toast position="top-right" class="app-toast" />
     </div>
@@ -262,7 +259,6 @@ const authForm = ref({
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    rememberMe: false,
     acceptTerms: false,
     isWXTJExecutive: false,
     wxtjAccessKey: ''
@@ -344,12 +340,12 @@ const menuItems = computed<MenuItem[]>(() => {
     if (!isAuthenticated.value) {
         return [...anonymousItems, ...devItems];
     }
-    
+
     let items = [...baseSignedInItems]; // Start with items all signed-in users get
-    
+
     // ADDITIVE ROLE SYSTEM: Check for each role and add corresponding menu items
     const userRoles = currentUser.value?.roles || [];
-    
+
     if (userRoles.includes('General User')) {
         items = [...items, ...generalUserExtraItems];
     }
@@ -362,7 +358,7 @@ const menuItems = computed<MenuItem[]>(() => {
     if (userRoles.includes('WXTJ Executive')) {
         items = [...items, ...wxtjExecExtraItems];
     }
-    
+
     return [...items, ...devItems];
 });
 
@@ -400,7 +396,7 @@ const profileMenuItems = computed<MenuItem[]>(() => [
 // Theme toggle functionality
 const toggleTheme = () => {
     isDarkMode.value = !isDarkMode.value;
-    
+
     if (isDarkMode.value) {
         document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
@@ -419,7 +415,7 @@ const toggleProfileMenu = (event: Event) => {
 const handleSignIn = async () => {
     // Clear any previous error
     signInError.value = '';
-    
+
     try {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
@@ -431,7 +427,7 @@ const handleSignIn = async () => {
                 password: authForm.value.password
             })
     });
-    
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -442,12 +438,12 @@ const handleSignIn = async () => {
 
         // Successful login
         login(data.user); // Use the composable's login function
-        
+
         showAuthModal.value = false;
         resetAuthForm();
-        
+
         console.log('Login successful:', data.user);
-    
+
     } catch (error) {
         console.error('Login error:', error);
         signInError.value = 'Unable to connect to the server. Please try again later.';
@@ -457,7 +453,7 @@ const handleSignIn = async () => {
 const validateSignUp = () => {
     signUpErrors.value = {};
     const { firstName, lastName, email, password, confirmPassword, isWXTJExecutive, wxtjAccessKey } = authForm.value;
-    
+
     if (containsProfanity(firstName)) {
         signUpErrors.value.firstName = 'Inappropriate language is not allowed.';
     } else if (!firstName) {
@@ -512,7 +508,7 @@ const handleSignUp = async () => {
                 wxtjAccessKey: authForm.value.wxtjAccessKey
             })
         });
-        
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -523,15 +519,15 @@ const handleSignUp = async () => {
 
         // Successful registration
         login(data.user); // Use the composable's login function
-        
+
         showAuthModal.value = false;
         resetAuthForm();
-        
+
         console.log('Registration successful:', data.user);
-    
+
     // Redirect new users to onboarding
     router.push('/onboarding');
-        
+
     } catch (error) {
         console.error('Registration error:', error);
     }
@@ -544,7 +540,6 @@ const resetAuthForm = () => {
         confirmPassword: '',
         firstName: '',
         lastName: '',
-        rememberMe: false,
         acceptTerms: false,
         isWXTJExecutive: false,
         wxtjAccessKey: ''
@@ -574,10 +569,10 @@ const focusPassword = () => {
 const handleAuthKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
         const activeElement = document.activeElement;
-        
+
         // Check if we're currently in an input field (insert mode)
         if (activeElement && (
-            activeElement.tagName === 'INPUT' || 
+            activeElement.tagName === 'INPUT' ||
             activeElement.tagName === 'TEXTAREA' ||
             (activeElement as HTMLElement).isContentEditable
         )) {
@@ -592,17 +587,17 @@ const handleAuthKeydown = (event: KeyboardEvent) => {
 
 const focusEmailInput = async () => {
     await nextTick();
-    
+
     // More persistent focus approach - retry multiple times
     let attempts = 0;
     const maxAttempts = 10;
-    
+
     const tryFocus = () => {
         if (attempts >= maxAttempts) return;
-        
+
         if (emailInput.value && emailInput.value.$el) {
             emailInput.value.$el.focus();
-            
+
             // Check if focus actually worked
             setTimeout(() => {
                 if (document.activeElement !== emailInput.value?.$el && attempts < maxAttempts) {
@@ -612,7 +607,7 @@ const focusEmailInput = async () => {
             }, 50);
         }
     };
-    
+
     setTimeout(tryFocus, 100);
 };
 
@@ -633,19 +628,19 @@ onMounted(() => {
         isDarkMode.value = true;
         document.documentElement.setAttribute('data-theme', 'dark');
     }
-    
+
     // Initialize authentication state via composable
     refreshUser();
-    
+
     // Dynamically calculate navbar height for toast positioning
     const navbarElement = document.querySelector('.navbar');
     if (navbarElement) {
         const navbarHeight = navbarElement.getBoundingClientRect().height;
         const toastTopOffset = navbarHeight + 10; // 10px gap below navbar
-        
+
         // Update CSS custom property for toast positioning
         document.documentElement.style.setProperty('--navbar-height', `${toastTopOffset}px`);
-        
+
         console.log(`Navbar height detected: ${navbarHeight}px, toast offset: ${toastTopOffset}px`);
     }
 });

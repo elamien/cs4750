@@ -15,7 +15,7 @@
                 </template>
             </Card>
         </div>
-        
+
         <div v-else-if="!userBand.id" class="no-band-state">
         <Card>
             <template #content>
@@ -23,9 +23,9 @@
                         <i class="pi pi-exclamation-triangle"></i>
                         <h3>No Band Found</h3>
                         <p>You need to be a band leader to create fill-in requests.</p>
-                        <Button 
-                            label="Go to Band Management" 
-                            icon="pi pi-users" 
+                        <Button
+                            label="Go to Band Management"
+                            icon="pi pi-users"
                             @click="router.push('/join-create-band')"
                         />
                     </div>
@@ -41,7 +41,7 @@
                         <div class="form-grid">
                             <div class="field span-2">
                                 <label for="event">Event *</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="event"
                                     v-model="form.eventId"
                                     :options="upcomingEvents"
@@ -59,7 +59,7 @@
 
                             <div class="field">
                                 <label for="slot">Slot *</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="slot"
                                     v-model="form.slotNumber"
                                     :options="availableSlotOptions"
@@ -78,7 +78,7 @@
 
                             <div class="field">
                                 <label for="unavailableMember">Unavailable Member *</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="unavailableMember"
                                     v-model="form.unavailableMemberId"
                                     :options="bandMembers"
@@ -93,7 +93,7 @@
 
                             <div class="field">
                                 <label for="instrument">Instrument/Role Needed *</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="instrument"
                                     v-model="form.instrumentNeeded"
                                     :options="instruments"
@@ -109,7 +109,7 @@
 
                             <div class="field span-2">
                                 <label for="description">Requirements & Description *</label>
-                                <Textarea 
+                                <Textarea
                                     id="description"
                                     v-model="form.description"
                                     rows="4"
@@ -123,16 +123,16 @@
                         </div>
 
                         <div class="form-actions">
-                            <Button 
-                                label="Cancel" 
-                                icon="pi pi-times" 
+                            <Button
+                                label="Cancel"
+                                icon="pi pi-times"
                                 @click="router.back()"
                                 severity="secondary"
                                 outlined
                             />
-                            <Button 
-                                label="Post Fill-In Request" 
-                                icon="pi pi-send" 
+                            <Button
+                                label="Post Fill-In Request"
+                                icon="pi pi-send"
                                 type="submit"
                                 :loading="submitting"
                             />
@@ -285,7 +285,7 @@ const API_BASE_URL = 'http://localhost:3001/api';
 
 // Computed properties
 const hasFormData = computed(() => {
-    return form.value.eventId || form.value.slotNumber || form.value.unavailableMemberId || 
+    return form.value.eventId || form.value.slotNumber || form.value.unavailableMemberId ||
            form.value.instrumentNeeded || form.value.description;
 });
 
@@ -299,18 +299,18 @@ const selectedMember = computed(() => {
 
 const validateForm = () => {
     formErrors.value = {};
-    
+
     if (!form.value.eventId) formErrors.value.eventId = 'Please select an event.';
     if (!form.value.slotNumber) formErrors.value.slotNumber = 'Please select a slot.';
     if (!form.value.unavailableMemberId) formErrors.value.unavailableMemberId = 'Please select the unavailable member.';
     if (!form.value.instrumentNeeded) formErrors.value.instrumentNeeded = 'Please specify the instrument needed.';
-    
+
     if (!form.value.description.trim()) {
         formErrors.value.description = 'Please provide a description.';
     } else if (containsProfanity(form.value.description)) {
         formErrors.value.description = 'Inappropriate language is not allowed.';
     }
-    
+
     return Object.keys(formErrors.value).length === 0;
 };
 
@@ -336,14 +336,14 @@ const availableSlotOptions = computed(() => {
     if (!form.value.eventId || !selectedEvent.value) {
         return [];
     }
-    
+
     const event = selectedEvent.value;
-    
+
     // If the event has a specific time slot assigned, only show that slot
     if (event.timeSlot) {
         return slotOptions.value.filter(slot => slot.value === event.timeSlot);
     }
-    
+
     // Fallback: if no specific slot is assigned, show all slots
     // This shouldn't normally happen for events with accepted band invitations
     return slotOptions.value;
@@ -355,9 +355,9 @@ const fetchBandEvents = async () => {
         // Use the correct band-specific endpoint instead of general events endpoint
         const response = await fetch(`${API_BASE_URL}/bands/${userBand.value.id}/events?userId=${currentUserId.value}`);
         if (!response.ok) throw new Error('Failed to fetch band events');
-        
+
         const bandEvents = await response.json() as EventInfo[];
-        
+
         // Map to the format needed for the dropdown
         upcomingEvents.value = bandEvents.map((event: EventInfo) => ({
             id: event.id,
@@ -368,15 +368,34 @@ const fetchBandEvents = async () => {
             timeSlot: event.timeSlot,
             displayName: `${event.eventTitle} - ${formatDate(event.datetime)}`
         }));
-        
+
         console.log('Loaded band events:', upcomingEvents.value);
-        
+
     } catch (error) {
         console.error('Error fetching band events:', error);
         // Show more helpful error message
         alert('Failed to load events. Make sure your band has accepted event invitations to create fill-in requests.');
     }
 };
+const fetchBandMembers = async (bandId: string) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/bands/${bandId}/members`);
+        if (!response.ok) throw new Error('Failed to fetch band members');
+
+        const members = await response.json();
+        bandMembers.value = members.map((member: { id: string; firstName: string; lastName: string; instrument?: string }) => ({
+            id: member.id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            fullName: `${member.firstName} ${member.lastName}`,
+            instrument: member.instrument || 'Not specified'
+        }));
+    } catch (error) {
+        console.error('Error fetching band members:', error);
+        bandMembers.value = [];
+    }
+};
+
 const fetchUserBandInfo = async () => {
     if (!currentUserId.value) {
         console.error('User not authenticated');
@@ -386,14 +405,14 @@ const fetchUserBandInfo = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}/band-status`);
         if (!response.ok) throw new Error('Failed to fetch user band status');
-        
+
         const bandStatus = await response.json();
-        
+
         if (!bandStatus.isMemberOfBand || bandStatus.memberBands.length === 0) {
             userBand.value = { id: '', name: '', genre: '' };
             return;
         }
-        
+
         // Get the user's band (assuming they only have one)
         const band = bandStatus.memberBands[0];
         userBand.value = {
@@ -401,16 +420,13 @@ const fetchUserBandInfo = async () => {
             name: band.name,
             genre: band.genre || ''
         };
-        
-        // Fetch band members (using mock data for now)
-        bandMembers.value = [
-            { id: '6', firstName: 'Mike', lastName: 'Member', fullName: 'Mike Member', instrument: 'Guitar' },
-            { id: '7', firstName: 'Gary', lastName: 'General', fullName: 'Gary General', instrument: 'Drums' }
-        ];
-        
+
+        // Fetch actual band members from API
+        await fetchBandMembers(band.id);
+
         // Fetch events where this band is scheduled to play
         await fetchBandEvents();
-        
+
     } catch (error) {
         console.error('Error fetching user band info:', error);
         alert('Failed to load band information');
@@ -428,7 +444,7 @@ const createFillInRequest = async () => {
     }
 
     submitting.value = true;
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/fill-in-requests`, {
             method: 'POST',
@@ -451,10 +467,10 @@ const createFillInRequest = async () => {
 
         const result = await response.json();
         console.log('Fill-in request created successfully:', result);
-        
+
         alert('Fill-in request posted successfully!');
         router.push('/fill-in-requests');
-        
+
     } catch (error) {
         console.error('Failed to create fill-in request:', error);
         alert('Error creating fill-in request: ' + (error instanceof Error ? error.message : 'Unknown error'));
@@ -472,7 +488,7 @@ watch(() => form.value.eventId, (newEventId) => {
 
 onMounted(async () => {
     loading.value = true;
-    
+
     try {
         await initializeInstruments();
         await fetchUserBandInfo();
@@ -633,22 +649,22 @@ onMounted(async () => {
     .create-fill-in {
         padding: 1rem;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .field.span-2 {
         grid-column: 1;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .event-details {
         flex-direction: column;
         gap: 0.5rem;
     }
 }
-</style> 
+</style>

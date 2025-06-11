@@ -66,23 +66,9 @@
                         </template>
                     </Column>
                     
-                    <Column field="roleDetails" header="Status" sortable style="width: 220px">
+                    <Column field="roleDetails" header="Status" sortable style="width: 300px">
                         <template #body="{ data }">
                             <span class="role-details">{{ data.roleDetails }}</span>
-                        </template>
-                    </Column>
-                    
-                    <Column field="genre" header="Genre" sortable style="width: 120px">
-                        <template #body="{ data }">
-                            <Tag v-if="data.genre" severity="info">{{ data.genre }}</Tag>
-                            <span v-else class="text-500">—</span>
-                        </template>
-                    </Column>
-                    
-                    <Column field="instrument" header="Instrument" sortable style="width: 120px">
-                        <template #body="{ data }">
-                            <Tag v-if="data.instrument" severity="success">{{ data.instrument }}</Tag>
-                            <span v-else class="text-500">—</span>
                         </template>
                     </Column>
                     
