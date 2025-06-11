@@ -232,9 +232,13 @@ import AmbientMusicBackground from './components/ui/AmbientMusicBackground.vue';
 import styles from './styles/App.module.css';
 import { useAuth } from '@/composables/useAuth';
 import { containsProfanity } from '@/utils/profanityFilter';
+import { useToast } from 'primevue/usetoast';
 
 // Router instance
 const router = useRouter();
+
+// Toast service
+const toast = useToast();
 
 // Authentication state from composable
 const { isAuthenticated, currentUser, login, logout, refreshUser, getInitials, isWXTJExecutive } = useAuth();
@@ -403,6 +407,14 @@ const toggleTheme = () => {
     } else {
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem('theme', 'light');
+
+        // Show toast notification for light mode
+        toast.add({
+            severity: 'warn',
+            summary: 'Light Mode Beta',
+            detail: 'Light mode is currently in development and may not display all interface elements optimally. We\'re actively refining the experience.',
+            life: 6000
+        });
     }
 };
 

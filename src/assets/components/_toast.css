@@ -13,4 +13,16 @@
 .p-toast-top-right {
   top: var(--navbar-height, 70px) !important;
   right: 1rem !important;
-} 
+}
+
+/* Light mode toast text visibility */
+:root .p-toast .p-toast-message .p-toast-detail,
+:root .p-toast .p-toast-message .p-toast-summary {
+  color: #1a1a1a !important;
+}
+
+/* Dark mode toast text (keep original styling) */
+[data-theme="dark"] .p-toast .p-toast-message .p-toast-detail,
+[data-theme="dark"] .p-toast .p-toast-message .p-toast-summary {
+  color: #f5f5f5 !important;
+}
