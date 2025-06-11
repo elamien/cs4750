@@ -3,7 +3,9 @@
         <Card class="members-section glass-card">
         <template #title>
             <div class="members-header">
-                <span>Band Members</span>
+                <div class="members-title">
+                    <span>Band Members</span>
+                </div>
                 <div class="members-actions">
                     <Button
                         v-if="selectedMembers.length > 0"
@@ -14,7 +16,7 @@
                         @click="bulkRemoveMembers"
                     />
                     <Button
-                        :label="isEditMode ? 'Cancel' : 'Manage Members'"
+                        :label="isEditMode ? 'Cancel' : 'Manage'"
                         :icon="isEditMode ? 'pi pi-times' : 'pi pi-cog'"
                         :severity="isEditMode ? 'secondary' : 'primary'"
                         size="small"

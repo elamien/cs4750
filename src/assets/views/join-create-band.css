@@ -68,21 +68,74 @@ div.p-card.p-component.members-section.glass-card {
     border: none !important;
 }
 
-/* Background for members header */
-div.members-header {
+/* Background for members title only */
+div.members-title {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
+    padding: 0.75rem 1rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* Dark mode for members title */
+[data-theme="dark"] div.members-title {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Members header container styling */
+div.members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100%;
     margin-bottom: 1rem;
 }
 
-/* Dark mode for members header */
-[data-theme="dark"] div.members-header {
-    background: rgba(0, 0, 0, 0.2);
-    border-color: rgba(255, 255, 255, 0.1);
+/* Members actions container */
+div.members-actions {
+    display: flex !important;
+    align-items: stretch !important;
+}
+
+/* Glass morphism effect for manage button with darker green tint */
+div.members-actions .p-button {
+    background: rgba(34, 197, 94, 0.3) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+    padding: 0.75rem 1rem !important;
+    height: auto !important;
+    min-height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+    gap: 0.5rem !important;
+}
+
+/* White text and icon for manage button */
+div.members-actions .p-button .p-button-label,
+div.members-actions .p-button .p-button-icon {
+    color: white !important;
+    font-size: 1rem !important;
+}
+
+/* Fix icon spacing */
+div.members-actions .p-button .p-button-icon {
+    margin-right: 0 !important;
+}
+
+/* Dark mode for manage button */
+[data-theme="dark"] div.members-actions .p-button {
+    background: rgba(34, 197, 94, 0.4) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
 }
 
 /* Remove padding from card body in members section */
@@ -94,6 +147,45 @@ div.members-header {
 div.p-card.p-component.fill-in-requests-section.glass-card,
 div.p-card.p-component.member-requests-section.glass-card {
     margin-bottom: 0 !important;
+}
+
+/* Remove background from upcoming events card */
+div.p-card.p-component.events-section.glass-card {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Dark mode override for upcoming events card */
+[data-theme="dark"] div.p-card.p-component.events-section.glass-card {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Background for upcoming events header */
+div.upcoming-events-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* Dark mode for upcoming events header */
+[data-theme="dark"] div.upcoming-events-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Remove padding from card body in upcoming events section */
+.events-section div.p-card-body {
+    padding: 0;
 }
 
 .search-section {

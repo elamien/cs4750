@@ -1,6 +1,8 @@
 <template>
     <Card class="events-section glass-card">
-        <template #title>Upcoming Events</template>
+        <template #title>
+            <div class="upcoming-events-header">Upcoming Events</div>
+        </template>
         <template #content>
             <div v-if="upcomingEvents.length > 0" class="events-list">
                 <div v-for="event in upcomingEvents" :key="event.id" class="event-item glass-item">
