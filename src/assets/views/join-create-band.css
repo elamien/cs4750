@@ -53,6 +53,49 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Remove background from members section card */
+div.p-card.p-component.members-section.glass-card {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Dark mode override for members section */
+[data-theme="dark"] div.p-card.p-component.members-section.glass-card {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Background for members header */
+div.members-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Dark mode for members header */
+[data-theme="dark"] div.members-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Remove padding from card body in members section */
+.members-section div.p-card-body {
+    padding: 0;
+}
+
+/* Remove bottom margin from fill-in requests and membership requests sections */
+div.p-card.p-component.fill-in-requests-section.glass-card,
+div.p-card.p-component.member-requests-section.glass-card {
+    margin-bottom: 0 !important;
+}
+
 .search-section {
     margin-bottom: 2rem;
 }

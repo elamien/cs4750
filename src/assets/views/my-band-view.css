@@ -19,8 +19,8 @@
     .band-sections {
         grid-template-columns: 2fr 1fr;
         grid-template-areas:
-            "events fill-in"
-            "members requests";
+            "fill-in requests"
+            "events members";
     }
 
     .band-sections .events-section {
