@@ -10,7 +10,6 @@
             <div v-else-if="fillInRequests.length === 0" class="empty-state">
                 <div class="empty-content">
                     <i class="pi pi-calendar-times"></i>
-                    <h4>No Fill-In Requests</h4>
                     <p>Your band hasn't posted any fill-in requests yet.</p>
                     <Button
                         label="Create Fill-In Request"
