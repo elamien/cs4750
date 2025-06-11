@@ -188,6 +188,29 @@ div.upcoming-events-header {
     padding: 0;
 }
 
+/* Glass morphism effect for Create Fill-In Request button */
+div.fill-in-requests-section .empty-content .p-button {
+    background: rgba(34, 197, 94, 0.3) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* White text and icon for Create Fill-In Request button */
+div.fill-in-requests-section .empty-content .p-button .p-button-label,
+div.fill-in-requests-section .empty-content .p-button .p-button-icon {
+    color: white !important;
+}
+
+/* Dark mode for Create Fill-In Request button */
+[data-theme="dark"] div.fill-in-requests-section .empty-content .p-button {
+    background: rgba(34, 197, 94, 0.4) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
 .search-section {
     margin-bottom: 2rem;
 }
