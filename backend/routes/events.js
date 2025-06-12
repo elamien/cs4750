@@ -226,10 +226,10 @@ router.get('/available-slots/:date', async (req, res, next) => {
 
     // Slot information
     const slotInfo = {
-      1: { label: 'Slot 1 (8:00 AM - 9:00 AM)', time: '8:00 AM' },
-      2: { label: 'Slot 2 (9:00 AM - 10:00 AM)', time: '9:00 AM' },
-      3: { label: 'Slot 3 (10:00 AM - 11:00 AM)', time: '10:00 AM' },
-      4: { label: 'Slot 4 (11:00 AM - 12:00 PM)', time: '11:00 AM' }
+      1: { label: 'Slot 1 (8:00 PM - 9:00 PM)', time: '8:00 PM' },
+      2: { label: 'Slot 2 (9:00 PM - 10:00 PM)', time: '9:00 PM' },
+      3: { label: 'Slot 3 (10:00 PM - 11:00 PM)', time: '10:00 PM' },
+      4: { label: 'Slot 4 (11:00 PM - 12:00 AM)', time: '11:00 PM' }
     };
 
     const availableSlotsWithInfo = availableSlots.map(slot => ({

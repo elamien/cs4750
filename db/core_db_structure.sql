@@ -195,7 +195,7 @@ CREATE TABLE fill_in_request (
     fill_in_request_id INT PRIMARY KEY AUTO_INCREMENT,
     band_id INT NOT NULL,
     event_id INT NOT NULL,
-    -- NEW: Track which specific time slot needs coverage (1=8-9am, 2=9-10am, 3=10-11am, 4=11am-12pm)
+    -- NEW: Track which specific time slot needs coverage (1=8-9pm, 2=9-10pm, 3=10-11pm, 4=11pm-12am)
     slot_number INT NOT NULL CHECK (slot_number IN (1, 2, 3, 4)),
     fill_in_description TEXT,
     fill_in_member_id INT,

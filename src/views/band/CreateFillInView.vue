@@ -257,10 +257,10 @@ const formErrors = ref<Record<string, string>>({});
 
 // Options
 const slotOptions = ref([
-    { name: 'Slot 1 (8:00 AM - 9:00 AM)', value: 1, timeRange: '8:00 AM - 9:00 AM' },
-    { name: 'Slot 2 (9:00 AM - 10:00 AM)', value: 2, timeRange: '9:00 AM - 10:00 AM' },
-    { name: 'Slot 3 (10:00 AM - 11:00 AM)', value: 3, timeRange: '10:00 AM - 11:00 AM' },
-    { name: 'Slot 4 (11:00 AM - 12:00 PM)', value: 4, timeRange: '11:00 AM - 12:00 PM' }
+            { name: 'Slot 1 (8:00 PM - 9:00 PM)', value: 1, timeRange: '8:00 PM - 9:00 PM' },
+        { name: 'Slot 2 (9:00 PM - 10:00 PM)', value: 2, timeRange: '9:00 PM - 10:00 PM' },
+        { name: 'Slot 3 (10:00 PM - 11:00 PM)', value: 3, timeRange: '10:00 PM - 11:00 PM' },
+        { name: 'Slot 4 (11:00 PM - 12:00 AM)', value: 4, timeRange: '11:00 PM - 12:00 AM' }
 ]);
 
 const API_BASE_URL = 'http://localhost:3001/api';

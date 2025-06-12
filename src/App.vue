@@ -480,6 +480,9 @@ const handleSignIn = async () => {
 
         console.log('Login successful:', data.user);
 
+        // Redirect to home dashboard
+        router.push('/home-dashboard');
+
     } catch (error) {
         console.error('Login error:', error);
         signInError.value = 'Unable to connect to the server. Please try again later.';
