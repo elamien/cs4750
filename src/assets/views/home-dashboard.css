@@ -142,6 +142,34 @@
     gap: 0.5rem;
 }
 
+.read-only-note {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--p-surface-100);
+    border: 1px solid var(--p-surface-border);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+[data-theme="dark"] .read-only-note {
+    background: var(--p-surface-700);
+}
+
+.read-only-note small {
+    color: var(--theme-secondary-text);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.read-only-note i {
+    color: var(--hoojams-orange);
+    font-size: 0.75rem;
+}
+
 .empty-state {
     text-align: center;
     padding: 2rem;

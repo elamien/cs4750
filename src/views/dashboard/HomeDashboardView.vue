@@ -197,7 +197,164 @@
                 </Card>
             </div>
 
-            <!-- Other User Roles (Band Member, General User, etc.) -->
+            <!-- Band Member Dashboard -->
+            <div v-else-if="isBandMember()" class="dashboard-grid">
+                <!-- Upcoming Events Card -->
+                <Card class="dashboard-card">
+                    <template #title>
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="pi pi-calendar"></i>
+                                <span>Upcoming Events</span>
+                            </div>
+                            <Button
+                                label="View All"
+                                link
+                                size="small"
+                                @click="$router.push('/events?tab=my-events')"
+                            />
+                        </div>
+                    </template>
+                    <template #content>
+                        <div v-if="upcomingEvents.length > 0" class="events-list">
+                            <div v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" class="event-item">
+                                <div class="event-info">
+                                    <h4>{{ event.eventTitle }}</h4>
+                                    <div class="event-meta">
+                                        <span><i class="pi pi-calendar"></i> {{ formatDate(event.datetime) }}</span>
+                                        <span><i class="pi pi-map-marker"></i> {{ event.location }}</span>
+                                    </div>
+                                </div>
+                                <Tag value="Playing" severity="success" />
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="pi pi-calendar"></i>
+                            <p>No upcoming events</p>
+                        </div>
+                    </template>
+                </Card>
+
+                <!-- Fill-In Requests Card -->
+                <Card class="dashboard-card">
+                    <template #title>
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="pi pi-bell"></i>
+                                <span>Fill-In Requests</span>
+                                <Badge v-if="fillInRequests.length > 0" :value="fillInRequests.length" severity="info" />
+                            </div>
+                            <Button
+                                label="View All"
+                                link
+                                size="small"
+                                @click="$router.push('/fill-in-requests')"
+                            />
+                        </div>
+                    </template>
+                    <template #content>
+                        <div v-if="fillInRequests.length > 0" class="requests-list">
+                            <div v-for="request in fillInRequests.slice(0, 3)" :key="request.id" class="request-item">
+                                <div class="request-info">
+                                    <h4>{{ request.eventName }}</h4>
+                                    <p>{{ request.fillInDescription }}</p>
+                                    <div class="request-meta">
+                                        <span><i class="pi pi-user"></i> {{ request.originalMemberName }}</span>
+                                        <span><i class="pi pi-clock"></i> {{ formatDate(request.eventDate) }}</span>
+                                    </div>
+                                </div>
+                                <Tag
+                                    :value="request.status"
+                                    :severity="getStatusSeverity(request.status)"
+                                />
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="pi pi-bell"></i>
+                            <p>No fill-in requests</p>
+                        </div>
+                    </template>
+                </Card>
+
+                <!-- Open Events Card (Read-Only) -->
+                <Card class="dashboard-card">
+                    <template #title>
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="pi pi-search"></i>
+                                <span>Available Events</span>
+                            </div>
+                            <Button
+                                label="Browse All"
+                                link
+                                size="small"
+                                @click="$router.push('/events?tab=browse')"
+                            />
+                        </div>
+                    </template>
+                    <template #content>
+                        <div v-if="openEvents.length > 0" class="events-list">
+                            <div v-for="event in openEvents.slice(0, 3)" :key="event.id" class="event-item">
+                                <div class="event-info">
+                                    <h4>{{ event.eventTitle }}</h4>
+                                    <div class="event-meta">
+                                        <span><i class="pi pi-calendar"></i> {{ formatDate(event.datetime) }}</span>
+                                        <span><i class="pi pi-map-marker"></i> {{ event.location }}</span>
+                                    </div>
+                                </div>
+                                <div class="read-only-note">
+                                    <small><i class="pi pi-info-circle"></i> Contact band leader to express interest</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="pi pi-search"></i>
+                            <p>No open events available</p>
+                        </div>
+                    </template>
+                </Card>
+
+                <!-- Membership Requests Card (Read-Only) -->
+                <Card class="dashboard-card">
+                    <template #title>
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="pi pi-users"></i>
+                                <span>New Member Requests</span>
+                                <Badge v-if="membershipRequests.length > 0" :value="membershipRequests.length" severity="warning" />
+                            </div>
+                            <Button
+                                label="View All"
+                                link
+                                size="small"
+                                @click="$router.push('/join-create-band')"
+                            />
+                        </div>
+                    </template>
+                    <template #content>
+                        <div v-if="membershipRequests.length > 0" class="requests-list">
+                            <div v-for="request in membershipRequests.slice(0, 3)" :key="request.id" class="request-item">
+                                <div class="request-info">
+                                    <h4>{{ request.firstName }} {{ request.lastName }}</h4>
+                                    <p>{{ request.instrument || 'No instrument specified' }}</p>
+                                    <div class="request-meta">
+                                        <span><i class="pi pi-clock"></i> {{ formatTimeAgo(request.timeCreated) }}</span>
+                                    </div>
+                                </div>
+                                <div class="read-only-note">
+                                    <small><i class="pi pi-info-circle"></i> Band leader will review</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="pi pi-users"></i>
+                            <p>No membership requests</p>
+                        </div>
+                    </template>
+                </Card>
+            </div>
+
+            <!-- Other User Roles (General User, etc.) -->
             <div v-else class="other-dashboard">
                 <Card class="welcome-card">
                     <template #content>
