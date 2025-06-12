@@ -3,7 +3,6 @@
         <!-- Glass Submenu for signed-in users -->
         <GlassSubmenu
             v-if="isAuthenticated && !loading && activeSection"
-            title="Event Management"
             :menu-items="submenuItems"
             :active-item="activeSection"
             @item-selected="handleSectionChange"
@@ -51,7 +50,7 @@ const loading = ref(true);
 // Submenu items
 const submenuItems = computed(() => {
     const items = [
-        { label: 'Browse Events', value: 'browse', icon: 'pi pi-search' },
+        { label: 'Browse', value: 'browse', icon: 'pi pi-search' },
         { label: 'My Events', value: 'my-events', icon: 'pi pi-calendar' }
     ];
 
