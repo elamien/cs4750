@@ -404,7 +404,7 @@ watch(() => currentUser.value?.userId, (newUserId, oldUserId) => {
 
 <style scoped>
 .browse-events-content {
-    padding: 1.5rem;
+    padding: 0;
     color: var(--theme-main-text);
 }
 
@@ -413,7 +413,12 @@ watch(() => currentUser.value?.userId, (newUserId, oldUserId) => {
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 2rem;
-    border: 1px solid var(--p-surface-border);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dark mode for filters */
+[data-theme="dark"] .filters {
+    border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .filter-row {
@@ -447,6 +452,12 @@ watch(() => currentUser.value?.userId, (newUserId, oldUserId) => {
 
 .event-card {
     height: fit-content;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dark mode for event cards */
+[data-theme="dark"] .event-card {
+    border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .event-card .p-card-title {

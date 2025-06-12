@@ -101,7 +101,7 @@ onMounted(async () => {
     margin-left: var(--submenu-content-margin, 280px); /* Dynamic space based on actual submenu width */
     width: calc(100vw - var(--submenu-content-margin, 280px)); /* Ensure it doesn't overflow */
     max-width: calc(100vw - var(--submenu-content-margin, 280px));
-    padding: 2rem;
+    padding: 0;
     box-sizing: border-box;
     overflow-x: auto; /* Handle any internal overflow gracefully */
     transition: margin-left 0.2s ease, width 0.2s ease; /* Smooth transition when submenu resizes */
@@ -152,14 +152,14 @@ onMounted(async () => {
         margin-left: 220px;
         width: calc(100vw - 220px);
         max-width: calc(100vw - 220px);
-        padding: 1.5rem;
+        padding: 0;
     }
 
     .main-content.no-submenu {
         margin-left: 0;
         width: 100%;
         max-width: none;
-        padding: 1.5rem;
+        padding: 0;
     }
 }
 
@@ -168,14 +168,14 @@ onMounted(async () => {
         margin-left: 200px;
         width: calc(100vw - 200px);
         max-width: calc(100vw - 200px);
-        padding: 1rem;
+        padding: 0;
     }
 
     .main-content.no-submenu {
         margin-left: 0;
         width: 100%;
         max-width: none;
-        padding: 1rem;
+        padding: 0;
     }
 }
 
