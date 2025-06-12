@@ -61,11 +61,16 @@
                                     ref="avatarRef"
                                     v-ripple
                                 >
-                                    <Avatar
-                                        :label="currentUser?.firstName && currentUser?.lastName ? getInitials() : 'U'"
-                                        shape="circle"
-                                        class="profile-avatar"
-                                    />
+                                    <div class="profile-avatar-container">
+                                        <Avatar
+                                            :label="currentUser?.firstName && currentUser?.lastName ? getInitials() : 'U'"
+                                            shape="circle"
+                                            class="profile-avatar"
+                                        />
+                                        <div v-if="userRoleBadge" class="role-badge" :title="userRoleBadge">
+                                            {{ userRoleBadge }}
+                                        </div>
+                                    </div>
                                 </div>
                                 <Menu
                                     ref="profileMenuRef"
@@ -241,7 +246,7 @@ const router = useRouter();
 const toast = useToast();
 
 // Authentication state from composable
-const { isAuthenticated, currentUser, login, logout, refreshUser, getInitials, isWXTJExecutive } = useAuth();
+const { isAuthenticated, currentUser, login, logout, refreshUser, getInitials, isWXTJExecutive, isBandLeader, isBandMember, isGeneralUser, getPrimaryRole } = useAuth();
 
 // Theme state
 const isDarkMode = ref(false);
@@ -321,11 +326,8 @@ const generalUserExtraItems: MenuItem[] = [
 // Menu items for band members
 // Permissions: Leave band, View band approved event(s) and select (available vs not)
 const bandMemberExtraItems: MenuItem[] = [
-    {
-        label: 'My Band Dashboard', // For viewing events, setting availability, leaving band
-        icon: 'pi pi-users',
-        route: '/my-band' // MyBandView.vue
-    }
+    // Band members use the existing "My Band" section in the Bands tab
+    // which routes to /join-create-band?section=my-band
 ];
 
 // Menu items for band leaders
@@ -348,18 +350,16 @@ const menuItems = computed<MenuItem[]>(() => {
     let items = [...baseSignedInItems]; // Start with items all signed-in users get
 
     // ADDITIVE ROLE SYSTEM: Check for each role and add corresponding menu items
-    const userRoles = currentUser.value?.roles || [];
-
-    if (userRoles.includes('General User')) {
+    if (isGeneralUser()) {
         items = [...items, ...generalUserExtraItems];
     }
-    if (userRoles.includes('Band Member')) {
+    if (isBandMember()) {
         items = [...items, ...bandMemberExtraItems];
     }
-    if (userRoles.includes('Band Leader')) {
+    if (isBandLeader()) {
         items = [...items, ...bandLeaderExtraItems];
     }
-    if (userRoles.includes('WXTJ Executive')) {
+    if (isWXTJExecutive()) {
         items = [...items, ...wxtjExecExtraItems];
     }
 
@@ -396,6 +396,30 @@ const profileMenuItems = computed<MenuItem[]>(() => [
         }
     }
 ]);
+
+// Role badge for profile avatar
+const userRoleBadge = computed(() => {
+    if (!isAuthenticated.value || !currentUser.value) return null;
+
+    // Priority: Specialized roles first, then base roles
+    if (isBandLeader()) return 'Leader';
+    if (isBandMember()) return 'Member';
+    if (isWXTJExecutive()) return 'Executive';
+    if (isGeneralUser()) return 'General';
+
+    // Fallback to primary role if none of the above match
+    const primaryRole = getPrimaryRole();
+    if (primaryRole) {
+        // Shorten common role names for badge display
+        if (primaryRole === 'WXTJ Executive') return 'Executive';
+        if (primaryRole === 'Band Leader') return 'Leader';
+        if (primaryRole === 'Band Member') return 'Member';
+        if (primaryRole === 'General User') return 'General';
+        return primaryRole;
+    }
+
+    return null;
+});
 
 // Theme toggle functionality
 const toggleTheme = () => {

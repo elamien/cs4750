@@ -93,7 +93,7 @@
                 <i class="pi pi-megaphone" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
                 <h3>No Fill-In Requests Available</h3>
                 <p>It seems there are no open fill-in requests at the moment. Check back soon!</p>
-                <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/bands')" severity="secondary"/>
+                <Button label="Browse Bands" icon="pi pi-users" @click="router.push('/join-create-band?section=browse')" severity="secondary"/>
             </div>
         </div>
     </div>

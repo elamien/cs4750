@@ -220,6 +220,41 @@ div.p-menubar.p-component {
     border: 1.5px solid white;
 }
 
+/* Profile avatar container for badge positioning */
+.profile-avatar-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Role badge overlay */
+.role-badge {
+    position: absolute;
+    bottom: -12px;
+    right: -12px;
+    background: linear-gradient(135deg, var(--hoojams-orange), var(--hoojams-orange-hover));
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: 12px;
+    border: 1.5px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    min-width: 1.8rem;
+    text-align: center;
+    line-height: 1;
+    z-index: 10;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* Dark mode adjustments for role badge */
+[data-theme="dark"] .role-badge {
+    border-color: var(--p-surface-900);
+}
+
 /* Profile menu styling */
 .profile-menu {
     position: relative;
@@ -245,7 +280,7 @@ div.p-menubar.p-component {
     margin: 0.5rem 0;
 }
 
- 
+
 
 /* Sign In button styling */
 .navbar-end .p-button {
@@ -385,4 +420,4 @@ div.p-menubar.p-component {
 .p-menubar .p-menuitem-link.p-focus {
     background: transparent !important;
     color: white !important;
-} 
+}
