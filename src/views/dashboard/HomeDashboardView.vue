@@ -292,7 +292,7 @@
                             />
                         </div>
                     </template>
-                    <template #content>
+                <template #content>
                         <div v-if="openEvents.length > 0" class="events-list">
                             <div v-for="event in openEvents.slice(0, 3)" :key="event.id" class="event-item">
                                 <div class="event-info">
@@ -349,10 +349,10 @@
                         <div v-else class="empty-state">
                             <i class="pi pi-users"></i>
                             <p>No membership requests</p>
-                        </div>
-                    </template>
-                </Card>
-            </div>
+                    </div>
+                </template>
+            </Card>
+        </div>
 
             <!-- Other User Roles (General User, etc.) -->
             <div v-else class="other-dashboard">
