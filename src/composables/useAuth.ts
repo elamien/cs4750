@@ -1,5 +1,11 @@
 import { ref, computed } from 'vue'
 
+interface RoleRow {
+  role_name: string
+  role_context_type: string | null
+  role_context_id: number | null
+}
+
 interface UserRole {
   role_name: string
   context_type: 'general' | 'band' | 'event'
@@ -48,7 +54,7 @@ const initializeAuth = () => {
           context_id: null
         }]
       }
-      
+
       currentUser.value = {
         userId: String(userData.userId),
         email: userData.email,
@@ -84,6 +90,56 @@ export const useAuth = () => {
     initializeAuth()
   }
 
+  const refreshUserFromServer = async () => {
+    if (!currentUser.value?.userId) return false
+
+    try {
+      // First get basic user info
+      const userResponse = await fetch(`/api/users/${currentUser.value.userId}`, {
+        credentials: 'include'
+      })
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user data')
+      }
+
+      const userData = await userResponse.json()
+
+      // Then get user roles using the test endpoint (which uses the same query as login)
+      const rolesResponse = await fetch(`/api/auth/test-roles/${currentUser.value.userId}`, {
+        credentials: 'include'
+      })
+
+      if (!rolesResponse.ok) {
+        throw new Error('Failed to fetch user roles')
+      }
+
+      const rolesData = await rolesResponse.json()
+
+      // Update the current user with fresh data from server
+      const updatedUser = {
+        userId: String(userData.id),
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        roles: rolesData.roles.map((row: RoleRow) => ({
+          role_name: row.role_name,
+          context_type: row.role_context_type || 'general',
+          context_id: row.role_context_id || null
+        }))
+      }
+
+      currentUser.value = updatedUser
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+      console.log('User refreshed from server:', updatedUser)
+
+      return true
+    } catch (error) {
+      console.error('Error refreshing user from server:', error)
+      return false
+    }
+  }
+
   const getUserId = () => {
     return currentUser.value?.userId || null
   }
@@ -103,8 +159,8 @@ export const useAuth = () => {
   }
 
   const hasRoleInContext = (roleName: string, contextType: string, contextId?: number) => {
-    return currentUser.value?.roles?.some(role => 
-      role.role_name === roleName && 
+    return currentUser.value?.roles?.some(role =>
+      role.role_name === roleName &&
       role.context_type === contextType &&
       (contextId === undefined || role.context_id === contextId)
     ) || false
@@ -116,19 +172,19 @@ export const useAuth = () => {
     }
     return hasRole('Band Leader')
   }
-  
+
   const isBandMember = (bandId?: number) => {
     if (bandId !== undefined) {
       return hasRoleInContext('Band Member', 'band', bandId)
     }
     return hasRole('Band Member')
   }
-  
+
   const isWXTJExecutive = () => hasRole('WXTJ Executive')
   const isGeneralUser = () => hasRole('General User')
 
   const getBandLeadershipBands = () => {
-    return currentUser.value?.roles?.filter(role => 
+    return currentUser.value?.roles?.filter(role =>
       role.role_name === 'Band Leader' && role.context_type === 'band'
     ).map(role => role.context_id).filter(id => id !== null) || []
   }
@@ -145,6 +201,7 @@ export const useAuth = () => {
     login,
     logout,
     refreshUser,
+    refreshUserFromServer,
     getUserId,
     getUserName,
     getInitials,

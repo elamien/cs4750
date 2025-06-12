@@ -110,7 +110,7 @@ interface BandEvent {
 // Composables
 const router = useRouter();
 const toast = useToast();
-const { getUserId } = useAuth();
+const { getUserId, refreshUserFromServer } = useAuth();
 
 // Reactive state
 const bandInfo = ref<BandInfo>({
@@ -344,6 +344,9 @@ const promoteAndLeave = async () => {
             throw new Error('Failed to promote new leader');
         }
 
+        // Refresh user data from server to update roles
+        await refreshUserFromServer();
+
         toast.add({
             severity: 'success',
             summary: 'Success',
@@ -391,6 +394,9 @@ const forceLeave = async () => {
             throw new Error('Failed to leave band');
         }
 
+        // Refresh user data from server to update roles
+        await refreshUserFromServer();
+
         toast.add({
             severity: 'success',
             summary: 'Success',
@@ -437,6 +443,9 @@ const confirmLeaveBand = async () => {
         if (!response.ok) {
             throw new Error('Failed to leave band');
         }
+
+        // Refresh user data from server to update roles
+        await refreshUserFromServer();
 
         toast.add({
             severity: 'success',

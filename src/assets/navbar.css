@@ -234,8 +234,8 @@ div.p-menubar.p-component {
 /* Role badge overlay */
 .role-badge {
     position: absolute;
-    bottom: -8px;
-    right: -8px;
+    bottom: -12px;
+    right: -10px;
     background: linear-gradient(135deg, var(--hoojams-orange), var(--hoojams-orange-hover));
     color: white;
     font-size: 0.6rem;
