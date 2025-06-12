@@ -22,24 +22,24 @@
                     <div class="section-header">
                         <span>Profile Information</span>
                         <div class="section-actions">
-                            <Button 
-                                v-if="!isEditing" 
-                                label="Edit Profile" 
-                                icon="pi pi-pencil" 
+                            <Button
+                                v-if="!isEditing"
+                                label="Edit Profile"
+                                icon="pi pi-pencil"
                                 @click="startEditing"
                                 severity="secondary"
                             />
                             <div v-else class="edit-actions">
-                                <Button 
-                                    label="Cancel" 
-                                    icon="pi pi-times" 
+                                <Button
+                                    label="Cancel"
+                                    icon="pi pi-times"
                                     @click="cancelEditing"
                                     severity="secondary"
                                     outlined
                                 />
-                                <Button 
-                                    label="Save Changes" 
-                                    icon="pi pi-check" 
+                                <Button
+                                    label="Save Changes"
+                                    icon="pi pi-check"
                                     @click="saveProfile"
                                     :loading="saving"
                                     :disabled="!hasChanges"
@@ -84,9 +84,9 @@
                         <div class="form-grid">
                             <div class="field" :class="{ 'field-modified': isFieldModified('firstName') }">
                                 <label for="firstName">First Name *</label>
-                                <InputText 
-                                    id="firstName" 
-                                    v-model="editForm.firstName" 
+                                <InputText
+                                    id="firstName"
+                                    v-model="editForm.firstName"
                                     class="w-full"
                                     :class="{ 'p-invalid': editErrors.firstName }"
                                     @input="validateForm"
@@ -95,9 +95,9 @@
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('lastName') }">
                                 <label for="lastName">Last Name *</label>
-                                <InputText 
-                                    id="lastName" 
-                                    v-model="editForm.lastName" 
+                                <InputText
+                                    id="lastName"
+                                    v-model="editForm.lastName"
                                     class="w-full"
                                     :class="{ 'p-invalid': editErrors.lastName }"
                                     @input="validateForm"
@@ -106,9 +106,9 @@
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('email') }">
                                 <label for="email">Email *</label>
-                                <InputText 
-                                    id="email" 
-                                    v-model="editForm.email" 
+                                <InputText
+                                    id="email"
+                                    v-model="editForm.email"
                                     type="email"
                                     class="w-full"
                                     :class="{ 'p-invalid': editErrors.email }"
@@ -118,15 +118,15 @@
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('phoneNumber') }">
                                 <label for="phone">Phone</label>
-                                <InputText 
-                                    id="phone" 
-                                    v-model="editForm.phoneNumber" 
+                                <InputText
+                                    id="phone"
+                                    v-model="editForm.phoneNumber"
                                     class="w-full"
                                 />
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('instrument') }">
                                 <label for="instrument">Primary Instrument</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="instrument"
                                     v-model="editForm.instrument"
                                     :options="instruments"
@@ -139,7 +139,7 @@
                             </div>
                             <div class="field" :class="{ 'field-modified': isFieldModified('genre') }">
                                 <label for="genre">Primary Genre</label>
-                                <Dropdown 
+                                <Dropdown
                                     id="genre"
                                     v-model="editForm.genre"
                                     :options="genres"
@@ -152,8 +152,8 @@
                             </div>
                             <div class="field span-2" :class="{ 'field-modified': isFieldModified('bio') }">
                                 <label for="bio">Bio</label>
-                                <Textarea 
-                                    id="bio" 
+                                <Textarea
+                                    id="bio"
                                     v-model="editForm.bio"
                                     rows="4"
                                     placeholder="Tell us about yourself..."
@@ -170,7 +170,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div v-if="hasChanges" class="changes-summary">
                             <div class="changes-indicator">
                                 <i class="pi pi-exclamation-circle"></i>
@@ -180,13 +180,92 @@
                         </div>
                     </template>
                 </Card>
+
+                <!-- Roles Section -->
+                <Card class="roles-section">
+                    <template #title>
+                        <div class="section-header">
+                            <span>Account Roles</span>
+                            <i class="pi pi-info-circle"
+                               v-tooltip.top="'Your roles determine what features and permissions you have access to'"
+                               style="color: var(--p-text-muted-color); cursor: help;">
+                            </i>
+                        </div>
+                    </template>
+                    <template #content>
+                        <div class="roles-content">
+                            <div class="roles-grid">
+                                <!-- Base Roles -->
+                                <div class="role-category">
+                                    <h4>Base Role</h4>
+                                    <div class="role-badges">
+                                        <div v-if="isWXTJExecutive()" class="account-role-badge executive">
+                                            <i class="pi pi-star"></i>
+                                            <span>WXTJ Executive</span>
+                                        </div>
+                                        <div v-else class="account-role-badge general">
+                                            <i class="pi pi-user"></i>
+                                            <span>General User</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Specialized Roles -->
+                                <div class="role-category">
+                                    <h4>Band Roles</h4>
+                                    <div class="role-badges">
+                                        <div v-if="isBandLeader()" class="account-role-badge leader">
+                                            <i class="pi pi-crown"></i>
+                                            <span>Band Leader</span>
+                                        </div>
+                                        <div v-if="isBandMember()" class="account-role-badge member">
+                                            <i class="pi pi-users"></i>
+                                            <span>Band Member</span>
+                                        </div>
+                                        <div v-if="!isBandLeader() && !isBandMember()" class="account-role-badge none">
+                                            <i class="pi pi-minus"></i>
+                                            <span>No band roles</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Role Permissions Info -->
+                            <div class="role-permissions">
+                                <h4>Current Permissions</h4>
+                                <div class="permissions-list">
+                                    <div v-if="isWXTJExecutive()" class="permission-item">
+                                        <i class="pi pi-check-circle" style="color: var(--p-green-500);"></i>
+                                        <span>Full administrative access to all features</span>
+                                    </div>
+                                    <div v-if="isBandLeader()" class="permission-item">
+                                        <i class="pi pi-check-circle" style="color: var(--p-green-500);"></i>
+                                        <span>Manage band members and accept event requests</span>
+                                    </div>
+                                    <div v-if="isBandMember()" class="permission-item">
+                                        <i class="pi pi-check-circle" style="color: var(--p-green-500);"></i>
+                                        <span>View band events and respond to fill-in requests</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="pi pi-check-circle" style="color: var(--p-green-500);"></i>
+                                        <span>Browse events and save favorites</span>
+                                    </div>
+                                    <div v-if="isGeneralUser() && !isBandMember() && !isBandLeader()" class="permission-item">
+                                        <i class="pi pi-check-circle" style="color: var(--p-green-500);"></i>
+                                        <span>Create or request to join one band</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </Card>
         </div>
-        
+
         <!-- Unsaved Changes Confirmation Dialog -->
-        <Dialog 
-            v-model:visible="showCancelDialog" 
-            modal 
-            header="Unsaved Changes" 
+        <Dialog
+            v-model:visible="showCancelDialog"
+            modal
+            header="Unsaved Changes"
             :style="{ width: '450px' }"
             :closable="false"
         >
@@ -199,16 +278,16 @@
             </div>
             <template #footer>
                 <div class="dialog-footer">
-                    <Button 
-                        label="Keep Editing" 
-                        icon="pi pi-pencil" 
+                    <Button
+                        label="Keep Editing"
+                        icon="pi pi-pencil"
                         @click="showCancelDialog = false"
                         severity="secondary"
                         outlined
                     />
-                    <Button 
-                        label="Discard Changes" 
-                        icon="pi pi-trash" 
+                    <Button
+                        label="Discard Changes"
+                        icon="pi pi-trash"
                         @click="confirmCancelEditing"
                         severity="danger"
                     />
@@ -243,7 +322,7 @@ interface UserProfile {
 }
 
 // Get current authenticated user ID from auth system
-const { getUserId } = useAuth();
+const { getUserId, isWXTJExecutive, isBandLeader, isBandMember, isGeneralUser } = useAuth();
 const currentUserId = computed(() => getUserId());
 
 // Reference data (fetched from API)
@@ -321,7 +400,7 @@ const validateForm = () => {
     } else if (!isValidEmail(editForm.value.email)) {
         editErrors.value.email = 'Please enter a valid email.';
     }
-    
+
     if (editForm.value.bio && editForm.value.bio.length > 255) {
         editErrors.value.bio = 'Bio must be 255 characters or less.';
     } else if (containsProfanity(editForm.value.bio)) {
@@ -354,7 +433,7 @@ const cancelEditing = () => {
         showCancelDialog.value = true;
         return;
     }
-    
+
     // Reset edit form to original values
     editForm.value = { ...originalProfile.value };
     isEditing.value = false;
@@ -373,7 +452,7 @@ const fetchProfile = async () => {
         alert('Please sign in to view your profile');
         return;
     }
-    
+
     loading.value = true;
     try {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}`);
@@ -381,7 +460,7 @@ const fetchProfile = async () => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const userData = await response.json();
-        
+
         // Map API response to profile
         const mappedProfile = {
             id: String(userData.id),
@@ -393,7 +472,7 @@ const fetchProfile = async () => {
             instrument: userData.instrument || null,
             genre: userData.genre || null
         };
-        
+
         profile.value = mappedProfile;
         originalProfile.value = { ...mappedProfile };
     } catch (error) {
@@ -416,7 +495,7 @@ const saveProfile = async () => {
         alert('Please sign in to save your profile');
         return;
     }
-    
+
     saving.value = true;
     try {
         const response = await fetch(`${API_BASE_URL}/users/${currentUserId.value}`, {
@@ -439,12 +518,12 @@ const saveProfile = async () => {
         }
 
         await response.json();
-        
+
         // Update profile with saved data
         profile.value = { ...editForm.value };
         originalProfile.value = { ...editForm.value };
         isEditing.value = false;
-        
+
         alert('Profile saved successfully!');
     } catch (error) {
         console.error('Failed to save profile:', error);
@@ -469,7 +548,7 @@ onMounted(async () => {
         initializeGenres(),
         initializeInstruments()
     ]);
-    
+
     fetchProfile();
     window.addEventListener('beforeunload', handleBeforeUnload);
 });
@@ -690,24 +769,166 @@ onBeforeUnmount(() => {
     .account-view {
         padding: 1rem;
     }
-    
+
     .section-header {
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
     }
-    
+
     .edit-actions {
         justify-content: center;
     }
-    
+
     .view-grid,
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .field.span-2 {
         grid-column: 1;
     }
 }
-</style> 
+
+/* Roles Section Styles */
+.roles-section {
+    margin-top: 2rem;
+}
+
+.roles-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.role-category h4 {
+    margin: 0 0 1rem 0;
+    color: var(--theme-main-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--p-surface-border);
+    padding-bottom: 0.5rem;
+}
+
+.role-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.account-role-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid;
+    font-weight: 500;
+}
+
+.account-role-badge.executive {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1));
+    border-color: rgba(168, 85, 247, 0.3);
+    color: var(--p-purple-600);
+}
+
+.account-role-badge.general {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+    border-color: rgba(59, 130, 246, 0.3);
+    color: var(--p-blue-600);
+}
+
+.account-role-badge.leader {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+    border-color: rgba(245, 158, 11, 0.3);
+    color: var(--p-yellow-600);
+}
+
+.account-role-badge.member {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
+    border-color: rgba(34, 197, 94, 0.3);
+    color: var(--p-green-600);
+}
+
+.account-role-badge.none {
+    background: var(--p-surface-100);
+    border-color: var(--p-surface-border);
+    color: var(--p-text-muted-color);
+}
+
+.account-role-badge.unknown {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.1));
+    border-color: rgba(107, 114, 128, 0.3);
+    color: var(--p-text-color);
+}
+
+[data-theme="dark"] .account-role-badge.executive {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(147, 51, 234, 0.2));
+    color: var(--p-purple-400);
+}
+
+[data-theme="dark"] .account-role-badge.general {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+    color: var(--p-blue-400);
+}
+
+[data-theme="dark"] .account-role-badge.leader {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+    color: var(--p-yellow-400);
+}
+
+[data-theme="dark"] .account-role-badge.member {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
+    color: var(--p-green-400);
+}
+
+[data-theme="dark"] .account-role-badge.none {
+    background: var(--p-surface-700);
+}
+
+.role-permissions h4 {
+    margin: 0 0 1rem 0;
+    color: var(--theme-main-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--p-surface-border);
+    padding-bottom: 0.5rem;
+}
+
+.permissions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    color: var(--theme-main-text);
+}
+
+.permission-item i {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Responsive adjustments for roles section */
+@media (max-width: 640px) {
+    .roles-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .account-role-badge {
+        padding: 0.5rem 0.75rem;
+    }
+}
+</style>
